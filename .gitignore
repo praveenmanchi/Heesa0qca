@@ -1,0 +1,22 @@
+node_modules
+.vscode/settings.json
+yarn-error.log
+dist
+cypress/screenshots
+cypress/videos
+.env
+.env.production
+package
+.idea
+storybook-static
+coverage
+.DS_Store
+packages/tokens-studio-for-figma/benchmark/output
+packages/tokens-studio-for-figma/benchmark/build
+packages/tokens-studio-for-figma/preview
+# Temporary flamegraphs between builds
+packages/tokens-studio-for-figma/benchmark/flamegraphs
+**.0x
+techdocs/
+.turbo
+cypress/downloads

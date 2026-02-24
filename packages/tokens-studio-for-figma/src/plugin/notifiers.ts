@@ -1,0 +1,235 @@
+import {
+  MessageFromPluginTypes,
+  PostToUIMessage,
+} from '@/types/messages';
+import { TokenStore } from '@/types/tokens';
+import { SelectionGroup } from '@/types/SelectionGroup';
+import { SelectionValue } from '@/types/SelectionValue';
+import { UpdateMode } from '@/constants/UpdateMode';
+import { AsyncMessageTypes, NotifyAsyncMessage } from '@/types/AsyncMessages';
+import { AsyncMessageChannel } from '@/AsyncMessageChannel';
+import { StorageTypeCredentials } from '@/types/StorageType';
+import { StyleToCreateToken, VariableToCreateToken } from '@/types/payloads';
+import { TokenFormatOptions } from './TokenFormatStoreClass';
+import { ApplyVariablesStylesOrRawValues } from '@/constants/ApplyVariablesStyleOrder';
+import { ThemeObjectsList } from '@/types/ThemeObjectsList';
+
+export function notifyUI(msg: string, opts?: NotificationOptions) {
+  figma.notify(msg, opts);
+}
+
+export function notifyToUI(msg: string, opts: NotifyAsyncMessage['opts'] = {}) {
+  AsyncMessageChannel.ReactInstance.message({
+    type: AsyncMessageTypes.NOTIFY,
+    msg,
+    opts,
+  });
+}
+
+export function postToUI(props: PostToUIMessage) {
+  figma.ui.postMessage(props);
+}
+
+export function notifyInstancesCreated(count: number) {
+  postToUI({
+    type: MessageFromPluginTypes.INSTANCES_CREATED,
+    count,
+  });
+}
+
+export function notifyNoSelection() {
+  postToUI({
+    type: MessageFromPluginTypes.NO_SELECTION,
+  });
+}
+
+export function notifySelection({
+  selectionValues,
+  mainNodeSelectionValues,
+  selectedNodes,
+}: {
+  selectionValues: SelectionGroup[];
+  mainNodeSelectionValues: SelectionValue[];
+  selectedNodes: number;
+}) {
+  postToUI({
+    type: MessageFromPluginTypes.SELECTION,
+    selectionValues,
+    mainNodeSelectionValues,
+    selectedNodes,
+  });
+}
+
+export type SavedSettings = {
+  language: string,
+  sessionRecording: boolean;
+  width: number;
+  height: number;
+  showEmptyGroups: boolean
+  updateMode: UpdateMode;
+  updateRemote: boolean;
+  updateOnChange: boolean;
+  applyVariablesStylesOrRawValue: ApplyVariablesStylesOrRawValues;
+  shouldUpdateStyles: boolean;
+  variablesColor: boolean;
+  variablesNumber: boolean;
+  variablesString: boolean;
+  variablesBoolean: boolean;
+  stylesColor: boolean;
+  stylesTypography: boolean;
+  stylesEffect: boolean;
+  stylesGradient: boolean;
+  ignoreFirstPartForStyles: boolean;
+  createStylesWithVariableReferences: boolean;
+  prefixStylesWithThemeName: boolean;
+  renameExistingStylesAndVariables: boolean;
+  removeStylesAndVariablesWithoutConnection: boolean;
+  inspectDeep: boolean;
+  shouldSwapStyles: boolean;
+  shouldSwapFigmaModes: boolean;
+  baseFontSize: string;
+  aliasBaseFontSize: string;
+  storeTokenIdInJsonEditor: boolean;
+  tokenFormat: TokenFormatOptions;
+  autoApplyThemeOnDrop: boolean;
+  seenGenericVersionedHeaderMigrationDialog?: boolean;
+  seenTermsUpdate2026?: boolean;
+  githubExtractConfig?: {
+    pat?: string;
+    owner?: string;
+    repo?: string;
+    baseBranch?: string;
+    filePath?: string;
+    webhookUrl?: string;
+    webhookUrlDev?: string;
+  };
+};
+
+export function notifyUISettings(
+  {
+    language,
+    sessionRecording,
+    width,
+    height,
+    updateMode,
+    updateOnChange,
+    applyVariablesStylesOrRawValue,
+    shouldUpdateStyles,
+    showEmptyGroups,
+    variablesColor,
+    variablesNumber,
+    variablesString,
+    variablesBoolean,
+    stylesColor,
+    stylesTypography,
+    stylesEffect,
+    stylesGradient,
+    ignoreFirstPartForStyles,
+    createStylesWithVariableReferences,
+    prefixStylesWithThemeName,
+    updateRemote = true,
+    inspectDeep,
+    shouldSwapStyles,
+    shouldSwapFigmaModes,
+    baseFontSize,
+    aliasBaseFontSize,
+    storeTokenIdInJsonEditor,
+    tokenFormat,
+    renameExistingStylesAndVariables,
+    removeStylesAndVariablesWithoutConnection,
+    seenGenericVersionedHeaderMigrationDialog,
+    seenTermsUpdate2026,
+    githubExtractConfig,
+  }: SavedSettings,
+) {
+  postToUI({
+    type: MessageFromPluginTypes.UI_SETTINGS,
+    settings: {
+      uiWindow: {
+        width,
+        height,
+        isMinimized: false,
+      },
+      language,
+      sessionRecording,
+      updateMode,
+      updateRemote,
+      updateOnChange,
+      applyVariablesStylesOrRawValue,
+      shouldUpdateStyles,
+      variablesColor,
+      variablesBoolean,
+      variablesNumber,
+      variablesString,
+      stylesColor,
+      stylesEffect,
+      stylesTypography,
+      stylesGradient,
+      ignoreFirstPartForStyles,
+      createStylesWithVariableReferences,
+      prefixStylesWithThemeName,
+      inspectDeep,
+      shouldSwapStyles,
+      shouldSwapFigmaModes,
+      baseFontSize,
+      aliasBaseFontSize,
+      storeTokenIdInJsonEditor,
+      tokenFormat,
+      renameExistingStylesAndVariables,
+      removeStylesAndVariablesWithoutConnection,
+      seenGenericVersionedHeaderMigrationDialog,
+      seenTermsUpdate2026,
+      githubExtractConfig,
+    },
+  });
+  postToUI({
+    type: MessageFromPluginTypes.SHOW_EMPTY_GROUPS,
+    showEmptyGroups,
+  });
+}
+
+export function notifyAPIProviders(providers: StorageTypeCredentials[]) {
+  postToUI({ type: MessageFromPluginTypes.API_PROVIDERS, providers });
+}
+
+export function notifyStyleValues(values: Record<string, StyleToCreateToken[]>) {
+  postToUI({ type: MessageFromPluginTypes.STYLES, values });
+}
+
+export function notifyVariableValues(
+  values: Record<string, VariableToCreateToken[]>,
+  themes?: ThemeObjectsList,
+) {
+  postToUI({
+    type: MessageFromPluginTypes.VARIABLES,
+    values,
+    themes,
+  });
+}
+
+export function notifyRenamedCollections(renamedCollections: [string, string][]) {
+  postToUI({
+    type: MessageFromPluginTypes.RENAME_COLLECTIONS_AND_MODES,
+    renamedCollections,
+  });
+}
+
+export function notifySetTokens(values: TokenStore) {
+  postToUI({ type: MessageFromPluginTypes.SET_TOKENS, values });
+}
+
+export function notifyException(error: string, opts = {}) {
+  postToUI({
+    type: MessageFromPluginTypes.NOTIFY_EXCEPTION,
+    error,
+    opts,
+  });
+}
+
+export function trackFromPlugin(title: string, opts = {}) {
+  postToUI({
+    type: MessageFromPluginTypes.TRACK_FROM_PLUGIN,
+    title,
+    opts,
+  });
+}

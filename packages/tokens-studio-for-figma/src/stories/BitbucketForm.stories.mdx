@@ -1,0 +1,32 @@
+import { Meta, Story, ArgsTable, Canvas, Preview } from '@storybook/addon-docs';
+
+import BitbucketForm from '@/app/components/StorageItemForm/BitbucketForm';
+
+<Meta
+  title="BitbucketForm"
+  component={BitbucketForm}
+  args={{
+    values: {
+      apiToken: '',
+      id: '',
+      branch: '',
+      filePath: '',
+      baseUrl: '',
+      username: 'user@example.com',
+    },
+  }}
+/>
+
+<ArgsTable of={BitbucketForm} />
+
+export const BitbucketFormDefaultStory = (args) => {
+  return (
+    <>
+      <BitbucketForm values={args.values} />
+    </>
+  );
+};
+
+<Canvas>
+  <Story name="Default">{BitbucketFormDefaultStory.bind({})}</Story>
+</Canvas>

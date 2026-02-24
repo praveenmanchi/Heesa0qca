@@ -1,0 +1,19 @@
+{
+  "intro": "The Bridge le permite usar tokens de diseño en Figma y sincronizarlos con una fuente de verdad externa, por ejemplo, GitHub.",
+  "gettingStarted": "Empezando",
+  "documentation": "Documentación",
+  "joinSlack": "Únete a nuestro Slack",
+  "loadExample": "Cargar ejemplo",
+  "foundIssue": "¿Encontró un problema? ¡Estamos en GitHub!",
+  "newEmptyFile": "Nuevo archivo vacío",
+  "version": "Versión",
+  "guides": "Guías",
+  "couldNotLoadTokens": "No se pudieron cargar los tokens almacenados en {{provider}}",
+  "cancel": "Cancelar",
+  "loadingWait": "Cargando por favor espere",
+  "enterCredentials": "Ingrese las credenciales",
+  "unableToFetchRemote": "No se pueden obtener tokens del almacenamiento remoto, si aún no ha agregado credenciales, agréguelas en el siguiente paso. De lo contrario, asegúrese de que el archivo exista y de que tenga acceso a él.",
+  "unableToFetchRemoteNoCredentials": "No se pueden obtener tokens del almacenamiento remoto. Necesita agregar credenciales para acceder a este proveedor de almacenamiento.",
+  "unableToFetchRemoteWithCredentials": "No se pueden obtener tokens del almacenamiento remoto. Esto puede deberse a credenciales incorrectas, o el archivo puede no existir o no tener acceso a él.",
+  "retry": "Reintentar"
+}

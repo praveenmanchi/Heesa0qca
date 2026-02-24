@@ -1,0 +1,14 @@
+{
+  "ifYouCreate": "Als u uw branch maakt of verwisselt zonder uw lokale wijzigingen door te voeren naar uw repository, zullen de wijzigingen verloren gaan.",
+  "discardChanges": "Veranderingen ongedaan maken",
+  "cancel": "Annuleren",
+  "createNewBranch": "Maak een nieuwe tak van",
+  "currentChanges": "Huidige wijzigingen",
+  "unSavedChanges": "U heeft niet-opgeslagen wijzigingen",
+  "createNew": "Nieuw maken",
+  "search": "Zoeken...",
+  "noBranchesFound": "Geen takken gevonden",
+  "branchingProFeature": "Branching is een functie van het Pro-abonnement",
+  "upgradeToPro": "Upgrade naar Pro om takken te maken en te wisselen",
+  "switchingBranch": "Branch wisselen..."
+}

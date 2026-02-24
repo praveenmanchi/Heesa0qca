@@ -1,0 +1,758 @@
+import { useDispatch, useSelector } from 'react-redux';
+import { useCallback, useMemo } from 'react';
+import compact from 'just-compact';
+import { track } from '@/utils/analytics';
+import { useJSONbin } from './providers/jsonbin';
+import useURL from './providers/url';
+import { Dispatch } from '../store';
+import useStorage from './useStorage';
+import { useGitHub } from './providers/github';
+import { useGitLab } from './providers/gitlab';
+import { useSupernova } from './providers/supernova';
+import { useBitbucket } from './providers/bitbucket';
+import { useADO } from './providers/ado';
+import useFile from '@/app/store/providers/file';
+import { BackgroundJobs } from '@/constants/BackgroundJobs';
+import {
+  activeTabSelector, apiSelector, themesListSelector, tokensSelector,
+} from '@/selectors';
+import { ThemeObject, UsedTokenSetsMap } from '@/types';
+import { AsyncMessageTypes } from '@/types/AsyncMessages';
+import { AsyncMessageChannel } from '@/AsyncMessageChannel';
+import { StorageProviderType } from '@/constants/StorageProviderType';
+import { StorageTypeCredentials, StorageTypeFormValues } from '@/types/StorageType';
+import { useGenericVersionedStorage } from './providers/generic/versionedStorage';
+import { RemoteResponseData, RemoteResponseStatus } from '@/types/RemoteResponseData';
+import { getFormat, TokenFormat, TokenFormatOptions } from '@/plugin/TokenFormatStoreClass';
+import { ErrorMessages } from '@/constants/ErrorMessages';
+import { applyTokenSetOrder } from '@/utils/tokenset';
+import { isEqual } from '@/utils/isEqual';
+import { categorizeError } from '@/utils/error/categorizeError';
+import usePullDialog from '../hooks/usePullDialog';
+import { Tabs } from '@/constants/Tabs';
+import { useTokensStudio } from './providers/tokens-studio';
+import { notifyToUI } from '@/plugin/notifiers';
+
+export type PushOverrides = { branch: string; commitMessage: string };
+
+type PullTokensOptions = {
+  context?: StorageTypeCredentials;
+  usedTokenSet?: UsedTokenSetsMap | null;
+  activeTheme?: Record<string, string>;
+  collapsedTokenSets?: string[] | null;
+  updateLocalTokens?: boolean;
+  skipConfirmation?: boolean;
+};
+
+// @TODO typings and hooks
+
+export default function useRemoteTokens() {
+  const dispatch = useDispatch<Dispatch>();
+  const api = useSelector(apiSelector);
+  const tokens = useSelector(tokensSelector);
+  const themes = useSelector(themesListSelector);
+  const activeTab = useSelector(activeTabSelector);
+  const { showPullDialog, closePullDialog, showPullDialogError } = usePullDialog();
+
+  const { setStorageType } = useStorage();
+  const { pullTokensFromJSONBin, addJSONBinCredentials, createNewJSONBin } = useJSONbin();
+  const { addGenericVersionedCredentials, pullTokensFromGenericVersionedStorage, createNewGenericVersionedStorage } = useGenericVersionedStorage();
+  const {
+    addNewGitHubCredentials,
+    syncTokensWithGitHub,
+    pullTokensFromGitHub,
+    pushTokensToGitHub,
+    createGithubBranch,
+    fetchGithubBranches,
+    checkRemoteChangeForGitHub,
+  } = useGitHub();
+  const {
+    addNewGitLabCredentials,
+    syncTokensWithGitLab,
+    pullTokensFromGitLab,
+    pushTokensToGitLab,
+    fetchGitLabBranches,
+    createGitLabBranch,
+    checkRemoteChangeForGitLab,
+  } = useGitLab();
+  const {
+    addNewBitbucketCredentials,
+    syncTokensWithBitbucket,
+    pullTokensFromBitbucket,
+    pushTokensToBitbucket,
+    fetchBitbucketBranches,
+    createBitbucketBranch,
+  } = useBitbucket();
+  const {
+    addNewSupernovaCredentials, syncTokensWithSupernova, pushTokensToSupernova, pullTokensFromSupernova,
+  } = useSupernova();
+  const {
+    addNewTokensStudioCredentials,
+    syncTokensWithTokensStudio,
+    pushTokensToTokensStudio,
+    pullTokensFromTokensStudio,
+  } = useTokensStudio();
+  const {
+    addNewADOCredentials,
+    syncTokensWithADO,
+    pullTokensFromADO,
+    pushTokensToADO,
+    createADOBranch,
+    fetchADOBranches,
+  } = useADO();
+  const { pullTokensFromURL } = useURL();
+  const { readTokensFromFileOrDirectory } = useFile();
+
+  const pullTokens = useCallback(
+    async ({
+      context = api,
+      usedTokenSet,
+      activeTheme,
+      collapsedTokenSets,
+      updateLocalTokens = false,
+      skipConfirmation = false,
+    }: PullTokensOptions) => {
+      let remoteData: RemoteResponseData<unknown> | null = null;
+
+      try {
+        switch (context.provider) {
+          case StorageProviderType.JSONBIN: {
+            remoteData = await pullTokensFromJSONBin(context);
+            break;
+          }
+          case StorageProviderType.GENERIC_VERSIONED_STORAGE: {
+            remoteData = await pullTokensFromGenericVersionedStorage(context);
+            break;
+          }
+          case StorageProviderType.GITHUB: {
+            remoteData = await pullTokensFromGitHub(context);
+            break;
+          }
+          case StorageProviderType.BITBUCKET: {
+            remoteData = await pullTokensFromBitbucket(context);
+            break;
+          }
+          case StorageProviderType.GITLAB: {
+            remoteData = await pullTokensFromGitLab(context);
+            break;
+          }
+          case StorageProviderType.ADO: {
+            remoteData = await pullTokensFromADO(context);
+            break;
+          }
+          case StorageProviderType.URL: {
+            remoteData = await pullTokensFromURL(context);
+            break;
+          }
+          case StorageProviderType.SUPERNOVA: {
+            remoteData = await pullTokensFromSupernova(context);
+            break;
+          }
+          case StorageProviderType.TOKENS_STUDIO: {
+            remoteData = await pullTokensFromTokensStudio(context);
+            dispatch.tokenState.setTokenFormat(TokenFormatOptions.DTCG);
+            break;
+          }
+          default:
+            throw new Error('Not implemented');
+        }
+      } catch (err) {
+        console.error('Error pulling tokens:', err);
+        const { type, message, header } = categorizeError(err, {
+          provider: context.provider,
+          operation: 'pull',
+          hasCredentials: true,
+        });
+        // Create a failure response for the error
+        remoteData = {
+          status: 'failure',
+          errorMessage: message,
+          errorType: type,
+          errorHeader: header,
+        } as RemoteResponseData<unknown>;
+      }
+
+      // Handle errors - show error dialog and set error state
+      if (remoteData === null) {
+        return null;
+      }
+
+      if (remoteData?.status === 'failure') {
+        const type = remoteData.errorType || 'other';
+        const message = remoteData.errorMessage;
+        const header = remoteData.errorHeader;
+        dispatch.uiState.setLastError({ type, message, header });
+        showPullDialogError();
+        return remoteData;
+      }
+
+      if (remoteData?.status === 'success') {
+        dispatch.tokenState.setRemoteData({
+          tokens: remoteData.tokens,
+          themes: remoteData.themes,
+          metadata: remoteData.metadata,
+        });
+        dispatch.uiState.setHasRemoteChange(false);
+        const stringifiedRemoteTokens = JSON.stringify(
+          compact([remoteData.tokens, remoteData.themes, TokenFormat.format]),
+          null,
+          2,
+        );
+        dispatch.tokenState.setLastSyncedState(stringifiedRemoteTokens);
+        if (activeTab !== Tabs.LOADING) {
+          if (updateLocalTokens) {
+            const format = getFormat();
+            dispatch.tokenState.setTokenFormat(format);
+          }
+        }
+        if (activeTab === Tabs.LOADING || !isEqual(tokens, remoteData.tokens) || !isEqual(themes, remoteData.themes)) {
+          let shouldOverride = false;
+          if (activeTab !== Tabs.LOADING && !skipConfirmation) {
+            dispatch.tokenState.setChangedState({
+              tokens: remoteData.tokens,
+              themes: remoteData.themes,
+            });
+            shouldOverride = skipConfirmation ? true : !!(await showPullDialog());
+          }
+          if (shouldOverride || activeTab === Tabs.LOADING || skipConfirmation) {
+            switch (context.provider) {
+              case StorageProviderType.JSONBIN: {
+                break;
+              }
+              case StorageProviderType.GENERIC_VERSIONED_STORAGE: {
+                break;
+              }
+              case StorageProviderType.GITHUB: {
+                dispatch.uiState.setApiData({
+                  ...context,
+                  ...(remoteData.commitSha ? { commitSha: remoteData.commitSha } : {}),
+                });
+                break;
+              }
+              case StorageProviderType.BITBUCKET: {
+                break;
+              }
+              case StorageProviderType.GITLAB: {
+                dispatch.uiState.setApiData({
+                  ...context,
+                  ...(remoteData.commitDate ? { commitDate: remoteData.commitDate } : {}),
+                });
+                break;
+              }
+              case StorageProviderType.ADO: {
+                break;
+              }
+              case StorageProviderType.URL: {
+                break;
+              }
+              case StorageProviderType.TOKENS_STUDIO: {
+                dispatch.tokenState.setTokenSetMetadata(remoteData.metadata?.tokenSetsData ?? {});
+                break;
+              }
+              default:
+                break;
+            }
+            const remoteThemes: ThemeObject[] = remoteData.themes || [];
+            // remove those active themes that are no longer present in remoteThemes
+            const filteredThemes = activeTheme
+              ? Object.keys(activeTheme).reduce((acc, key) => {
+                if (remoteThemes.find((theme) => theme.id === activeTheme[key])) {
+                  acc[key] = activeTheme[key];
+                }
+                return acc;
+              }, {} as Record<string, string>)
+              : {};
+
+            if (updateLocalTokens || shouldOverride) {
+              dispatch.tokenState.setTokenData({
+                values: remoteData.tokens,
+                themes: remoteData.themes,
+                activeTheme: filteredThemes,
+                usedTokenSet: usedTokenSet ?? {},
+                hasChangedRemote: true,
+              });
+
+              dispatch.tokenState.setCollapsedTokenSets(collapsedTokenSets || []);
+            }
+            track('Launched with token sets', {
+              count: Object.keys(remoteData.tokens).length,
+              setNames: Object.keys(remoteData.tokens),
+            });
+          }
+        }
+      }
+      try {
+        if (remoteData?.status === 'success') {
+          const setCount = Object.keys(remoteData.tokens).length;
+          const tokensCount = Object.values(remoteData.tokens).reduce((acc, set) => acc + set.length, 0);
+          const themeCount = Object.keys(remoteData.themes).length;
+          const tokenFormat = getFormat();
+          track('pullTokens', {
+            provider: context.provider,
+            setCount,
+            tokensCount,
+            themeCount,
+            tokenFormat,
+          });
+        } else {
+          track('pullTokens failure', { provider: context.provider });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      dispatch.tokenState.resetChangedState();
+      closePullDialog();
+      return remoteData;
+    },
+    [
+      tokens,
+      themes,
+      activeTab,
+      dispatch,
+      api,
+      pullTokensFromGenericVersionedStorage,
+      pullTokensFromGitHub,
+      pullTokensFromGitLab,
+      pullTokensFromBitbucket,
+      pullTokensFromJSONBin,
+      pullTokensFromURL,
+      pullTokensFromADO,
+      showPullDialog,
+      showPullDialogError,
+      closePullDialog,
+      pullTokensFromSupernova,
+      pullTokensFromTokensStudio,
+    ],
+  );
+
+  const restoreStoredProvider = useCallback(
+    async (context: StorageTypeCredentials) => {
+      track('restoreStoredProvider', { provider: context.provider });
+      dispatch.uiState.setLocalApiState(context);
+      dispatch.uiState.setApiData(context);
+      dispatch.tokenState.setEditProhibited(false);
+      setStorageType({ provider: context, shouldSetInDocument: true });
+      let content: RemoteResponseData | null = null;
+      switch (context.provider) {
+        case StorageProviderType.GITHUB: {
+          content = await syncTokensWithGitHub(context);
+          break;
+        }
+        case StorageProviderType.GITLAB: {
+          content = await syncTokensWithGitLab(context);
+          break;
+        }
+        case StorageProviderType.BITBUCKET: {
+          content = await syncTokensWithBitbucket(context);
+          break;
+        }
+        case StorageProviderType.ADO: {
+          content = await syncTokensWithADO(context);
+          break;
+        }
+        case StorageProviderType.SUPERNOVA: {
+          content = await syncTokensWithSupernova(context);
+          break;
+        }
+        case StorageProviderType.TOKENS_STUDIO: {
+          content = await syncTokensWithTokensStudio(context);
+          dispatch.tokenState.setTokenFormat(TokenFormatOptions.DTCG);
+          break;
+        }
+        default:
+          content = await pullTokens({ context });
+      }
+      if (content?.status === 'failure') {
+        return {
+          status: 'failure',
+          errorMessage: content?.errorMessage,
+        };
+      }
+      if (content) {
+        return {
+          status: 'success',
+        };
+      }
+      return {
+        status: 'failure',
+        errorMessage: ErrorMessages.GENERAL_CONNECTION_ERROR,
+      };
+    },
+    [
+      dispatch,
+      setStorageType,
+      pullTokens,
+      syncTokensWithGitHub,
+      syncTokensWithGitLab,
+      syncTokensWithBitbucket,
+      syncTokensWithADO,
+      syncTokensWithSupernova,
+      syncTokensWithTokensStudio,
+    ],
+  );
+
+  const pushTokens = useCallback(
+    async ({ context = api, overrides }: { context?: StorageTypeCredentials; overrides?: PushOverrides } = {}) => {
+      const isFolder = 'filePath' in context && !context.filePath?.endsWith('.json');
+      let pushResult;
+      switch (context.provider) {
+        case StorageProviderType.GITHUB: {
+          pushResult = await pushTokensToGitHub(context, overrides);
+          break;
+        }
+        case StorageProviderType.GITLAB: {
+          pushResult = await pushTokensToGitLab(context);
+          break;
+        }
+        case StorageProviderType.BITBUCKET: {
+          pushResult = await pushTokensToBitbucket(context);
+          break;
+        }
+        case StorageProviderType.ADO: {
+          pushResult = await pushTokensToADO(context);
+          break;
+        }
+        case StorageProviderType.SUPERNOVA: {
+          pushResult = await pushTokensToSupernova(context);
+          break;
+        }
+        case StorageProviderType.TOKENS_STUDIO: {
+          pushResult = await pushTokensToTokensStudio(context);
+          break;
+        }
+        default:
+          throw new Error('Not implemented');
+      }
+      try {
+        if (pushResult?.status === 'success') {
+          const setCount = Object.keys(tokens).length;
+          const tokensCount = Object.values(tokens).reduce((acc, set) => acc + set.length, 0);
+          const themeCount = Object.keys(themes).length;
+          const tokenFormat = getFormat();
+          track('pushTokens', {
+            provider: context.provider,
+            isFolder,
+            setCount,
+            tokensCount,
+            themeCount,
+            tokenFormat,
+          });
+        } else {
+          track('pushTokens failure', { provider: context.provider, isFolder });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      if (pushResult.status && pushResult.status === 'failure') {
+        notifyToUI(pushResult.errorMessage, { error: true });
+      }
+    },
+    [
+      api,
+      pushTokensToGitHub,
+      pushTokensToGitLab,
+      pushTokensToBitbucket,
+      pushTokensToADO,
+      pushTokensToSupernova,
+      pushTokensToTokensStudio,
+      tokens,
+      themes,
+    ],
+  );
+
+  const addNewProviderItem = useCallback(
+    async (credentials: StorageTypeFormValues<false>): Promise<RemoteResponseStatus> => {
+      let content: RemoteResponseData | null = null;
+      switch (credentials.provider) {
+        case StorageProviderType.JSONBIN: {
+          if (credentials.id) {
+            content = await addJSONBinCredentials(credentials);
+          } else {
+            const id = await createNewJSONBin(credentials);
+            if (id) {
+              credentials.id = id;
+              return {
+                status: 'success',
+              };
+            }
+            return {
+              status: 'failure',
+              errorMessage: ErrorMessages.JSONBIN_CREATE_ERROR,
+            };
+          }
+          break;
+        }
+        case StorageProviderType.GENERIC_VERSIONED_STORAGE: {
+          if (credentials.id) {
+            content = await addGenericVersionedCredentials(credentials);
+          } else {
+            const id = await createNewGenericVersionedStorage(credentials);
+            if (id) {
+              credentials.id = id;
+              return {
+                status: 'success',
+              };
+            }
+          }
+          break;
+        }
+        case StorageProviderType.GITHUB: {
+          content = await addNewGitHubCredentials(credentials);
+          break;
+        }
+        case StorageProviderType.GITLAB: {
+          content = await addNewGitLabCredentials(credentials);
+          break;
+        }
+        case StorageProviderType.BITBUCKET: {
+          content = await addNewBitbucketCredentials(credentials);
+          break;
+        }
+        case StorageProviderType.ADO: {
+          content = await addNewADOCredentials(credentials);
+          break;
+        }
+        case StorageProviderType.URL: {
+          content = await pullTokensFromURL(credentials);
+          break;
+        }
+        case StorageProviderType.SUPERNOVA: {
+          content = await addNewSupernovaCredentials(credentials);
+          break;
+        }
+        case StorageProviderType.TOKENS_STUDIO: {
+          content = await addNewTokensStudioCredentials(credentials);
+          break;
+        }
+        default:
+          throw new Error('Not implemented');
+      }
+      if (content?.status === 'failure') {
+        return {
+          status: 'failure',
+          errorMessage: content?.errorMessage,
+        };
+      }
+      if (content) {
+        dispatch.uiState.setLocalApiState(credentials as StorageTypeCredentials); // in JSONBIN the ID can technically be omitted, but this function handles this by creating a new JSONBin and assigning the ID
+        dispatch.uiState.setApiData(credentials as StorageTypeCredentials);
+        setStorageType({ provider: credentials as StorageTypeCredentials, shouldSetInDocument: true });
+        return {
+          status: 'success',
+        };
+      }
+      return {
+        status: 'failure',
+        errorMessage: ErrorMessages.GENERAL_CONNECTION_ERROR,
+      };
+    },
+    [
+      dispatch,
+      addJSONBinCredentials,
+      addGenericVersionedCredentials,
+      addNewGitLabCredentials,
+      addNewGitHubCredentials,
+      addNewBitbucketCredentials,
+      addNewADOCredentials,
+      addNewSupernovaCredentials,
+      addNewTokensStudioCredentials,
+      createNewJSONBin,
+      createNewGenericVersionedStorage,
+      pullTokensFromURL,
+      setStorageType,
+    ],
+  );
+
+  const addNewBranch = useCallback(
+    async (context: StorageTypeCredentials, branch: string, source?: string) => {
+      let newBranchCreated = false;
+      switch (context.provider) {
+        case StorageProviderType.GITHUB: {
+          newBranchCreated = await createGithubBranch(context, branch, source);
+          break;
+        }
+        case StorageProviderType.GITLAB: {
+          newBranchCreated = await createGitLabBranch(context, branch, source);
+          break;
+        }
+        case StorageProviderType.BITBUCKET: {
+          newBranchCreated = await createBitbucketBranch(context, branch, source);
+          break;
+        }
+        case StorageProviderType.ADO: {
+          newBranchCreated = await createADOBranch(context, branch, source);
+          break;
+        }
+        default:
+          throw new Error('Not implemented');
+      }
+      return newBranchCreated;
+    },
+    [createGithubBranch, createGitLabBranch, createBitbucketBranch, createADOBranch],
+  );
+
+  const fetchBranches = useCallback(
+    async (context: StorageTypeCredentials) => {
+      switch (context.provider) {
+        case StorageProviderType.GITHUB:
+          return fetchGithubBranches(context);
+        case StorageProviderType.GITLAB:
+          return fetchGitLabBranches(context);
+        case StorageProviderType.BITBUCKET:
+          return fetchBitbucketBranches(context);
+        case StorageProviderType.ADO:
+          return fetchADOBranches(context);
+        default:
+          return null;
+      }
+    },
+    [fetchGithubBranches, fetchGitLabBranches, fetchBitbucketBranches, fetchADOBranches],
+  );
+
+  const deleteProvider = useCallback((provider: any) => {
+    AsyncMessageChannel.ReactInstance.message({
+      type: AsyncMessageTypes.REMOVE_SINGLE_CREDENTIAL,
+      context: provider,
+    });
+  }, []);
+
+  const fetchTokensFromFileOrDirectory = useCallback(
+    async ({
+      files,
+      usedTokenSet,
+      activeTheme,
+    }: {
+      files: FileList | null;
+      usedTokenSet?: UsedTokenSetsMap;
+      activeTheme?: Record<string, string>;
+    }) => {
+      track('fetchTokensFromFileOrDirectory');
+      dispatch.uiState.startJob({ name: BackgroundJobs.UI_FETCHTOKENSFROMFILE });
+
+      if (files && files.length > 0) {
+        const remoteData = await readTokensFromFileOrDirectory(files);
+
+        if (remoteData?.status === 'success') {
+          const sortedTokens = applyTokenSetOrder(
+            remoteData.tokens,
+            remoteData.metadata?.tokenSetOrder ?? Object.keys(remoteData.tokens),
+          );
+
+          dispatch.tokenState.setTokenData({
+            values: sortedTokens,
+            themes: remoteData.themes,
+            activeTheme: activeTheme ?? {},
+            usedTokenSet: usedTokenSet ?? {},
+            shouldUpdate: true,
+          });
+          track('Launched with token sets', {
+            count: Object.keys(remoteData.tokens).length,
+            setNames: Object.keys(remoteData.tokens),
+          });
+        }
+        dispatch.uiState.completeJob(BackgroundJobs.UI_FETCHTOKENSFROMFILE);
+        return remoteData;
+      }
+      return null;
+    },
+    [dispatch, readTokensFromFileOrDirectory],
+  );
+
+  const checkRemoteChange = useCallback(
+    async (context: StorageTypeCredentials = api): Promise<boolean> => {
+      let hasChange = false;
+      switch (context?.provider) {
+        case StorageProviderType.JSONBIN: {
+          hasChange = false;
+          break;
+        }
+        case StorageProviderType.GENERIC_VERSIONED_STORAGE: {
+          hasChange = false;
+          break;
+        }
+        case StorageProviderType.GITHUB: {
+          hasChange = await checkRemoteChangeForGitHub(context);
+          break;
+        }
+        case StorageProviderType.BITBUCKET: {
+          hasChange = false;
+          break;
+        }
+        case StorageProviderType.GITLAB: {
+          hasChange = await checkRemoteChangeForGitLab(context);
+          break;
+        }
+        case StorageProviderType.ADO: {
+          hasChange = false;
+          break;
+        }
+        case StorageProviderType.URL: {
+          hasChange = false;
+          break;
+        }
+        default:
+          hasChange = false;
+          break;
+      }
+      dispatch.uiState.setHasRemoteChange(hasChange);
+      return hasChange;
+    },
+    [api, checkRemoteChangeForGitHub, checkRemoteChangeForGitLab, dispatch.uiState],
+  );
+
+  const restoreProviderWithAutoPull = useCallback(
+    async (context: StorageTypeCredentials) => {
+      track('restoreProviderWithAutoPull', { provider: context.provider });
+      dispatch.uiState.setLocalApiState(context);
+      dispatch.uiState.setApiData(context);
+      dispatch.tokenState.setEditProhibited(false);
+      setStorageType({ provider: context, shouldSetInDocument: true });
+
+      // Pull tokens automatically without user confirmation
+      await pullTokens({
+        context,
+        updateLocalTokens: true,
+        usedTokenSet: {},
+        activeTheme: {},
+        collapsedTokenSets: [],
+        skipConfirmation: true,
+      });
+
+      // Switch to tokens tab after successful load
+      dispatch.uiState.setActiveTab(Tabs.VARIABLES);
+
+      return {
+        status: 'success',
+      };
+    },
+    [dispatch, setStorageType, pullTokens],
+  );
+
+  return useMemo(
+    () => ({
+      restoreStoredProvider,
+      restoreProviderWithAutoPull,
+      deleteProvider,
+      pullTokens,
+      pushTokens,
+      addNewProviderItem,
+      fetchBranches,
+      addNewBranch,
+      fetchTokensFromFileOrDirectory,
+      checkRemoteChange,
+    }),
+    [
+      restoreStoredProvider,
+      restoreProviderWithAutoPull,
+      deleteProvider,
+      pullTokens,
+      pushTokens,
+      addNewProviderItem,
+      fetchBranches,
+      addNewBranch,
+      fetchTokensFromFileOrDirectory,
+      checkRemoteChange,
+    ],
+  );
+}
