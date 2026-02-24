@@ -47,6 +47,8 @@ import { triggerTeamsWebhook } from '@/utils/teamsWebhookHandler';
 import { styled } from '@/stitches.config';
 import { TabRoot } from '@/app/components/ui';
 
+import { JsonDiffViewer } from '@/app/components/ui/JsonDiffViewer';
+
 // ─── Styled components ───────────────────────────────────────────────────────
 
 const Section = styled(Box, {
@@ -959,50 +961,12 @@ export default function ExtractTab() {
                 )}
               </Box>
 
-              <Stack direction="row" gap={0} css={{ height: '400px' }}>
-                <Box css={{ flex: 1, borderRight: '1px solid $borderSubtle', display: 'flex', flexDirection: 'column' }}>
-                  <Text css={{ padding: '$2 $3', color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.06em', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', display: 'block' }}>OLD (GITHUB)</Text>
-                  <Box as="textarea" readOnly value={oldJsonPreview} css={{ 
-                    flex: 1, 
-                    width: '100%', 
-                    padding: '$3', 
-                    fontFamily: '$mono', 
-                    fontSize: FONT_SIZE.xs, 
-                    lineHeight: 1.5,
-                    color: '$fgMuted',
-                    backgroundColor: '$bgDefault', 
-                    border: 'none', 
-                    resize: 'none',
-                    outline: 'none',
-                    whiteSpace: 'pre',
-                    overflow: 'auto',
-                    '&::-webkit-scrollbar': { width: '8px', height: '8px' },
-                    '&::-webkit-scrollbar-track': { background: 'transparent' },
-                    '&::-webkit-scrollbar-thumb': { background: '$borderMuted', borderRadius: '4px' },
-                  }} />
+              <Box css={{ height: '400px', display: 'flex', flexDirection: 'column' }}>
+                <Text css={{ padding: '$2 $3', color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.06em', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', display: 'block' }}>UNIFIED DIFF (GITHUB vs CANVAS)</Text>
+                <Box css={{ flex: 1, overflow: 'hidden' }}>
+                  <JsonDiffViewer oldValue={oldJsonPreview} newValue={jsonResult} />
                 </Box>
-                <Box css={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <Text css={{ padding: '$2 $3', color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.06em', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', display: 'block' }}>NEW (CANVAS)</Text>
-                  <Box as="textarea" readOnly value={jsonResult} css={{ 
-                    flex: 1, 
-                    width: '100%', 
-                    padding: '$3', 
-                    fontFamily: '$mono', 
-                    fontSize: FONT_SIZE.xs, 
-                    lineHeight: 1.5,
-                    color: '$fgDefault',
-                    backgroundColor: '$bgDefault', 
-                    border: 'none', 
-                    resize: 'none',
-                    outline: 'none',
-                    whiteSpace: 'pre',
-                    overflow: 'auto',
-                    '&::-webkit-scrollbar': { width: '8px', height: '8px' },
-                    '&::-webkit-scrollbar-track': { background: 'transparent' },
-                    '&::-webkit-scrollbar-thumb': { background: '$borderMuted', borderRadius: '4px' },
-                  }} />
-                </Box>
-              </Stack>
+              </Box>
             </Box>
           )}
         </Section>
