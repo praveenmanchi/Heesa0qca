@@ -42,7 +42,9 @@ import {
 } from '@/app/store/providers/github/githubPrHandler';
 import { settingsStateSelector } from '@/selectors';
 import type { Dispatch } from '@/app/store';
-import { FONT_SIZE, CONTROL_HEIGHT, ICON_SIZE, DROPDOWN_WIDTH } from '@/constants/UIConstants';
+import {
+  FONT_SIZE, CONTROL_HEIGHT, ICON_SIZE, DROPDOWN_WIDTH,
+} from '@/constants/UIConstants';
 import { triggerTeamsWebhook } from '@/utils/teamsWebhookHandler';
 import { styled } from '@/stitches.config';
 import { TabRoot } from '@/app/components/ui';
@@ -212,7 +214,9 @@ function formatValueForDesigner(
       return resolvedName ? `{${resolvedName}}` : `{alias: ${aliasId}}`;
     }
     if ('r' in val && 'g' in val && 'b' in val) {
-      const { r, g, b, a = 1 } = val;
+      const {
+        r, g, b, a = 1,
+      } = val;
       const hex = `#${[r, g, b].map((c) => Math.round((c ?? 0) * 255).toString(16).padStart(2, '0')).join('')}`;
       return a < 1 ? `${hex} ${Math.round((a ?? 1) * 100)}%` : hex;
     }
@@ -543,7 +547,9 @@ export default function ExtractTab() {
         type: AsyncMessageTypes.EXTRACT_VARIABLES_TO_CANVAS,
       });
       const currentCanvasJson = extractResponse.jsonString || '[]';
-      const githubConfig = { pat, owner, repo, branch: baseBranch, path: filePath };
+      const githubConfig = {
+        pat, owner, repo, branch: baseBranch, path: filePath,
+      };
       const remoteJson = await withRetry(() => getGitHubFileContent(githubConfig));
       if (remoteJson) {
         const { data: remoteVars, error: remoteErr } = safeParseJson(remoteJson, []);
@@ -592,7 +598,9 @@ export default function ExtractTab() {
       setJsonResult(freshJson);
 
       if (pat && owner && repo) {
-        const baseJsonStr = await withRetry(() => getGitHubFileContent({ pat, owner, repo, branch: baseBranch, path: filePath }));
+        const baseJsonStr = await withRetry(() => getGitHubFileContent({
+          pat, owner, repo, branch: baseBranch, path: filePath,
+        }));
         const baseStr = baseJsonStr || '[]';
         setOldJsonPreview(baseStr);
         const { data: oldVars, error: baseErr } = safeParseJson(baseStr, []);
@@ -679,7 +687,11 @@ export default function ExtractTab() {
         ? buildPrBody(diff, changesByMode, rawComponentImpacts)
         : 'Automated PR containing updated Figma variables.';
       const url = await createGitHubPullRequest({
-        pat, owner, repo, baseBranch, targetBranch,
+        pat,
+        owner,
+        repo,
+        baseBranch,
+        targetBranch,
         title: 'Design Tokens Update from Figma',
         body: prBody,
         files: [{ path: filePath, content: jsonResult }],
@@ -811,7 +823,10 @@ export default function ExtractTab() {
   return (
     <TabRoot>
       {/* ── Top Bar ── */}
-      <Box css={{ padding: '$3 $4', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', flexShrink: 0 }}>
+      <Box css={{
+        padding: '$3 $4', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', flexShrink: 0,
+      }}
+      >
         <Stack direction="row" align="center" justify="between">
           <Box>
             <Heading size="small" css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '2px' }}>Extract Variables</Heading>
@@ -858,7 +873,9 @@ export default function ExtractTab() {
               variant="primary"
               onClick={handleExtractAndAnalyze}
               disabled={isLoading}
-              css={{ backgroundColor: '$accentDefault', height: `${CONTROL_HEIGHT.md}px`, fontSize: FONT_SIZE.md, padding: '0 $3', marginLeft: '$2' }}
+              css={{
+                backgroundColor: '$accentDefault', height: `${CONTROL_HEIGHT.md}px`, fontSize: FONT_SIZE.md, padding: '0 $3', marginLeft: '$2',
+              }}
             >
               {isLoading ? 'Extracting...' : 'Extract JSON'}
             </Button>
@@ -875,25 +892,35 @@ export default function ExtractTab() {
           </Stack>
           <Stack direction="column" gap={3}>
             <Box>
-              <Label css={{ color: '$fgMuted', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$1' }}>
+              <Label css={{
+                color: '$fgMuted', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$1',
+              }}
+              >
                 DS TEAM WEBHOOK URL
               </Label>
               <TextInput
                 value={webhookUrlInput}
                 onChange={handleWebhookUrlChange}
                 placeholder="https://teams.webhook.url/ds"
-                css={{ backgroundColor: '$bgSubtle', border: '1px solid $borderMuted', color: '$fgDefault', fontSize: FONT_SIZE.md, height: `${CONTROL_HEIGHT.md + 2}px` }}
+                css={{
+                  backgroundColor: '$bgSubtle', border: '1px solid $borderMuted', color: '$fgDefault', fontSize: FONT_SIZE.md, height: `${CONTROL_HEIGHT.md + 2}px`,
+                }}
               />
             </Box>
             <Box>
-              <Label css={{ color: '$fgMuted', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$1' }}>
+              <Label css={{
+                color: '$fgMuted', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$1',
+              }}
+              >
                 DEV TEAM WEBHOOK URL
               </Label>
               <TextInput
                 value={webhookUrlDev}
                 onChange={handleWebhookDevChange}
                 placeholder="https://teams.webhook.url/dev"
-                css={{ backgroundColor: '$bgSubtle', border: '1px solid $borderMuted', color: '$fgDefault', fontSize: FONT_SIZE.md, height: `${CONTROL_HEIGHT.md + 2}px` }}
+                css={{
+                  backgroundColor: '$bgSubtle', border: '1px solid $borderMuted', color: '$fgDefault', fontSize: FONT_SIZE.md, height: `${CONTROL_HEIGHT.md + 2}px`,
+                }}
               />
             </Box>
           </Stack>
@@ -917,19 +944,20 @@ export default function ExtractTab() {
               {showJsonPreviews ? 'Hide' : 'Show'}
             </Button>
           </Stack>
-          
+
           {showJsonPreviews && (
-            <Box css={{ 
-              backgroundColor: '$bgSubtle', 
-              borderRadius: '$medium', 
+            <Box css={{
+              backgroundColor: '$bgSubtle',
+              borderRadius: '$medium',
               border: '1px solid $borderSubtle',
               overflow: 'hidden',
               display: 'flex',
-              flexDirection: 'column'
-            }}>
+              flexDirection: 'column',
+            }}
+            >
               {/* Summary Header */}
-              <Box css={{ 
-                padding: '$2 $3', 
+              <Box css={{
+                padding: '$2 $3',
                 borderBottom: '1px solid $borderSubtle',
                 backgroundColor: '$bgCanvas',
                 display: 'flex',
@@ -938,31 +966,55 @@ export default function ExtractTab() {
                 alignItems: 'center',
                 fontSize: FONT_SIZE.xs,
                 color: '$fgSubtle',
-                fontFamily: '$mono'
-              }}>
+                fontFamily: '$mono',
+              }}
+              >
                 <Text css={{ fontFamily: 'inherit' }}>
-                  GitHub API returned string length: {oldJsonPreview.length}
+                  GitHub API returned string length:
+                  {' '}
+                  {oldJsonPreview.length}
                 </Text>
                 <Text css={{ color: '$borderSubtle' }}>|</Text>
                 <Text css={{ fontFamily: 'inherit' }}>
-                  Old Variables Count: {oldVariablesCount}
+                  Old Variables Count:
+                  {' '}
+                  {oldVariablesCount}
                 </Text>
                 <Text css={{ color: '$borderSubtle' }}>|</Text>
                 <Text css={{ fontFamily: 'inherit' }}>
-                  New Variables Count: {newVariablesCount}
+                  New Variables Count:
+                  {' '}
+                  {newVariablesCount}
                 </Text>
                 {diff && (
                   <>
                     <Text css={{ color: '$borderSubtle' }}>|</Text>
                     <Text css={{ fontFamily: 'inherit' }}>
-                      Diff {`=>`} Added: <span style={{ color: '#81C784' }}>{diff.added.length}</span>, Removed: <span style={{ color: '#EF9A9A' }}>{diff.removed.length}</span>, Modified: <span style={{ color: '#90CAF9' }}>{diff.changed.length}</span>
+                      Diff
+                      {' '}
+                      {'=>'}
+                      {' '}
+                      Added:
+                      {' '}
+                      <span style={{ color: '#81C784' }}>{diff.added.length}</span>
+                      , Removed:
+                      {' '}
+                      <span style={{ color: '#EF9A9A' }}>{diff.removed.length}</span>
+                      , Modified:
+                      {' '}
+                      <span style={{ color: '#90CAF9' }}>{diff.changed.length}</span>
                     </Text>
                   </>
                 )}
               </Box>
 
               <Box css={{ height: '400px', display: 'flex', flexDirection: 'column' }}>
-                <Text css={{ padding: '$2 $3', color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.06em', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', display: 'block' }}>UNIFIED DIFF (GITHUB vs CANVAS)</Text>
+                <Text css={{
+                  padding: '$2 $3', color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.06em', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', display: 'block',
+                }}
+                >
+                  UNIFIED DIFF (GITHUB vs CANVAS)
+                </Text>
                 <Box css={{ flex: 1, overflow: 'hidden' }}>
                   <JsonDiffViewer oldValue={oldJsonPreview} newValue={jsonResult} />
                 </Box>
@@ -985,18 +1037,27 @@ export default function ExtractTab() {
             <Stack direction="row" gap={2} css={{ flexWrap: 'wrap' }}>
               <StatChip type="added">
                 <Check width={ICON_SIZE.xs} height={ICON_SIZE.xs} />
-                {diff!.added.length} added
+                {diff!.added.length}
+                {' '}
+                added
               </StatChip>
               <StatChip type="removed">
                 <Xmark width={ICON_SIZE.xs} height={ICON_SIZE.xs} />
-                {diff!.removed.length} removed
+                {diff!.removed.length}
+                {' '}
+                removed
               </StatChip>
               <StatChip type="modified">
                 <NavArrowDown width={ICON_SIZE.xs} height={ICON_SIZE.xs} />
-                {diff!.changed.length} modified
+                {diff!.changed.length}
+                {' '}
+                modified
               </StatChip>
               {impactData.length > 0 && (
-                <Box css={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '20px', fontSize: FONT_SIZE.sm, fontWeight: '$bold', letterSpacing: '0.05em', backgroundColor: 'rgba(156,39,176,0.2)', color: '#CE93D8', border: '1px solid #7B1FA2' }}>
+                <Box css={{
+                  display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '20px', fontSize: FONT_SIZE.sm, fontWeight: '$bold', letterSpacing: '0.05em', backgroundColor: 'rgba(156,39,176,0.2)', color: '#CE93D8', border: '1px solid #7B1FA2',
+                }}
+                >
                   {impactData.reduce((sum, v) => sum + v.componentCount, 0)}
                   {' '}
                   components affected
@@ -1008,8 +1069,16 @@ export default function ExtractTab() {
 
         {/* Changes by mode summary */}
         {hasAnalysis && changesByMode.length > 0 && (
-          <Box css={{ marginBottom: '$3', padding: '$3', backgroundColor: '$bgSubtle', borderRadius: '$medium', border: '1px solid $borderMuted' }}>
-            <Text css={{ fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.05em', color: '$fgMuted', marginBottom: '$2', display: 'block' }}>CHANGES BY MODE</Text>
+          <Box css={{
+            marginBottom: '$3', padding: '$3', backgroundColor: '$bgSubtle', borderRadius: '$medium', border: '1px solid $borderMuted',
+          }}
+          >
+            <Text css={{
+              fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.05em', color: '$fgMuted', marginBottom: '$2', display: 'block',
+            }}
+            >
+              CHANGES BY MODE
+            </Text>
             <Stack direction="row" gap={2} css={{ flexWrap: 'wrap' }}>
               {changesByMode.map((m) => (
                 <Box
@@ -1022,11 +1091,37 @@ export default function ExtractTab() {
                     fontSize: FONT_SIZE.xs,
                   }}
                 >
-                  <Text css={{ fontWeight: '$bold', color: '$fgDefault', display: 'block', marginBottom: '$1' }}>{m.modeName}</Text>
+                  <Text css={{
+                    fontWeight: '$bold', color: '$fgDefault', display: 'block', marginBottom: '$1',
+                  }}
+                  >
+                    {m.modeName}
+                  </Text>
                   <Stack direction="row" gap={2} css={{ fontSize: FONT_SIZE.xxs, color: '$fgSubtle' }}>
-                    {m.added > 0 && <span style={{ color: '#81C784' }}>+{m.added} added</span>}
-                    {m.removed > 0 && <span style={{ color: '#EF9A9A' }}>-{m.removed} removed</span>}
-                    {m.modified > 0 && <span style={{ color: '#90CAF9' }}>~{m.modified} modified</span>}
+                    {m.added > 0 && (
+                    <span style={{ color: '#81C784' }}>
+                      +
+                      {m.added}
+                      {' '}
+                      added
+                    </span>
+                    )}
+                    {m.removed > 0 && (
+                    <span style={{ color: '#EF9A9A' }}>
+                      -
+                      {m.removed}
+                      {' '}
+                      removed
+                    </span>
+                    )}
+                    {m.modified > 0 && (
+                    <span style={{ color: '#90CAF9' }}>
+                      ~
+                      {m.modified}
+                      {' '}
+                      modified
+                    </span>
+                    )}
                   </Stack>
                 </Box>
               ))}
@@ -1037,9 +1132,15 @@ export default function ExtractTab() {
         <Box css={{ border: '1px solid $borderMuted', borderRadius: '6px', overflow: 'hidden' }}>
           {!hasAnalysis && (
             <Box css={{ padding: '$8', textAlign: 'center' }}>
-              <InfoCircle width={28} height={28} style={{ color: 'var(--colors-fgSubtle)', marginBottom: '8px', display: 'block', margin: '0 auto 8px' }} />
+              <InfoCircle
+                width={28}
+                height={28}
+                style={{
+                  color: 'var(--colors-fgSubtle)', marginBottom: '8px', display: 'block', margin: '0 auto 8px',
+                }}
+              />
               <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.md }}>No analysis data yet.</Text>
-              <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.sm, marginTop: '$1' }}>{'Click "Extract JSON" to load and compare variables.'}</Text>
+              <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.sm, marginTop: '$1' }}>Click "Extract JSON" to load and compare variables.</Text>
             </Box>
           )}
 
@@ -1053,7 +1154,13 @@ export default function ExtractTab() {
 
           {hasAnalysis && totalChanges > 0 && impactData.length === 0 && (
             <Box css={{ padding: '$4 $6', backgroundColor: 'rgba(156,39,176,0.1)', borderTop: '1px solid $borderMuted' }}>
-              <InfoCircle width={16} height={16} style={{ color: '#CE93D8', display: 'inline-block', marginRight: '6px', verticalAlign: 'middle' }} />
+              <InfoCircle
+                width={16}
+                height={16}
+                style={{
+                  color: '#CE93D8', display: 'inline-block', marginRight: '6px', verticalAlign: 'middle',
+                }}
+              />
               <Text css={{ color: '#CE93D8', fontSize: FONT_SIZE.sm }}>
                 Changed variables are not used in any components yet. Components Affected will appear when modified/removed variables are bound to component instances.
               </Text>
@@ -1063,7 +1170,12 @@ export default function ExtractTab() {
           {hasAnalysis && diff!.added.length > 0 && (
             <>
               <Box css={{ padding: '$1 $4', backgroundColor: '$bgSubtle', borderBottom: '1px solid $borderMuted' }}>
-                <Text css={{ color: '$successFg', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em' }}>ADDED</Text>
+                <Text css={{
+                  color: '$successFg', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em',
+                }}
+                >
+                  ADDED
+                </Text>
               </Box>
               {diff!.added.map((v) => (
                 <VarRow key={v.id}>
@@ -1079,8 +1191,16 @@ export default function ExtractTab() {
 
           {hasAnalysis && diff!.changed.length > 0 && (
             <>
-              <Box css={{ padding: '$1 $4', backgroundColor: '$bgSubtle', borderBottom: '1px solid $borderMuted', borderTop: diff!.added.length > 0 ? '1px solid $borderMuted' : 'none' }}>
-                <Text css={{ color: '$accentDefault', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em' }}>MODIFIED</Text>
+              <Box css={{
+                padding: '$1 $4', backgroundColor: '$bgSubtle', borderBottom: '1px solid $borderMuted', borderTop: diff!.added.length > 0 ? '1px solid $borderMuted' : 'none',
+              }}
+              >
+                <Text css={{
+                  color: '$accentDefault', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em',
+                }}
+                >
+                  MODIFIED
+                </Text>
               </Box>
               {diff!.changed.map((v) => {
                 const oldVal = Object.values(v.old.valuesByMode)[0];
@@ -1106,8 +1226,16 @@ export default function ExtractTab() {
 
           {hasAnalysis && diff!.removed.length > 0 && (
             <>
-              <Box css={{ padding: '$1 $4', backgroundColor: '$bgSubtle', borderBottom: '1px solid $borderMuted', borderTop: (diff!.added.length > 0 || diff!.changed.length > 0) ? '1px solid $borderMuted' : 'none' }}>
-                <Text css={{ color: '$dangerFg', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em' }}>REMOVED</Text>
+              <Box css={{
+                padding: '$1 $4', backgroundColor: '$bgSubtle', borderBottom: '1px solid $borderMuted', borderTop: (diff!.added.length > 0 || diff!.changed.length > 0) ? '1px solid $borderMuted' : 'none',
+              }}
+              >
+                <Text css={{
+                  color: '$dangerFg', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em',
+                }}
+                >
+                  REMOVED
+                </Text>
               </Box>
               {diff!.removed.map((v) => (
                 <VarRow key={v.id}>
@@ -1158,10 +1286,19 @@ export default function ExtractTab() {
               {showComponentImpacts && (
                 <>
                   {/* Search, filter, export bar */}
-                  <Box css={{ padding: '$2 $4', backgroundColor: '$bgSubtle', borderBottom: '1px solid $borderMuted', display: 'flex', flexDirection: 'column', gap: '$2' }}>
+                  <Box css={{
+                    padding: '$2 $4', backgroundColor: '$bgSubtle', borderBottom: '1px solid $borderMuted', display: 'flex', flexDirection: 'column', gap: '$2',
+                  }}
+                  >
                     <Stack direction="row" align="center" gap={2}>
                       <Box css={{ position: 'relative', flex: 1 }}>
-                        <Search width={12} height={12} style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: 'var(--colors-fgSubtle)' }} />
+                        <Search
+                          width={12}
+                          height={12}
+                          style={{
+                            position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: 'var(--colors-fgSubtle)',
+                          }}
+                        />
                         <TextInput
                           value={componentSearchFilter}
                           onChange={(e) => setComponentSearchFilter(e.target.value)}
@@ -1172,7 +1309,9 @@ export default function ExtractTab() {
                           <Box
                             as="button"
                             onClick={() => setComponentSearchFilter('')}
-                            css={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px' }}
+                            css={{
+                              position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px',
+                            }}
                           >
                             <Xmark width={10} height={10} style={{ color: 'var(--colors-fgSubtle)' }} />
                           </Box>
@@ -1300,7 +1439,12 @@ export default function ExtractTab() {
                                 if (changes.length === 0) return null;
                                 return (
                                   <Box key={cat} css={{ marginBottom: '$2' }}>
-                                    <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.xxs, fontWeight: '$bold', letterSpacing: '0.08em', marginBottom: '$1', display: 'block' }}>{CATEGORY_LABELS[cat]}</Text>
+                                    <Text css={{
+                                      color: '$fgMuted', fontSize: FONT_SIZE.xxs, fontWeight: '$bold', letterSpacing: '0.08em', marginBottom: '$1', display: 'block',
+                                    }}
+                                    >
+                                      {CATEGORY_LABELS[cat]}
+                                    </Text>
                                     {changes.map((ch) => (
                                       <Box
                                         key={ch.variableName}
@@ -1365,7 +1509,12 @@ export default function ExtractTab() {
                                         </Stack>
                                         {ch.valuesByMode && Object.keys(ch.valuesByMode).length > 1 && (
                                           <Box css={{ marginTop: '4px' }}>
-                                            <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.xxs, fontWeight: '$bold', display: 'block' }}>By mode:</Text>
+                                            <Text css={{
+                                              color: '$fgMuted', fontSize: FONT_SIZE.xxs, fontWeight: '$bold', display: 'block',
+                                            }}
+                                            >
+                                              By mode:
+                                            </Text>
                                             {Object.entries(ch.valuesByMode).map(([modeId, val]) => (
                                               <Text key={modeId} css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xxs }}>
                                                 {modeId}
@@ -1417,7 +1566,10 @@ export default function ExtractTab() {
         <Stack direction="column" gap={3}>
           {/* Target Branch — proper dropdown */}
           <Box>
-            <Label css={{ color: '$fgMuted', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$2' }}>
+            <Label css={{
+              color: '$fgMuted', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$2',
+            }}
+            >
               TARGET BRANCH
             </Label>
             <DropdownMenu>
@@ -1448,7 +1600,9 @@ export default function ExtractTab() {
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
                 <DropdownMenu.Content
-                  css={{ backgroundColor: '$bgDefault', border: '1px solid $borderMuted', borderRadius: '6px', minWidth: '200px', maxHeight: '180px', overflowY: 'auto' }}
+                  css={{
+                    backgroundColor: '$bgDefault', border: '1px solid $borderMuted', borderRadius: '6px', minWidth: '200px', maxHeight: '180px', overflowY: 'auto',
+                  }}
                   sideOffset={4}
                 >
                   {availableBranches.length === 0 && (
@@ -1492,20 +1646,28 @@ export default function ExtractTab() {
 
           {/* Commit message */}
           <Box>
-            <Label css={{ color: '#666', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$2' }}>
+            <Label css={{
+              color: '#666', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$2',
+            }}
+            >
               COMMIT MESSAGE
             </Label>
             <TextInput
               value={commitMessage}
               onChange={handleCommitChange}
               placeholder="chore: update design tokens"
-              css={{ backgroundColor: '#1A1A1A', border: '1px solid #2A2A2A', color: '$white', fontSize: FONT_SIZE.md, height: `${CONTROL_HEIGHT.lg}px` }}
+              css={{
+                backgroundColor: '#1A1A1A', border: '1px solid #2A2A2A', color: '$white', fontSize: FONT_SIZE.md, height: `${CONTROL_HEIGHT.lg}px`,
+              }}
             />
           </Box>
 
           {/* Notification Toggles */}
           <Box>
-            <Text css={{ color: '#666', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', marginBottom: '$2', display: 'block' }}>
+            <Text css={{
+              color: '#666', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', marginBottom: '$2', display: 'block',
+            }}
+            >
               NOTIFICATIONS
             </Text>
             <ToggleRow>
@@ -1532,13 +1694,19 @@ export default function ExtractTab() {
 
           {/* Error / Success */}
           {error && (
-            <Box css={{ padding: '$2 $3', backgroundColor: 'rgba(229,57,53,0.12)', borderRadius: '4px', border: '1px solid rgba(229,57,53,0.3)' }}>
+            <Box css={{
+              padding: '$2 $3', backgroundColor: 'rgba(229,57,53,0.12)', borderRadius: '4px', border: '1px solid rgba(229,57,53,0.3)',
+            }}
+            >
               <Text css={{ color: '#EF9A9A', fontSize: FONT_SIZE.sm }}>{error}</Text>
             </Box>
           )}
 
           {prUrl && (
-            <Box css={{ padding: '$3', backgroundColor: 'rgba(46,125,50,0.12)', borderRadius: '4px', border: '1px solid rgba(46,125,50,0.3)' }}>
+            <Box css={{
+              padding: '$3', backgroundColor: 'rgba(46,125,50,0.12)', borderRadius: '4px', border: '1px solid rgba(46,125,50,0.3)',
+            }}
+            >
               <Stack direction="row" gap={2} align="center">
                 <Check width={13} height={13} style={{ color: '#81C784' }} />
                 <Text css={{ color: '#81C784', fontSize: FONT_SIZE.sm }}>
@@ -1554,7 +1722,9 @@ export default function ExtractTab() {
             variant="primary"
             onClick={handleCreatePr}
             disabled={isCreatingPr || !jsonResult || !targetBranch}
-            css={{ backgroundColor: '#1565C0', height: '36px', fontWeight: '$bold', fontSize: FONT_SIZE.lg, marginTop: '$1' }}
+            css={{
+              backgroundColor: '#1565C0', height: '36px', fontWeight: '$bold', fontSize: FONT_SIZE.lg, marginTop: '$1',
+            }}
           >
             {isCreatingPr ? 'Creating PR...' : 'Create Pull Request'}
           </Button>

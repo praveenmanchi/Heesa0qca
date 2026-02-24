@@ -19,6 +19,7 @@ import { ConvertToDTCGModal } from './ConvertToDTCGModal';
 import ChangeLog from './ChangeLog';
 import ExtractTab from './ExtractTab';
 import StyleGuideTab from './StyleGuideTab';
+import UXAITab from './UXAITab';
 
 function App() {
   const activeTab = useSelector(activeTabSelector);
@@ -43,16 +44,16 @@ function App() {
               overflow: 'hidden',
             }}
           >
-          <Box
-            css={{
-              display: 'flex',
-              flexDirection: 'column',
-              flexGrow: 1,
-              height: '100%',
-              overflow: 'hidden',
-              backgroundColor: '$bgDefault',
-            }}
-          >
+            <Box
+              css={{
+                display: 'flex',
+                flexDirection: 'column',
+                flexGrow: 1,
+                height: '100%',
+                overflow: 'hidden',
+                backgroundColor: '$bgDefault',
+              }}
+            >
               {activeTab === 'loading' && <FigmaLoading />}
               {activeTab !== 'start' && activeTab !== 'loading' && <Navbar />}
               {activeTab === 'start' && <StartScreen />}
@@ -64,6 +65,7 @@ function App() {
               {activeTab === 'extract' && <ExtractTab />}
               {activeTab === 'settings' && <Settings />}
               {activeTab === 'styleguide' && <StyleGuideTab />}
+              {activeTab === 'uxai' && <UXAITab />}
             </Box>
             {activeTab !== 'loading' && activeTab !== 'start' && <Footer />}
           </Box>

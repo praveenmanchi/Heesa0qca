@@ -57,8 +57,8 @@ export const stitchesInstance = createStitches({
       medium: '13px !important',
       large: '14px !important',
     },
-    lineHeights: lineHeights,
-    letterSpacings: letterSpacings,
+    lineHeights,
+    letterSpacings,
     radii: {
       ...core.radii,
       full: '999px',

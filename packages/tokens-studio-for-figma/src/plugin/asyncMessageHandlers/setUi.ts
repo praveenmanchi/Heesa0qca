@@ -40,6 +40,10 @@ export const setUi: AsyncMessageChannelHandlers[AsyncMessageTypes.SET_UI] = asyn
     seenGenericVersionedHeaderMigrationDialog: msg.seenGenericVersionedHeaderMigrationDialog,
     seenTermsUpdate2026: msg.seenTermsUpdate2026,
     githubExtractConfig: msg.githubExtractConfig,
+    aiAssistanceEnabled: msg.aiAssistanceEnabled,
+    aiProvider: msg.aiProvider,
+    aiClaudeApiKey: msg.aiClaudeApiKey,
+    aiGeminiApiKey: msg.aiGeminiApiKey,
   });
   figma.ui.resize(width, height);
   if (store.inspectDeep !== msg.inspectDeep) {

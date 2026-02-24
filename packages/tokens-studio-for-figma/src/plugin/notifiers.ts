@@ -103,6 +103,10 @@ export type SavedSettings = {
     webhookUrl?: string;
     webhookUrlDev?: string;
   };
+  aiAssistanceEnabled?: boolean;
+  aiProvider?: 'claude' | 'gemini';
+  aiClaudeApiKey?: string;
+  aiGeminiApiKey?: string;
 };
 
 export function notifyUISettings(
@@ -140,6 +144,10 @@ export function notifyUISettings(
     seenGenericVersionedHeaderMigrationDialog,
     seenTermsUpdate2026,
     githubExtractConfig,
+    aiAssistanceEnabled,
+    aiProvider,
+    aiClaudeApiKey,
+    aiGeminiApiKey,
   }: SavedSettings,
 ) {
   postToUI({
@@ -180,6 +188,10 @@ export function notifyUISettings(
       seenGenericVersionedHeaderMigrationDialog,
       seenTermsUpdate2026,
       githubExtractConfig,
+      aiAssistanceEnabled,
+      aiProvider,
+      aiClaudeApiKey,
+      aiGeminiApiKey,
     },
   });
   postToUI({

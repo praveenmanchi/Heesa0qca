@@ -1,7 +1,9 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Box, EmptyState, Button, Heading, Textarea } from '@tokens-studio/ui';
+import {
+  Box, EmptyState, Button, Heading, Textarea,
+} from '@tokens-studio/ui';
 import { uiStateSelector, settingsStateSelector } from '@/selectors';
 import { isEqual } from '@/utils/isEqual';
 import Text from './Text';
@@ -227,7 +229,11 @@ export default function InspectorJsonView({
           <Box css={{ display: 'flex', flexDirection: 'column', gap: '$3' }}>
             <Stack direction="row" gap={3} css={{ marginTop: '$2' }}>
               <Box css={{ flex: 1, overflow: 'hidden' }}>
-                <Heading size="small">Old JSON ({baseBranch})</Heading>
+                <Heading size="small">
+                  Old JSON (
+                  {baseBranch}
+                  )
+                </Heading>
                 <Textarea
                   disabled
                   value={oldJsonPreview}
@@ -270,13 +276,21 @@ export default function InspectorJsonView({
               <Box css={{ marginBottom: '$2' }}>
                 <Text css={{ fontWeight: 'bold' }}>
                   Added:
-                  {diff.added.length} variables
+                  {diff.added.length}
+                  {' '}
+                  variables
                 </Text>
                 {diff.added.length > 0 && (
                   <ul style={{ margin: '4px 0 8px 0', paddingLeft: '20px', fontSize: `${CODE_FONT_SIZE}px` }}>
                     {diff.added.map((v) => (
                       <li key={v.id || v.name}>
-                        {v.name} <span style={{ opacity: 0.7 }}>({v.collectionName})</span>
+                        {v.name}
+                        {' '}
+                        <span style={{ opacity: 0.7 }}>
+                          (
+                          {v.collectionName}
+                          )
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -285,13 +299,21 @@ export default function InspectorJsonView({
               <Box css={{ marginBottom: '$2' }}>
                 <Text css={{ fontWeight: 'bold' }}>
                   Removed:
-                  {diff.removed.length} variables
+                  {diff.removed.length}
+                  {' '}
+                  variables
                 </Text>
                 {diff.removed.length > 0 && (
                   <ul style={{ margin: '4px 0 8px 0', paddingLeft: '20px', fontSize: `${CODE_FONT_SIZE}px` }}>
                     {diff.removed.map((v) => (
                       <li key={v.id || v.name}>
-                        {v.name} <span style={{ opacity: 0.7 }}>({v.collectionName})</span>
+                        {v.name}
+                        {' '}
+                        <span style={{ opacity: 0.7 }}>
+                          (
+                          {v.collectionName}
+                          )
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -300,7 +322,9 @@ export default function InspectorJsonView({
               <Box css={{ marginBottom: '$2' }}>
                 <Text css={{ fontWeight: 'bold' }}>
                   Modified:
-                  {diff.changed.length} variables
+                  {diff.changed.length}
+                  {' '}
+                  variables
                 </Text>
                 {diff.changed.length > 0 && (
                   <ul style={{ margin: '4px 0 8px 0', paddingLeft: '20px', fontSize: `${CODE_FONT_SIZE}px` }}>
@@ -324,8 +348,13 @@ export default function InspectorJsonView({
 
                       return (
                         <li key={v.old.id || v.new.name} style={{ marginBottom: '4px' }}>
-                          <span style={{ fontWeight: 500 }}>{v.new.name}</span>{' '}
-                          <span style={{ opacity: 0.7 }}>({v.new.collectionName})</span>
+                          <span style={{ fontWeight: 500 }}>{v.new.name}</span>
+                          {' '}
+                          <span style={{ opacity: 0.7 }}>
+                            (
+                            {v.new.collectionName}
+                            )
+                          </span>
                           {hasValueChanged ? (
                             <div style={{ color: 'var(--colors-textSubtle, #666)', marginTop: '2px' }}>
                               <span style={{ textDecoration: 'line-through', opacity: 0.8 }}>{String(oldVal)}</span>

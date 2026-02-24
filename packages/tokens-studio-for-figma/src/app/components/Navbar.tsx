@@ -6,7 +6,7 @@ import { Tabs } from '@/constants/Tabs';
 import Stack from './Stack';
 import { TabButton } from './TabButton';
 import { NavbarUndoButton } from './NavbarUndoButton';
-import { activeTabSelector } from '@/selectors';
+import { activeTabSelector, settingsStateSelector } from '@/selectors';
 import { Dispatch } from '../store';
 import { useAuth } from '@/context/AuthContext';
 import Banner from './Banner';
@@ -17,12 +17,15 @@ import {
   IconExtract,
   IconBell,
   IconSettings,
+  IconComposition,
 } from '@/icons';
 
 const Navbar: React.FC<React.PropsWithChildren<unknown>> = () => {
   const activeTab = useSelector(activeTabSelector);
+  const settings = useSelector(settingsStateSelector);
   const dispatch = useDispatch<Dispatch>();
   const { t } = useTranslation(['navbar']);
+  const aiEnabled = settings?.aiAssistanceEnabled ?? false;
 
   const handleSwitch = useCallback(
     (tab: Tabs) => {
@@ -78,6 +81,15 @@ const Navbar: React.FC<React.PropsWithChildren<unknown>> = () => {
               onSwitch={handleSwitch}
               startEnhancer={<IconExtract />}
             />
+            {aiEnabled && (
+              <TabButton
+                name={Tabs.UXAI}
+                activeTab={activeTab}
+                label="UXAI"
+                onSwitch={handleSwitch}
+                startEnhancer={<IconComposition />}
+              />
+            )}
             <TabButton
               name={Tabs.CHANGELOG}
               activeTab={activeTab}

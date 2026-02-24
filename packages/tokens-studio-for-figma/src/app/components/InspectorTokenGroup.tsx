@@ -7,7 +7,9 @@ import InspectorTokenSingle from './InspectorTokenSingle';
 import { Properties } from '@/constants/Properties';
 import { SelectionGroup } from '@/types';
 
-export default function InspectorTokenGroup({ group, resolvedTokens, selectedMode, defaultCollapsed = false }: { group: [Properties, SelectionGroup[]], resolvedTokens: SingleToken[], selectedMode: string, defaultCollapsed?: boolean }) {
+export default function InspectorTokenGroup({
+  group, resolvedTokens, selectedMode, defaultCollapsed = false,
+}: { group: [Properties, SelectionGroup[]], resolvedTokens: SingleToken[], selectedMode: string, defaultCollapsed?: boolean }) {
   const [groupKey, groupValue] = group;
   const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
 

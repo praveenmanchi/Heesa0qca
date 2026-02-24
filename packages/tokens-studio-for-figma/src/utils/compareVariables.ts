@@ -60,9 +60,9 @@ export function compareVariables(oldVars: VariableExport[], newVars: VariableExp
     if (!oldVar) {
       added.push(newVar);
     } else if (
-      oldVar.description !== newVar.description ||
-      oldVar.type !== newVar.type ||
-      !isDeepEqual(oldVar.valuesByMode, newVar.valuesByMode)
+      oldVar.description !== newVar.description
+      || oldVar.type !== newVar.type
+      || !isDeepEqual(oldVar.valuesByMode, newVar.valuesByMode)
     ) {
       changed.push({ old: oldVar, new: newVar });
     }

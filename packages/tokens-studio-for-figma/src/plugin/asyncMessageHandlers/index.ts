@@ -45,6 +45,8 @@ export * from './removeStylesWithoutConnection';
 export * from './setVariableExportSettings';
 export * from './setSelectedExportThemes';
 export * from './extractVariablesToCanvas';
+export * from './uxaiHistory';
+export * from './applyUxaiChanges';
 export * from './calculateImpact';
 export * from '../livingDocumentation';
 export * from './searchVariableUsage';

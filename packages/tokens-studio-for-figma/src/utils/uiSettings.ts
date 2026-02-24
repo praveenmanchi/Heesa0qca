@@ -44,6 +44,10 @@ export async function updateUISettings(uiSettings: Partial<SavedSettings>) {
       seenGenericVersionedHeaderMigrationDialog: uiSettings.seenGenericVersionedHeaderMigrationDialog ?? data?.seenGenericVersionedHeaderMigrationDialog,
       seenTermsUpdate2026: uiSettings.seenTermsUpdate2026 ?? data?.seenTermsUpdate2026,
       githubExtractConfig: uiSettings.githubExtractConfig ?? data?.githubExtractConfig,
+      aiAssistanceEnabled: uiSettings.aiAssistanceEnabled ?? data?.aiAssistanceEnabled,
+      aiProvider: uiSettings.aiProvider ?? data?.aiProvider,
+      aiClaudeApiKey: uiSettings.aiClaudeApiKey ?? data?.aiClaudeApiKey,
+      aiGeminiApiKey: uiSettings.aiGeminiApiKey ?? data?.aiGeminiApiKey,
     });
   } catch (err) {
     notifyUI('There was an issue saving your credentials. Please try again.');
@@ -89,6 +93,10 @@ export async function getUISettings(notify = true): Promise<SavedSettings> {
     let seenGenericVersionedHeaderMigrationDialog: boolean;
     let seenTermsUpdate2026: boolean;
     let githubExtractConfig: SavedSettings['githubExtractConfig'];
+    let aiAssistanceEnabled: boolean;
+    let aiProvider: 'claude' | 'gemini';
+    let aiClaudeApiKey: string;
+    let aiGeminiApiKey: string;
 
     if (data) {
       width = data.width || 400;
@@ -125,6 +133,10 @@ export async function getUISettings(notify = true): Promise<SavedSettings> {
       seenGenericVersionedHeaderMigrationDialog = typeof data.seenGenericVersionedHeaderMigrationDialog === 'undefined' ? false : data.seenGenericVersionedHeaderMigrationDialog;
       seenTermsUpdate2026 = typeof data.seenTermsUpdate2026 === 'undefined' ? false : data.seenTermsUpdate2026;
       githubExtractConfig = data.githubExtractConfig;
+      aiAssistanceEnabled = typeof data.aiAssistanceEnabled === 'undefined' ? false : data.aiAssistanceEnabled;
+      aiProvider = data.aiProvider ?? 'claude';
+      aiClaudeApiKey = data.aiClaudeApiKey ?? '';
+      aiGeminiApiKey = data.aiGeminiApiKey ?? '';
       settings = {
         language,
         width: Math.max(300, width),
@@ -160,6 +172,10 @@ export async function getUISettings(notify = true): Promise<SavedSettings> {
         seenGenericVersionedHeaderMigrationDialog,
         seenTermsUpdate2026,
         githubExtractConfig,
+        aiAssistanceEnabled,
+        aiProvider,
+        aiClaudeApiKey,
+        aiGeminiApiKey,
       };
 
       if (notify) {

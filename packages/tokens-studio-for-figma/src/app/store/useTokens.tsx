@@ -570,9 +570,9 @@ export default function useTokens() {
       const tokensToSet = uiState.selectionValues
         .filter((v) => inspectState.selectedTokens.includes(`${v.category}-${v.value}`))
         .map((v) => ({ nodes: v.nodes, property: v.type })) as {
-          property: Properties;
-          nodes: NodeInfo[];
-        }[];
+        property: Properties;
+        nodes: NodeInfo[];
+      }[];
 
       track('setNoneValuesOnNode', tokensToSet);
 

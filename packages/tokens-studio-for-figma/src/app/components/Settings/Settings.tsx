@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  Box, Link, Text, Button, Heading, Label, Stack, Switch,
+  Box, Link, Text, Button, Heading, Label, Stack, Switch, Select, TextInput,
 } from '@tokens-studio/ui';
 import SyncSettings from '../SyncSettings';
 import GithubExtractSettings from '../GithubExtractSettings';
@@ -10,12 +10,12 @@ import GithubExtractSettings from '../GithubExtractSettings';
 import { Dispatch } from '../../store';
 import {
   uiStateSelector,
+  settingsStateSelector,
 } from '@/selectors';
 
 import { Divider } from '../Divider';
 import OnboardingExplainer from '../OnboardingExplainer';
 import RemConfiguration from '../RemConfiguration';
-
 
 // TODO: expose types from @tokens-studio/ui/checkbox
 type CheckedState = boolean | 'indeterminate';
@@ -30,10 +30,8 @@ function Settings() {
   };
 
   const uiState = useSelector(uiStateSelector);
+  const settings = useSelector(settingsStateSelector);
   const dispatch = useDispatch<Dispatch>();
-
-
-
 
   const closeOnboarding = React.useCallback(() => {
     dispatch.uiState.setOnboardingExplainerSyncProviders(false);
@@ -60,6 +58,60 @@ function Settings() {
         <Divider />
         <Stack direction="column" align="start" gap={4} css={{ padding: '0 $4' }}>
           <GithubExtractSettings />
+        </Stack>
+        <Divider />
+        <Stack direction="column" align="start" gap={4} css={{ padding: '0 $4' }}>
+          <Heading size="medium">AI Assistance (UXAI)</Heading>
+          <Stack
+            direction="column"
+            gap={4}
+            css={{
+              border: '1px solid $borderSubtle', borderRadius: '$medium', padding: '$4', width: '100%',
+            }}
+          >
+            <Stack direction="row" justify="between" align="center" css={{ width: '100%' }}>
+              <Label>Enable AI assistance</Label>
+              <Switch
+                checked={settings.aiAssistanceEnabled ?? false}
+                onCheckedChange={(checked) => dispatch.settings.setAiAssistanceEnabled(checked)}
+              />
+            </Stack>
+            {settings.aiAssistanceEnabled && (
+              <>
+                <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                  <Label>AI Provider</Label>
+                  <Select
+                    value={settings.aiProvider ?? 'claude'}
+                    onValueChange={(v) => dispatch.settings.setAiProvider(v as 'claude' | 'gemini')}
+                  >
+                    <Select.Trigger value={settings.aiProvider ?? 'claude'} />
+                    <Select.Content>
+                      <Select.Item value="claude">Claude (Anthropic)</Select.Item>
+                      <Select.Item value="gemini">Gemini (Google)</Select.Item>
+                    </Select.Content>
+                  </Select>
+                </Stack>
+                <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                  <Label>Claude API Key</Label>
+                  <TextInput
+                    type="password"
+                    value={settings.aiClaudeApiKey ?? ''}
+                    onChange={(e) => dispatch.settings.setAiClaudeApiKey(e.target.value)}
+                    placeholder="sk-ant-..."
+                  />
+                </Stack>
+                <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                  <Label>Gemini API Key</Label>
+                  <TextInput
+                    type="password"
+                    value={settings.aiGeminiApiKey ?? ''}
+                    onChange={(e) => dispatch.settings.setAiGeminiApiKey(e.target.value)}
+                    placeholder="AIza..."
+                  />
+                </Stack>
+              </>
+            )}
+          </Stack>
         </Stack>
         <Divider />
         <Stack direction="column" align="start" gap={4} css={{ padding: '0 $4' }}>

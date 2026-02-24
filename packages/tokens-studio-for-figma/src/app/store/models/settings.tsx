@@ -70,6 +70,11 @@ export interface SettingsState {
   seenTermsUpdate2026?: boolean;
   githubExtractConfig?: GithubExtractConfig;
   zeroheightAPIKey?: string;
+  /** AI assistance (UXAI tab) */
+  aiAssistanceEnabled?: boolean;
+  aiProvider?: 'claude' | 'gemini';
+  aiClaudeApiKey?: string;
+  aiGeminiApiKey?: string;
 }
 
 const setUI = (state: SettingsState) => {
@@ -125,6 +130,10 @@ export const settings = createModel<RootModel>()({
       webhookUrl: '',
       webhookUrlDev: '',
     },
+    aiAssistanceEnabled: false,
+    aiProvider: 'claude' as const,
+    aiClaudeApiKey: '',
+    aiGeminiApiKey: '',
   } as SettingsState,
   reducers: {
     ...settingsStateReducers,
@@ -290,6 +299,18 @@ export const settings = createModel<RootModel>()({
         zeroheightAPIKey: payload,
       };
     },
+    setAiAssistanceEnabled(state, payload: boolean) {
+      return { ...state, aiAssistanceEnabled: payload };
+    },
+    setAiProvider(state, payload: 'claude' | 'gemini') {
+      return { ...state, aiProvider: payload };
+    },
+    setAiClaudeApiKey(state, payload: string) {
+      return { ...state, aiClaudeApiKey: payload };
+    },
+    setAiGeminiApiKey(state, payload: string) {
+      return { ...state, aiGeminiApiKey: payload };
+    },
   },
   effects: () => ({
     setLanguage: (payload: string, rootState) => {
@@ -362,6 +383,18 @@ export const settings = createModel<RootModel>()({
       setUI(rootState.settings);
     },
     setZeroheightAPIKey: (payload: string, rootState) => {
+      setUI(rootState.settings);
+    },
+    setAiAssistanceEnabled: (payload: boolean, rootState) => {
+      setUI(rootState.settings);
+    },
+    setAiProvider: (payload: 'claude' | 'gemini', rootState) => {
+      setUI(rootState.settings);
+    },
+    setAiClaudeApiKey: (payload: string, rootState) => {
+      setUI(rootState.settings);
+    },
+    setAiGeminiApiKey: (payload: string, rootState) => {
       setUI(rootState.settings);
     },
     ...Object.fromEntries(

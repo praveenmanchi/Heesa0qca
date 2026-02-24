@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import {
   Box, Checkbox, Label, Stack, Button, EmptyState, DropdownMenu, Link, TextInput, IconButton,
 } from '@tokens-studio/ui';
-import { ArrowUpIcon, ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ChevronDownIcon } from '@radix-ui/react-icons';
+import {
+  ArrowUpIcon, ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ChevronDownIcon,
+} from '@radix-ui/react-icons';
 import { Download } from 'iconoir-react';
 import { Dispatch } from '../store';
 import useTokens from '../store/useTokens';
@@ -83,8 +85,8 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
 
   const groupedSelectionValues = React.useMemo(() => {
     const grouped = filteredSelectionValues.reduce<Partial<
-      Record<TokenTypes, SelectionGroup[]>
-      & Record<Properties, SelectionGroup[]>
+    Record<TokenTypes, SelectionGroup[]>
+    & Record<Properties, SelectionGroup[]>
     >>((acc, curr) => {
       if (StyleIdBackupKeys.includes(curr.type)) return acc;
       if (acc[curr.category]) {
@@ -117,9 +119,9 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
     const valuesToRemove = uiState.selectionValues
       .filter((v) => inspectState.selectedTokens.includes(`${v.category}-${v.value}`))
       .map((v) => ({ nodes: v.nodes, property: v.type })) as ({
-        property: Properties;
-        nodes: NodeInfo[];
-      }[]);
+      property: Properties;
+      nodes: NodeInfo[];
+    }[]);
 
     removeTokensByValue(valuesToRemove);
   }, [inspectState.selectedTokens, removeTokensByValue, uiState.selectionValues]);
@@ -163,7 +165,7 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
     const lines: string[] = [
       `# Inspector Export - ${new Date().toISOString().slice(0, 10)}`,
       '',
-      `## Summary`,
+      '## Summary',
       `- ${filteredSelectionValues.length} variables across ${Object.keys(groupedSelectionValues).length} property groups`,
       `- ${uiState.selectedLayers} layer${uiState.selectedLayers !== 1 ? 's' : ''} selected`,
       '',
@@ -232,7 +234,10 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
           }}
         >
           {/* Selection summary */}
-          <Box css={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '$2' }}>
+          <Box css={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '$2',
+          }}
+          >
             <Box css={{ fontSize: '$bodyXs', color: '$fgMuted' }}>
               <strong>{uniqueVarCount}</strong>
               {' '}
@@ -257,7 +262,10 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
                 </>
               )}
             </Box>
-            <Box css={{ display: 'flex', alignItems: 'center', gap: '$2', flexWrap: 'wrap' }}>
+            <Box css={{
+              display: 'flex', alignItems: 'center', gap: '$2', flexWrap: 'wrap',
+            }}
+            >
               <Button size="small" variant="secondary" onClick={handleToggleDeepInspect} css={{ fontSize: '$label' }}>
                 {settings.inspectDeep ? '✓ Deep Inspect' : 'Deep Inspect'}
               </Button>
@@ -266,7 +274,10 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
           </Box>
 
           {/* Filters row */}
-          <Box css={{ display: 'flex', flexWrap: 'wrap', gap: '$2', alignItems: 'center' }}>
+          <Box css={{
+            display: 'flex', flexWrap: 'wrap', gap: '$2', alignItems: 'center',
+          }}
+          >
             <Box css={{ display: 'flex', gap: '2px' }}>
               {(['all', 'color', 'typography', 'spacing', 'other'] as TypeFilter[]).map((f) => (
                 <Box
@@ -310,8 +321,14 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
           </Box>
 
           {/* Select all + Select by pattern + Bulk actions */}
-          <Box css={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '$3' }}>
-            <Box css={{ display: 'flex', alignItems: 'center', gap: '$3', flexWrap: 'wrap' }}>
+          <Box css={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '$3',
+          }}
+          >
+            <Box css={{
+              display: 'flex', alignItems: 'center', gap: '$3', flexWrap: 'wrap',
+            }}
+            >
               <Checkbox
                 checked={inspectState.selectedTokens.length === filteredSelectionValues.length && filteredSelectionValues.length > 0}
                 id="selectAll"
@@ -343,16 +360,38 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
                   </Button>
                   <DropdownMenu>
                     <DropdownMenu.Trigger asChild>
-                      <Button size="small" variant="secondary" css={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0, paddingLeft: '$2', paddingRight: '$2' }}>
+                      <Button
+                        size="small"
+                        variant="secondary"
+                        css={{
+                          borderTopLeftRadius: 0, borderBottomLeftRadius: 0, paddingLeft: '$2', paddingRight: '$2',
+                        }}
+                      >
                         <ChevronDownIcon />
                       </Button>
                     </DropdownMenu.Trigger>
                     <DropdownMenu.Portal>
                       <DropdownMenu.Content>
-                        <DropdownMenu.Item onSelect={() => handleAnnotate(Direction.TOP)}><ArrowUpIcon /> Top</DropdownMenu.Item>
-                        <DropdownMenu.Item onSelect={() => handleAnnotate(Direction.RIGHT)}><ArrowRightIcon /> Right</DropdownMenu.Item>
-                        <DropdownMenu.Item onSelect={() => handleAnnotate(Direction.BOTTOM)}><ArrowDownIcon /> Bottom</DropdownMenu.Item>
-                        <DropdownMenu.Item onSelect={() => handleAnnotate(Direction.LEFT)}><ArrowLeftIcon /> Left</DropdownMenu.Item>
+                        <DropdownMenu.Item onSelect={() => handleAnnotate(Direction.TOP)}>
+                          <ArrowUpIcon />
+                          {' '}
+                          Top
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item onSelect={() => handleAnnotate(Direction.RIGHT)}>
+                          <ArrowRightIcon />
+                          {' '}
+                          Right
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item onSelect={() => handleAnnotate(Direction.BOTTOM)}>
+                          <ArrowDownIcon />
+                          {' '}
+                          Bottom
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item onSelect={() => handleAnnotate(Direction.LEFT)}>
+                          <ArrowLeftIcon />
+                          {' '}
+                          Left
+                        </DropdownMenu.Item>
                       </DropdownMenu.Content>
                     </DropdownMenu.Portal>
                   </DropdownMenu>

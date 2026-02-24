@@ -165,7 +165,7 @@ export async function getGitHubFileContent(config: { pat: string; owner: string;
       path: config.path,
       ref: config.branch,
     });
-    console.log(`[getGitHub] Fast path success! Data type:`, typeof data);
+    console.log('[getGitHub] Fast path success! Data type:', typeof data);
 
     if (Array.isArray(data)) {
       throw new Error(`Path '${config.path}' is a directory, not a file.`);
@@ -187,7 +187,7 @@ export async function getGitHubFileContent(config: { pat: string; owner: string;
             }
           }
         } catch (fallbackBlobErr: any) {
-          console.error("[getGitHub] Failed direct Blob fallback!", fallbackBlobErr.message);
+          console.error('[getGitHub] Failed direct Blob fallback!', fallbackBlobErr.message);
         }
       }
 
@@ -196,7 +196,7 @@ export async function getGitHubFileContent(config: { pat: string; owner: string;
         // GitHub API returns content as base64 encoded string
         return Buffer.from(data.content, 'base64').toString('utf8');
       } catch (decodeError) {
-        console.error(`[getGitHub] Decode Buffer error! Falling back to atob.`, decodeError);
+        console.error('[getGitHub] Decode Buffer error! Falling back to atob.', decodeError);
         const base64 = data.content.replace(/\n/g, '');
         const binString = atob(base64);
         const bytes = new Uint8Array(binString.length);
@@ -206,18 +206,20 @@ export async function getGitHubFileContent(config: { pat: string; owner: string;
         return new TextDecoder().decode(bytes);
       }
     } else {
-      console.error(`[getGitHub] Unexpected format. Content key missing!`);
+      console.error('[getGitHub] Unexpected format. Content key missing!');
       throw new Error(`File content not found or not in expected format for '${config.path}'.`);
     }
   } catch (err: any) {
-    console.error(`[getGitHub] Main API exception thrown:`, err.status, err.message);
+    console.error('[getGitHub] Main API exception thrown:', err.status, err.message);
 
     // Large file logic inside primary catch!
     if (err.status === 403 || err.status === 422 || err.message?.includes('too large')) {
-      console.log("[getGitHub] Exception matched large file blob limitation. Using Git Trees fallback...");
+      console.log('[getGitHub] Exception matched large file blob limitation. Using Git Trees fallback...');
       try {
         const { data: branchData } = await octokit.rest.repos.getBranch({ owner: config.owner, repo: config.repo, branch: config.branch });
-        const { data: treeData } = await octokit.rest.git.getTree({ owner: config.owner, repo: config.repo, tree_sha: branchData.commit.sha, recursive: 'true' });
+        const { data: treeData } = await octokit.rest.git.getTree({
+          owner: config.owner, repo: config.repo, tree_sha: branchData.commit.sha, recursive: 'true',
+        });
         const fileNode = treeData.tree.find((t) => t.path === config.path);
 
         if (fileNode && fileNode.sha) {
@@ -225,7 +227,7 @@ export async function getGitHubFileContent(config: { pat: string; owner: string;
           const { data: blob } = await octokit.rest.git.getBlob({ owner: config.owner, repo: config.repo, file_sha: fileNode.sha });
           console.log(`[getGitHub] Successful blob fetch. Encoding: ${blob.encoding}`);
           if (blob.encoding === 'base64' && typeof blob.content === 'string') {
-            console.log("[getGitHub] Decoding base64 large chunk blob...");
+            console.log('[getGitHub] Decoding base64 large chunk blob...');
             const base64 = blob.content.replace(/\n/g, '');
             const binString = atob(base64);
             const bytes = new Uint8Array(binString.length);
@@ -234,13 +236,13 @@ export async function getGitHubFileContent(config: { pat: string; owner: string;
           }
         }
       } catch (fallbackErr: any) {
-        console.error("[getGitHub] Git Trees recursive fallback failed!", fallbackErr.message);
+        console.error('[getGitHub] Git Trees recursive fallback failed!', fallbackErr.message);
       }
     }
 
     if (err.status === 404) {
-      console.log(`[getGitHub] Returning empty string. 404 block reached.`);
-      return ''; // Explicitly requested per previous UI behavior 
+      console.log('[getGitHub] Returning empty string. 404 block reached.');
+      return ''; // Explicitly requested per previous UI behavior
     }
     throw err;
   }

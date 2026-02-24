@@ -45,7 +45,7 @@ const AddedLine = styled(DiffLine, {
   '.figma-dark &': {
     color: '#81C784',
     backgroundColor: 'rgba(129, 199, 132, 0.15)',
-  }
+  },
 });
 
 const RemovedLine = styled(DiffLine, {
@@ -54,7 +54,7 @@ const RemovedLine = styled(DiffLine, {
   '.figma-dark &': {
     color: '#EF9A9A',
     backgroundColor: 'rgba(239, 154, 154, 0.15)',
-  }
+  },
 });
 
 const NormalLine = styled(DiffLine, {
@@ -62,13 +62,14 @@ const NormalLine = styled(DiffLine, {
 });
 
 export const JsonDiffViewer: React.FC<Props> = ({ oldValue, newValue }) => {
-  const patch = useMemo(() => {
-    return Diff.structuredPatch('old.json', 'new.json', oldValue || '', newValue || '');
-  }, [oldValue, newValue]);
+  const patch = useMemo(() => Diff.structuredPatch('old.json', 'new.json', oldValue || '', newValue || ''), [oldValue, newValue]);
 
   if (!patch.hunks || patch.hunks.length === 0) {
     return (
-      <DiffContainer css={{ padding: '$4', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '$fgSubtle' }}>
+      <DiffContainer css={{
+        padding: '$4', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '$fgSubtle',
+      }}
+      >
         No differences found.
       </DiffContainer>
     );
@@ -76,51 +77,65 @@ export const JsonDiffViewer: React.FC<Props> = ({ oldValue, newValue }) => {
 
   return (
     <DiffContainer>
-      {patch.hunks.map((hunk, hunkIndex) => {
-        return (
-          <React.Fragment key={hunkIndex}>
-            <DiffRow>
-              <DiffLine css={{ 
-                backgroundColor: '$bgSubtle', 
-                color: '$fgSubtle', 
-                borderTop: '1px solid $borderSubtle',
-                borderBottom: '1px solid $borderSubtle',
-                marginTop: hunkIndex > 0 ? '$2' : 0,
-                marginBottom: '$2',
-                padding: '$1 $3'
-              }}>
-                @@ -{hunk.oldStart},{hunk.oldLines} +{hunk.newStart},{hunk.newLines} @@
-              </DiffLine>
-            </DiffRow>
+      {patch.hunks.map((hunk, hunkIndex) => (
+        <React.Fragment key={hunkIndex}>
+          <DiffRow>
+            <DiffLine css={{
+              backgroundColor: '$bgSubtle',
+              color: '$fgSubtle',
+              borderTop: '1px solid $borderSubtle',
+              borderBottom: '1px solid $borderSubtle',
+              marginTop: hunkIndex > 0 ? '$2' : 0,
+              marginBottom: '$2',
+              padding: '$1 $3',
+            }}
+            >
+              @@ -
+              {hunk.oldStart}
+              ,
+              {hunk.oldLines}
+              {' '}
+              +
+              {hunk.newStart}
+              ,
+              {hunk.newLines}
+              {' '}
+              @@
+            </DiffLine>
+          </DiffRow>
 
-            {hunk.lines.map((line, lineIndex) => {
-              // Ignore the "No newline at end of file" text that `diff` sometimes inserts
-              if (line.startsWith('\\ No newline')) return null;
+          {hunk.lines.map((line, lineIndex) => {
+            // Ignore the "No newline at end of file" text that `diff` sometimes inserts
+            if (line.startsWith('\\ No newline')) return null;
 
-              let Component = NormalLine;
-              let prefix = '  ';
-              let lineContent = line.substring(1);
+            let Component = NormalLine;
+            let prefix = '  ';
+            const lineContent = line.substring(1);
 
-              if (line.startsWith('+')) {
-                Component = AddedLine;
-                prefix = '+ ';
-              } else if (line.startsWith('-')) {
-                Component = RemovedLine;
-                prefix = '- ';
-              }
+            if (line.startsWith('+')) {
+              Component = AddedLine;
+              prefix = '+ ';
+            } else if (line.startsWith('-')) {
+              Component = RemovedLine;
+              prefix = '- ';
+            }
 
-              return (
-                <DiffRow key={`${hunkIndex}-${lineIndex}`}>
-                  <Component>
-                    <span style={{ opacity: 0.5, userSelect: 'none', marginRight: '16px', display: 'inline-block', width: '16px' }}>{prefix}</span>
-                    {lineContent}
-                  </Component>
-                </DiffRow>
-              );
-            })}
-          </React.Fragment>
-        );
-      })}
+            return (
+              <DiffRow key={`${hunkIndex}-${lineIndex}`}>
+                <Component>
+                  <span style={{
+                    opacity: 0.5, userSelect: 'none', marginRight: '16px', display: 'inline-block', width: '16px',
+                  }}
+                  >
+                    {prefix}
+                  </span>
+                  {lineContent}
+                </Component>
+              </DiffRow>
+            );
+          })}
+        </React.Fragment>
+      ))}
     </DiffContainer>
   );
 };

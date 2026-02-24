@@ -2,7 +2,11 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ValueNoneIcon } from '@radix-ui/react-icons';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { IconButton, Button, Checkbox, Badge } from '@tokens-studio/ui';
+import {
+  IconButton, Button, Checkbox, Badge,
+} from '@tokens-studio/ui';
+import { Copy } from 'iconoir-react';
+import copy from 'copy-to-clipboard';
 import { SingleToken } from '@/types/tokens';
 import Box from './Box';
 import useTokens from '../store/useTokens';
@@ -21,8 +25,6 @@ import StyleIcon from '@/icons/style.svg';
 import Tooltip from './Tooltip';
 import { TokenTypes } from '@/constants/TokenTypes';
 import { TokensContext } from '@/context';
-import { Copy } from 'iconoir-react';
-import copy from 'copy-to-clipboard';
 import { AsyncMessageChannel } from '@/AsyncMessageChannel';
 import { AsyncMessageTypes } from '@/types/AsyncMessages';
 
@@ -139,62 +141,67 @@ export default function InspectorTokenSingle({
       }}
       data-testid={`inspector-token-single-${token.category}`}
     >
-        <Box
-          css={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '$1',
-            flex: 1,
-            minWidth: 0,
-          }}
+      <Box
+        css={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '$1',
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
+        <Box css={{
+          display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '$4',
+        }}
         >
-        <Box css={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '$4' }}>
-        <Checkbox
-          style={{ flexShrink: 0 }}
-          checked={isChecked}
-          id={`${token.category}-${token.value}`}
-          onCheckedChange={onCheckedChanged}
-        />
-        {
-          (token.value === 'none' || tokenToDisplay?.value === 'none') && <ValueNoneIcon style={{ flexShrink: 0 }} />
-        }
-        {
-          isBrokenLink && token.value !== 'none' && <IconBrokenLink style={{ flexShrink: 0 }} />
-        }
-        {(tokenToDisplay && tokenToDisplay.value !== 'none' && tokenToDisplay.name !== 'none') && (
-          <InspectorResolvedToken token={tokenToDisplay} />
-        )}
-        <Box
-          css={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: '$1',
-          }}
-        >
-          {token.appliedType === 'variable' && <Tooltip label={t('appliedVariable')}><IconVariable /></Tooltip>}
-          {token.appliedType === 'style' && <Tooltip label={t('appliedStyle')}><StyleIcon /></Tooltip>}
-          <Box css={{ fontSize: '$small' }}>{token.value}</Box>
-          {isShared && (
-            <Badge size="small" variant="accent" title="Shared by multiple components">
-              Shared
-            </Badge>
-          )}
-          {isModeDependent && (
-            <Tooltip label={t('modeDependent', { modes: modeKeys.join(', ') })}>
-              <Badge size="small" variant="accent">
-                {modeKeys.length} modes
-              </Badge>
-            </Tooltip>
-          )}
-          <IconButton
-            tooltip={t('copyVariableName')}
-            onClick={handleCopyName}
-            icon={<Copy />}
-            size="small"
-            variant="invisible"
+          <Checkbox
+            style={{ flexShrink: 0 }}
+            checked={isChecked}
+            id={`${token.category}-${token.value}`}
+            onCheckedChange={onCheckedChanged}
           />
           {
+          (token.value === 'none' || tokenToDisplay?.value === 'none') && <ValueNoneIcon style={{ flexShrink: 0 }} />
+        }
+          {
+          isBrokenLink && token.value !== 'none' && <IconBrokenLink style={{ flexShrink: 0 }} />
+        }
+          {(tokenToDisplay && tokenToDisplay.value !== 'none' && tokenToDisplay.name !== 'none') && (
+            <InspectorResolvedToken token={tokenToDisplay} />
+          )}
+          <Box
+            css={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: '$1',
+            }}
+          >
+            {token.appliedType === 'variable' && <Tooltip label={t('appliedVariable')}><IconVariable /></Tooltip>}
+            {token.appliedType === 'style' && <Tooltip label={t('appliedStyle')}><StyleIcon /></Tooltip>}
+            <Box css={{ fontSize: '$small' }}>{token.value}</Box>
+            {isShared && (
+              <Badge size="small" variant="accent" title="Shared by multiple components">
+                Shared
+              </Badge>
+            )}
+            {isModeDependent && (
+              <Tooltip label={t('modeDependent', { modes: modeKeys.join(', ') })}>
+                <Badge size="small" variant="accent">
+                  {modeKeys.length}
+                  {' '}
+                  modes
+                </Badge>
+              </Tooltip>
+            )}
+            <IconButton
+              tooltip={t('copyVariableName')}
+              onClick={handleCopyName}
+              icon={<Copy />}
+              size="small"
+              variant="invisible"
+            />
+            {
             !token.resolvedValue && (
               <IconButton
                 tooltip={t('changeToAnotherToken')}
@@ -206,29 +213,32 @@ export default function InspectorTokenSingle({
               />
             )
           }
-        </Box>
-        {/* Inline impact preview */}
-        {(componentCount > 0 || modeCount > 1) && (
-          <Box css={{ fontSize: '$label', color: '$fgSubtle', paddingLeft: '24px', lineHeight: 1.3 }}>
-            Affects
-            {' '}
-            {componentCount > 0 && (
+          </Box>
+          {/* Inline impact preview */}
+          {(componentCount > 0 || modeCount > 1) && (
+            <Box css={{
+              fontSize: '$label', color: '$fgSubtle', paddingLeft: '24px', lineHeight: 1.3,
+            }}
+            >
+              Affects
+              {' '}
+              {componentCount > 0 && (
               <>
                 {componentCount}
                 {' '}
                 {componentCount === 1 ? 'component' : 'components'}
                 {modeCount > 1 ? ' in ' : ''}
               </>
-            )}
-            {modeCount > 1 && (
+              )}
+              {modeCount > 1 && (
               <>
                 {modeCount}
                 {' '}
                 modes
               </>
-            )}
-          </Box>
-        )}
+              )}
+            </Box>
+          )}
         </Box>
         {
           showDialog && (

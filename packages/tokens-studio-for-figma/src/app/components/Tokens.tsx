@@ -209,16 +209,16 @@ const Tokens: React.FC<Props> = ({ isActive, simplified }) => {
         }}
       >
         <Box
-        css={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          padding: '$3 $4',
-          gap: '$3',
-          borderBottom: '1px solid $borderSubtle',
-          backgroundColor: '$bgDefault',
-          flexShrink: 0,
-        }}
+          css={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            padding: '$3 $4',
+            gap: '$3',
+            borderBottom: '1px solid $borderSubtle',
+            backgroundColor: '$bgDefault',
+            flexShrink: 0,
+          }}
         >
           <IconButton
             onClick={handleToggleTokenSetsVisibility}
@@ -319,7 +319,10 @@ const Tokens: React.FC<Props> = ({ isActive, simplified }) => {
                   }}
                   >
                     <Box css={{ color: '$fgDefault', fontSize: '$subtitle', fontWeight: '$sansBold' }}>Welcome to The Bridge</Box>
-                    <Box css={{ color: '$fgMuted', fontSize: '$bodySm', maxWidth: '320px', lineHeight: 1.5 }}>
+                    <Box css={{
+                      color: '$fgMuted', fontSize: '$bodySm', maxWidth: '320px', lineHeight: 1.5,
+                    }}
+                    >
                       Start by creating your first token set or importing tokens from a JSON file.
                     </Box>
                     <Link href="https://docs.tokens.studio/getting-started?ref=plugin_empty_state" target="_blank" rel="noreferrer" css={{ fontSize: '$bodySm', color: '$accentDefault' }}>
@@ -338,6 +341,6 @@ const Tokens: React.FC<Props> = ({ isActive, simplified }) => {
       </Box>
     </TokensContext.Provider>
   );
-}
+};
 
 export default Tokens;

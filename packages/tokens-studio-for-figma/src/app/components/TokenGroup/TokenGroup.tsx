@@ -9,6 +9,7 @@ import { isSingleToken } from '@/utils/is';
 import { collapsedTokensSelector } from '@/selectors/collapsedTokensSelector';
 import { ShowFormOptions, ShowNewFormOptions } from '@/types';
 import { TokenTypes } from '@/constants/TokenTypes';
+
 type Props = {
   tokenValues: DeepKeyTokenMap;
   showNewForm: (opts: ShowNewFormOptions) => void;

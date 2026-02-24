@@ -116,8 +116,16 @@ function StartScreen() {
   const shouldShowProviderSelector = apiProviders.length > 0 && storageType?.provider === StorageProviderType.LOCAL;
 
   return (
-    <Box css={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      <Box className="content scroll-container" css={{ padding: '$5', height: '100%', display: 'flex', background: '$bgSubtle' }}>
+    <Box css={{
+      display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden',
+    }}
+    >
+      <Box
+        className="content scroll-container"
+        css={{
+          padding: '$5', height: '100%', display: 'flex', background: '$bgSubtle',
+        }}
+      >
         <Stack
           direction="column"
           gap={6}

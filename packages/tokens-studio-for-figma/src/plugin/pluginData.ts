@@ -31,7 +31,9 @@ function findClosestComponentName(node: BaseNode): string | undefined {
 function createNodeInfo(curr: NodeManagerNode): { id: string; name: string; type: NodeType; componentName?: string } {
   const { id, node: { name, type } } = curr;
   const componentName = findClosestComponentName(curr.node);
-  return { id, name, type, componentName };
+  return {
+    id, name, type, componentName,
+  };
 }
 
 export function transformPluginDataToSelectionValues(pluginData: NodeManagerNode[]): SelectionGroup[] {

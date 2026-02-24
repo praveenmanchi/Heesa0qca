@@ -55,11 +55,23 @@ export default function TermsUpdateModal() {
           Use the tabs at the top to navigate:
         </p>
         <p style={{ marginTop: '8px' }}>
-          📐 <b>Extract</b> — pull tokens from your Figma file
+          📐
+          {' '}
+          <b>Extract</b>
+          {' '}
+          — pull tokens from your Figma file
           <br />
-          🔍 <b>Variables</b> — search variable usage across all pages
+          🔍
+          {' '}
+          <b>Variables</b>
+          {' '}
+          — search variable usage across all pages
           <br />
-          🎨 <b>Style Guide</b> — generate a living style guide on canvas
+          🎨
+          {' '}
+          <b>Style Guide</b>
+          {' '}
+          — generate a living style guide on canvas
         </p>
       </div>
     </Modal>

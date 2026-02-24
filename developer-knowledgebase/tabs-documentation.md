@@ -14,6 +14,7 @@ This directory contains deep technical documentation for each functional area of
 | **Extract** | [extract-tab.md](file:///Users/praveenmanchi/Desktop/github-data/figma-plugin/developer-knowledgebase/plugin-tabs/extract-tab.md) | Variable serialization, GitHub sync, and diffing logic. |
 | **Style Guide** | [style-guide-tab.md](file:///Users/praveenmanchi/Desktop/github-data/figma-plugin/developer-knowledgebase/plugin-tabs/style-guide-tab.md) | Automated canvas generation, font management, and Auto Layout. |
 | **Variables** | [variables-tab.md](file:///Users/praveenmanchi/Desktop/github-data/figma-plugin/developer-knowledgebase/plugin-tabs/variables-tab.md) | Global variable usage search and node mapping. |
+| **UXAI** | [uxai-tab.md](plugin-tabs/uxai-tab.md) | AI-powered variable analysis, change summary, and apply flow. |
 | **Settings** | [settings-tab.md](file:///Users/praveenmanchi/Desktop/github-data/figma-plugin/developer-knowledgebase/plugin-tabs/settings-tab.md) | Sync providers, storage architecture, and persistence configuration. |
 
 ---

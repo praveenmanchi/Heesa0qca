@@ -84,6 +84,9 @@ export enum AsyncMessageTypes {
   PREVIEW_REQUEST_STARTUP = 'async/preview-request-startup',
   GET_AVAILABLE_VARIABLE_COLLECTIONS = 'async/get-available-variable-collections',
   EXTRACT_VARIABLES_TO_CANVAS = 'async/extract-variables-to-canvas',
+  GET_UXAI_HISTORY = 'async/get-uxai-history',
+  SET_UXAI_HISTORY = 'async/set-uxai-history',
+  APPLY_UXAI_CHANGES = 'async/apply-uxai-changes',
   GENERATE_STYLE_GUIDE = 'async/generate-style-guide',
   UPDATE_STYLE_GUIDE = 'async/update-style-guide',
   GENERATE_STYLE_GUIDE_FROM_VARIABLES = 'async/generate-style-guide-from-variables',
@@ -421,10 +424,10 @@ export type UpdateVariablesAsyncMessageResult = AsyncMessage<AsyncMessageTypes.U
 }>;
 
 export type RemoveRelaunchDataMessage = AsyncMessage<
-  AsyncMessageTypes.REMOVE_RELAUNCH_DATA,
-  {
-    area: UpdateMode;
-  }
+AsyncMessageTypes.REMOVE_RELAUNCH_DATA,
+{
+  area: UpdateMode;
+}
 >;
 export type RemoveRelaunchDataMessageResult = AsyncMessage<AsyncMessageTypes.REMOVE_RELAUNCH_DATA>;
 
@@ -503,6 +506,27 @@ export type ExtractVariablesToCanvasAsyncMessageResult = AsyncMessage<AsyncMessa
   collectionsInfo?: CollectionInfo[];
 }>;
 
+export interface UxaiHistoryEntry {
+  id: string;
+  prompt: string;
+  result: { summary: string; componentImpact: string; suggestions: string; proposedChanges?: string; rawResponse?: string };
+  timestamp: number;
+}
+
+export type GetUxaiHistoryAsyncMessage = AsyncMessage<AsyncMessageTypes.GET_UXAI_HISTORY>;
+export type GetUxaiHistoryAsyncMessageResult = AsyncMessage<AsyncMessageTypes.GET_UXAI_HISTORY, { history: UxaiHistoryEntry[] }>;
+
+export type SetUxaiHistoryAsyncMessage = AsyncMessage<AsyncMessageTypes.SET_UXAI_HISTORY, { history: UxaiHistoryEntry[] }>;
+export type SetUxaiHistoryAsyncMessageResult = AsyncMessage<AsyncMessageTypes.SET_UXAI_HISTORY>;
+
+export type UxaiVariableUpdate = { variableId: string; variableName?: string; modeId: string; value: string | number | boolean; type: 'COLOR' | 'FLOAT' | 'STRING' | 'BOOLEAN' };
+export type UxaiVariableCreate = { collectionId: string; variableName: string; modeId: string; value: string | number | boolean; type: 'COLOR' | 'FLOAT' | 'STRING' | 'BOOLEAN'; remapFromVariableId?: string };
+export type ApplyUxaiChangesAsyncMessage = AsyncMessage<AsyncMessageTypes.APPLY_UXAI_CHANGES, {
+  updates: UxaiVariableUpdate[];
+  creates: UxaiVariableCreate[];
+}>;
+export type ApplyUxaiChangesAsyncMessageResult = AsyncMessage<AsyncMessageTypes.APPLY_UXAI_CHANGES, { applied: number; errors: string[] }>;
+
 export type AsyncMessages =
   CreateStylesAsyncMessage
   | RenameStylesAsyncMessage
@@ -561,6 +585,9 @@ export type AsyncMessages =
   | SetVariablesAsyncMessage
   | CreateChangeLogFrameAsyncMessage
   | ExtractVariablesToCanvasAsyncMessage
+  | GetUxaiHistoryAsyncMessage
+  | SetUxaiHistoryAsyncMessage
+  | ApplyUxaiChangesAsyncMessage
   | CalculateVariablesImpactAsyncMessage
   | GenerateStyleGuideAsyncMessage
   | UpdateStyleGuideAsyncMessage
@@ -623,6 +650,9 @@ export type AsyncMessageResults =
   | SetVariablesAsyncMessageResult
   | CreateChangeLogFrameAsyncMessageResult
   | ExtractVariablesToCanvasAsyncMessageResult
+  | GetUxaiHistoryAsyncMessageResult
+  | SetUxaiHistoryAsyncMessageResult
+  | ApplyUxaiChangesAsyncMessageResult
   | CalculateVariablesImpactAsyncMessageResult
   | GenerateStyleGuideAsyncMessageResult
   | UpdateStyleGuideAsyncMessageResult

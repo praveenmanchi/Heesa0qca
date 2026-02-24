@@ -30,7 +30,10 @@ export default function FigmaLoading({
         <Stack direction="column" gap={3} align="center">
           <IconLogo />
           <Stack direction="column" gap={1} align="center">
-            <Box css={{ fontSize: '$large', fontWeight: '$sansBold', color: '$loadingScreenFg', letterSpacing: '-0.01em' }}>
+            <Box css={{
+              fontSize: '$large', fontWeight: '$sansBold', color: '$loadingScreenFg', letterSpacing: '-0.01em',
+            }}
+            >
               The Bridge
             </Box>
             <Box css={{ fontSize: '$xsmall', color: '$loadingScreenFgMuted', fontStyle: 'italic' }}>

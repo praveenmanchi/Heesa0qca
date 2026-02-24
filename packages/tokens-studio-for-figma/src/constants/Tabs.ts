@@ -10,4 +10,5 @@ export enum Tabs {
   CHANGELOG = 'changelog',
   EXTRACT = 'extract',
   STYLEGUIDE = 'styleguide',
+  UXAI = 'uxai',
 }

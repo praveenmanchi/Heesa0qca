@@ -42,7 +42,7 @@ function Inspector() {
     const modes = new Set<string>();
     uiState.selectionValues.forEach((group) => {
       if (group.modes) {
-        Object.keys(group.modes).forEach(mode => modes.add(mode));
+        Object.keys(group.modes).forEach((mode) => modes.add(mode));
       }
     });
     return Array.from(modes);
@@ -129,7 +129,10 @@ function Inspector() {
             {/* Disabling tooltip for now due to https://github.com/radix-ui/primitives/issues/602
             <ToggleGroup.Item value="multi" tooltip={t('inspectLayers') as string} tooltipSide="bottom"> */}
             <ToggleGroup.Item value="multi" iconOnly={false}>
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$2', padding: '0 $1' }}>
+              <Box css={{
+                display: 'flex', alignItems: 'center', gap: '$2', padding: '0 $1',
+              }}
+              >
                 <IconInspect />
                 <Box css={{ whiteSpace: 'nowrap' }}>{t('multiInspect')}</Box>
               </Box>
@@ -137,13 +140,19 @@ function Inspector() {
             {/* Disabling tooltip for now due to https://github.com/radix-ui/primitives/issues/602
               <ToggleGroup.Item value="debug" tooltip={t('debugAndAnnotate') as string} tooltipSide="bottom"> */}
             <ToggleGroup.Item value="debug" iconOnly={false}>
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$2', padding: '0 $1' }}>
+              <Box css={{
+                display: 'flex', alignItems: 'center', gap: '$2', padding: '0 $1',
+              }}
+              >
                 <IconDebug />
                 <Box css={{ whiteSpace: 'nowrap' }}>{t('debug')}</Box>
               </Box>
             </ToggleGroup.Item>
             <ToggleGroup.Item value="json" iconOnly={false}>
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$2', padding: '0 $1' }}>
+              <Box css={{
+                display: 'flex', alignItems: 'center', gap: '$2', padding: '0 $1',
+              }}
+              >
                 <IconJson />
                 <Box css={{ whiteSpace: 'nowrap' }}>{t('json')}</Box>
               </Box>

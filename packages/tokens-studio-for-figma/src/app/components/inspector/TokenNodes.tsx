@@ -62,7 +62,7 @@ export default function TokenNodes({ nodes }: { nodes: NodeInfo[] }) {
         sideOffset={4}
         className={`content content-dark ${nodes.length > VISIBLE_VIEWPORT_NODES ? 'scroll-container' : null}`}
       >
-      {hasComponentInfo && componentCount > 0 && (
+        {hasComponentInfo && componentCount > 0 && (
         <>
           {Array.from(componentGroups.entries()).map(([componentName, componentNodes]) => (
             <DropdownMenu.Item
@@ -100,10 +100,10 @@ export default function TokenNodes({ nodes }: { nodes: NodeInfo[] }) {
             }}
           />
         </>
-      )}
-      {nodes.map((node) => (
-        <TokenNode key={node.id} {...node} />
-      ))}
+        )}
+        {nodes.map((node) => (
+          <TokenNode key={node.id} {...node} />
+        ))}
       </DropdownMenu.Content>
     </DropdownMenu.Portal>
   );

@@ -23,50 +23,50 @@ const ZH_API_BASE = 'https://zeroheight.com/open_api/v2';
 
 /** Download a Style Dictionary-compatible JSON file from the current token set. */
 export function downloadStyleDictionaryJson(tokens: SingleToken[], filename = 'tokens-style-dictionary.json') {
-    const styleDictionary: Record<string, any> = {};
+  const styleDictionary: Record<string, any> = {};
 
-    tokens.forEach((token) => {
-        const parts = token.name.split('.');
-        let node = styleDictionary;
-        parts.forEach((part, i) => {
-            if (i === parts.length - 1) {
-                node[part] = {
-                    value: token.value,
-                    type: token.type,
-                    ...(token.description ? { comment: token.description } : {}),
-                };
-            } else {
-                if (!node[part]) node[part] = {};
-                node = node[part];
-            }
-        });
+  tokens.forEach((token) => {
+    const parts = token.name.split('.');
+    let node = styleDictionary;
+    parts.forEach((part, i) => {
+      if (i === parts.length - 1) {
+        node[part] = {
+          value: token.value,
+          type: token.type,
+          ...(token.description ? { comment: token.description } : {}),
+        };
+      } else {
+        if (!node[part]) node[part] = {};
+        node = node[part];
+      }
     });
+  });
 
-    const blob = new Blob([JSON.stringify(styleDictionary, null, 2)], { type: 'application/json;charset=utf-8' });
-    saveAs(blob, filename);
+  const blob = new Blob([JSON.stringify(styleDictionary, null, 2)], { type: 'application/json;charset=utf-8' });
+  saveAs(blob, filename);
 }
 
 /** Read styleguide pages via the real Zeroheight API (requires Enterprise + Bearer token). */
 export async function getZeroheightPages(apiToken: string, styleguideId: string): Promise<{ id: string; name: string; status?: string }[]> {
-    const res = await fetch(`${ZH_API_BASE}/styleguides/${styleguideId}/pages`, {
-        headers: { Authorization: `Bearer ${apiToken}` },
-    });
-    if (!res.ok) throw new Error(`Zeroheight API error: ${res.status} ${res.statusText}`);
-    const data = await res.json();
-    return (data.data || []).map((p: any) => ({ id: p.id, name: p.name, status: p.status }));
+  const res = await fetch(`${ZH_API_BASE}/styleguides/${styleguideId}/pages`, {
+    headers: { Authorization: `Bearer ${apiToken}` },
+  });
+  if (!res.ok) throw new Error(`Zeroheight API error: ${res.status} ${res.statusText}`);
+  const data = await res.json();
+  return (data.data || []).map((p: any) => ({ id: p.id, name: p.name, status: p.status }));
 }
 
 /** Update a page's status via the real Zeroheight API (requires Enterprise + Bearer token). */
 export async function updateZeroheightPageStatus(apiToken: string, pageId: string, status: string): Promise<void> {
-    const res = await fetch(`${ZH_API_BASE}/pages/${pageId}/status`, {
-        method: 'PATCH',
-        headers: {
-            Authorization: `Bearer ${apiToken}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status }),
-    });
-    if (!res.ok) throw new Error(`Zeroheight API error: ${res.status} ${res.statusText}`);
+  const res = await fetch(`${ZH_API_BASE}/pages/${pageId}/status`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) throw new Error(`Zeroheight API error: ${res.status} ${res.statusText}`);
 }
 
 /**
@@ -76,5 +76,5 @@ export async function updateZeroheightPageStatus(apiToken: string, pageId: strin
  * existing callers.
  */
 export async function exportToZeroheight(tokens: SingleToken[], _apiKey?: string) {
-    downloadStyleDictionaryJson(tokens);
+  downloadStyleDictionaryJson(tokens);
 }

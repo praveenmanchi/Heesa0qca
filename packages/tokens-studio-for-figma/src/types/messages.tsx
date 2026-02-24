@@ -82,6 +82,10 @@ export type UiSettingsFromPluginMessage = {
       webhookUrl?: string;
       webhookUrlDev?: string;
     };
+    aiAssistanceEnabled?: boolean;
+    aiProvider?: 'claude' | 'gemini';
+    aiClaudeApiKey?: string;
+    aiGeminiApiKey?: string;
   };
 };
 
