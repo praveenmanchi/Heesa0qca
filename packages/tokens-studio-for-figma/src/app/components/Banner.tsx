@@ -4,7 +4,7 @@ import { IconLogo, IconBanner } from '@/icons';
 import Box from './Box';
 
 const BannerContainer = styled(Box, {
-    backgroundColor: '$accentDefault',
+    backgroundColor: '#0048B7',
     height: '72px',
     display: 'flex',
     alignItems: 'center',
