@@ -62,39 +62,64 @@ const NormalLine = styled(DiffLine, {
 });
 
 export const JsonDiffViewer: React.FC<Props> = ({ oldValue, newValue }) => {
-  const diffParts = useMemo(() => {
-    return Diff.diffLines(oldValue || '', newValue || '');
+  const patch = useMemo(() => {
+    return Diff.structuredPatch('old.json', 'new.json', oldValue || '', newValue || '');
   }, [oldValue, newValue]);
+
+  if (!patch.hunks || patch.hunks.length === 0) {
+    return (
+      <DiffContainer css={{ padding: '$4', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '$fgSubtle' }}>
+        No differences found.
+      </DiffContainer>
+    );
+  }
 
   return (
     <DiffContainer>
-      {diffParts.map((part, index) => {
-        const lines = part.value.split('\n');
-        // Remove the last empty line from split if the value ends with newline
-        if (lines[lines.length - 1] === '') {
-          lines.pop();
-        }
-
-        return lines.map((line, lineIndex) => {
-          let Component = NormalLine;
-          let prefix = '  ';
-          if (part.added) {
-            Component = AddedLine;
-            prefix = '+ ';
-          } else if (part.removed) {
-            Component = RemovedLine;
-            prefix = '- ';
-          }
-
-          return (
-            <DiffRow key={`${index}-${lineIndex}`}>
-              <Component>
-                <span style={{ opacity: 0.5, userSelect: 'none', marginRight: '16px', display: 'inline-block', width: '16px' }}>{prefix}</span>
-                {line}
-              </Component>
+      {patch.hunks.map((hunk, hunkIndex) => {
+        return (
+          <React.Fragment key={hunkIndex}>
+            <DiffRow>
+              <DiffLine css={{ 
+                backgroundColor: '$bgSubtle', 
+                color: '$fgSubtle', 
+                borderTop: '1px solid $borderSubtle',
+                borderBottom: '1px solid $borderSubtle',
+                marginTop: hunkIndex > 0 ? '$2' : 0,
+                marginBottom: '$2',
+                padding: '$1 $3'
+              }}>
+                @@ -{hunk.oldStart},{hunk.oldLines} +{hunk.newStart},{hunk.newLines} @@
+              </DiffLine>
             </DiffRow>
-          );
-        });
+
+            {hunk.lines.map((line, lineIndex) => {
+              // Ignore the "No newline at end of file" text that `diff` sometimes inserts
+              if (line.startsWith('\\ No newline')) return null;
+
+              let Component = NormalLine;
+              let prefix = '  ';
+              let lineContent = line.substring(1);
+
+              if (line.startsWith('+')) {
+                Component = AddedLine;
+                prefix = '+ ';
+              } else if (line.startsWith('-')) {
+                Component = RemovedLine;
+                prefix = '- ';
+              }
+
+              return (
+                <DiffRow key={`${hunkIndex}-${lineIndex}`}>
+                  <Component>
+                    <span style={{ opacity: 0.5, userSelect: 'none', marginRight: '16px', display: 'inline-block', width: '16px' }}>{prefix}</span>
+                    {lineContent}
+                  </Component>
+                </DiffRow>
+              );
+            })}
+          </React.Fragment>
+        );
       })}
     </DiffContainer>
   );
