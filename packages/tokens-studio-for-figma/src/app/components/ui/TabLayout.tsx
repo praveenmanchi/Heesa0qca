@@ -17,11 +17,11 @@ export const TabContent = styled(Box, {
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
-  padding: '$4',
+  padding: '$5',
   overflowY: 'auto',
   variants: {
     compact: {
-      true: { padding: '$3' },
+      true: { padding: '$4' },
       false: {},
     },
   },

@@ -153,8 +153,9 @@ export default function TokenSetSelector({ saveScrollPositionSet, simplified }: 
           flexDirection: 'column',
           width: '100%',
           borderRight: '1px solid',
-          borderColor: '$borderMuted',
+          borderColor: '$borderSubtle',
           overflowY: 'auto',
+          backgroundColor: '$bgDefault',
         }}
         className="content"
       >

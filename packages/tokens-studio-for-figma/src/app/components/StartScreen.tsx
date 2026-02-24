@@ -117,12 +117,20 @@ function StartScreen() {
 
   return (
     <Box css={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      <Box className="content scroll-container" css={{ padding: '$5', height: '100%', display: 'flex' }}>
+      <Box className="content scroll-container" css={{ padding: '$5', height: '100%', display: 'flex', background: '$bgSubtle' }}>
         <Stack
           direction="column"
           gap={6}
           align="start"
-          css={{ padding: '$7', margin: 'auto', maxWidth: '400px', borderRadius: '$medium' }}
+          css={{
+            padding: '$7',
+            margin: 'auto',
+            maxWidth: '420px',
+            borderRadius: '$medium',
+            backgroundColor: '$bgDefault',
+            border: '1px solid $borderSubtle',
+            boxShadow: '0 1px 3px 0 $borderSubtle',
+          }}
         >
           {/* Logo + Brand */}
           <Stack direction="column" gap={3}>

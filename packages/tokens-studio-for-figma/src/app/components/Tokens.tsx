@@ -209,15 +209,16 @@ const Tokens: React.FC<Props> = ({ isActive, simplified }) => {
         }}
       >
         <Box
-          css={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            padding: '$2',
-            gap: '$2',
-            borderBottom: '1px solid',
-            borderColor: '$borderMuted',
-          }}
+        css={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: '$3 $4',
+          gap: '$3',
+          borderBottom: '1px solid $borderSubtle',
+          backgroundColor: '$bgDefault',
+          flexShrink: 0,
+        }}
         >
           <IconButton
             onClick={handleToggleTokenSetsVisibility}
@@ -304,17 +305,24 @@ const Tokens: React.FC<Props> = ({ isActive, simplified }) => {
                   ))
                 ) : (
                   <Box css={{
-                    padding: '$8', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '$4',
+                    padding: '$8',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    gap: '$4',
+                    backgroundColor: '$bgSubtle',
+                    borderRadius: '$medium',
+                    margin: '$4',
+                    border: '1px solid $borderSubtle',
                   }}
                   >
-                    <Box css={{ color: '$fgMuted', fontSize: '$large' }}>Welcome to Tokens Studio!</Box>
-                    <Box css={{
-                      color: '$fgMuted', fontSize: '$small', maxWidth: '300px',
-                    }}
-                    >
+                    <Box css={{ color: '$fgDefault', fontSize: '$subtitle', fontWeight: '$sansBold' }}>Welcome to The Bridge</Box>
+                    <Box css={{ color: '$fgMuted', fontSize: '$bodySm', maxWidth: '320px', lineHeight: 1.5 }}>
                       Start by creating your first token set or importing tokens from a JSON file.
                     </Box>
-                    <Link href="https://docs.tokens.studio/getting-started?ref=plugin_empty_state" target="_blank" rel="noreferrer" css={{ fontSize: '$small' }}>
+                    <Link href="https://docs.tokens.studio/getting-started?ref=plugin_empty_state" target="_blank" rel="noreferrer" css={{ fontSize: '$bodySm', color: '$accentDefault' }}>
                       View getting started guide
                     </Link>
                   </Box>

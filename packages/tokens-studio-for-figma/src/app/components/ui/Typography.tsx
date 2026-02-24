@@ -33,13 +33,13 @@ export const BodySmall = styled(Box, {
 /** Subtitle - section headers */
 export const Subtitle = styled(Box, {
   fontSize: '$subtitle',
-  lineHeight: 1.2,
+  lineHeight: 1.25,
   fontWeight: '$sansBold',
 });
 
 /** Title - card titles */
 export const Title = styled(Box, {
   fontSize: '$title',
-  lineHeight: 1.2,
+  lineHeight: 1.25,
   fontWeight: '$sansBold',
 });

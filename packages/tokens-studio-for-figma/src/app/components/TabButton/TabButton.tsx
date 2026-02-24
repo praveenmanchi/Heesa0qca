@@ -19,26 +19,33 @@ type Props<T extends string> = {
 };
 
 const StyledButton = styled('button', {
-  padding: '$5 $4',
+  padding: '$4 $4',
   maxWidth: 'fit-content',
-  fontSize: '$xsmall',
-  fontWeight: '$sansBold',
+  fontSize: '$bodySm',
+  fontWeight: 500,
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
   gap: '$2',
   cursor: 'pointer',
   color: '$fgMuted',
-  opacity: 0.7,
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',
-  '&:not(:disabled):focus, &:not(:disabled):hover': {
+  borderRadius: '$small',
+  transition: 'color 0.15s ease, background-color 0.15s ease',
+  '&:not(:disabled):focus-visible': {
+    outline: '2px solid $accentDefault',
+    outlineOffset: '2px',
+  },
+  '&:not(:disabled):focus:not(:focus-visible), &:not(:disabled):hover': {
     outline: 'none',
     boxShadow: 'none',
     color: '$fgDefault',
+    backgroundColor: '$bgSubtle',
   },
   '> svg': {
     minHeight: '100%',
+    flexShrink: 0,
   },
   '&:disabled': {
     pointerEvents: 'none',
@@ -46,7 +53,11 @@ const StyledButton = styled('button', {
   },
   variants: {
     isActive: {
-      true: { color: '$fgDefault', opacity: 1 },
+      true: {
+        color: '$fgDefault',
+        backgroundColor: '$bgSubtle',
+        '&:hover': { backgroundColor: '$bgSubtle' },
+      },
     },
     small: {
       true: {

@@ -4,18 +4,18 @@ import { IconLogo, IconBanner } from '@/icons';
 import Box from './Box';
 
 const BannerContainer = styled(Box, {
-    backgroundColor: '#01579B', // More accurate Tokens Studio blue from some themes
-    height: '77px',
+    backgroundColor: '$accentDefault',
+    height: '72px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '0 16px',
+    padding: '0 $5',
     overflow: 'hidden',
     position: 'relative',
 });
 
 const LogoWrapper = styled(Box, {
-    color: '$white',
+    color: '$fgOnEmphasis',
     display: 'flex',
     alignItems: 'center',
     zIndex: 1,

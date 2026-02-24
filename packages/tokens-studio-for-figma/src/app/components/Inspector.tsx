@@ -26,7 +26,7 @@ import Stack from './Stack';
 import { defaultTokenResolver } from '@/utils/TokenResolver';
 
 function Inspector() {
-  const [inspectView, setInspectView] = React.useState('debug');
+  const [inspectView, setInspectView] = React.useState('multi');
   const [selectedMode, setSelectedMode] = React.useState<string>('All Modes');
   const { t } = useTranslation(['inspect']);
   const [searchInputValue, setSearchInputValue] = React.useState<string>('');
@@ -82,7 +82,7 @@ function Inspector() {
     }}
     >
       <Box css={{
-        display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: '$2', padding: '$2', borderBottom: '1px solid $borderMuted',
+        display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: '$3', padding: '$3 $4', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', flexShrink: 0,
       }}
       >
         <Box

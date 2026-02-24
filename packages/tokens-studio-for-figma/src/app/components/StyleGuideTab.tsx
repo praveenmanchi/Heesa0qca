@@ -54,7 +54,7 @@ const Root = styled(Box, {
 const Sidebar = styled(Box, {
     width: '180px',
     flexShrink: 0,
-    borderRight: '1px solid $borderMuted',
+    borderRight: '1px solid $borderSubtle',
     display: 'flex',
     flexDirection: 'column',
     overflowY: 'auto',
@@ -66,8 +66,8 @@ const Sidebar = styled(Box, {
 });
 
 const SidebarSection = styled(Box, {
-    borderBottom: '1px solid $borderMuted',
-    padding: '$3',
+    borderBottom: '1px solid $borderSubtle',
+    padding: '$3 $4',
 });
 
 const CollectionBtn = styled(Box, {

@@ -48,13 +48,15 @@ const StyledDialogContent = styled(Dialog.Content, {
   '&:focus-visible': {
     outline: 'none',
   },
+  borderRadius: '$medium',
+  border: '1px solid $borderSubtle',
   variants: {
     size: {
       large: {
         width: 'calc(100vw - $7)',
         maxWidth: '480px',
         padding: 0,
-        boxShadow: '$contextMenu',
+        boxShadow: '0 4px 12px $borderSubtle',
         borderColor: '$borderSubtle',
       },
       fullscreen: {

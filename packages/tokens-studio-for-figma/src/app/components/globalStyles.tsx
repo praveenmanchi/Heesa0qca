@@ -18,6 +18,10 @@ export const globalStyles = globalCss({
   'button:focus': {
     outline: 'none',
   },
+  'button:focus-visible, a:focus-visible, [tabindex]:focus-visible': {
+    outline: '2px solid var(--colors-accentDefault)',
+    outlineOffset: '2px',
+  },
   'textarea.input, select.input, input.input': {
     outline: 'none',
     padding: '$2',

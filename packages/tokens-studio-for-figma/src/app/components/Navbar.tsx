@@ -42,9 +42,10 @@ const Navbar: React.FC<React.PropsWithChildren<unknown>> = () => {
           alignItems: 'center',
           justifyContent: 'space-between',
           background: '$bgDefault',
-          borderBottom: '1px solid $borderMuted',
+          borderBottom: '1px solid $borderSubtle',
+          boxShadow: '0 1px 0 0 $borderSubtle',
           zIndex: 1,
-          transform: 'translateY(-1px)',
+          padding: '0 $2',
         }}
       >
         <Stack gap={0} direction="row" align="center" justify="between" css={{ width: '100%' }}>

@@ -19,7 +19,7 @@ export default function InspectorTokenGroup({ group, resolvedTokens, selectedMod
         display: 'flex',
         flexDirection: 'column',
         marginBottom: '$3',
-        border: '1px solid $borderMuted',
+        border: '1px solid $borderSubtle',
         borderRadius: '$medium',
         overflow: 'hidden',
       }}

@@ -654,6 +654,16 @@ export default function ExtractTab() {
   const changesByMode = hasAnalysis && diff && collectionsInfo.length > 0 ? buildChangesByMode(diff, collectionsInfo) : [];
   const rawComponentImpacts = hasAnalysis && diff && impactData.length > 0 ? buildComponentImpactList(impactData, diff, variableIdToName) : [];
 
+  const oldVariablesCount = React.useMemo(() => {
+    const parsed = safeParseJson(oldJsonPreview, []);
+    return Array.isArray(parsed.data) ? parsed.data.length : 0;
+  }, [oldJsonPreview]);
+
+  const newVariablesCount = React.useMemo(() => {
+    const parsed = safeParseJson(jsonResult, []);
+    return Array.isArray(parsed.data) ? parsed.data.length : 0;
+  }, [jsonResult]);
+
   const handleCreatePr = useCallback(async () => {
     if (!jsonResult || !pat || !owner || !repo || !targetBranch) {
       setError('Please fill all required fields and extract JSON first.');
@@ -799,10 +809,10 @@ export default function ExtractTab() {
   return (
     <TabRoot>
       {/* ── Top Bar ── */}
-      <Section css={{ padding: '$3 $4' }}>
+      <Box css={{ padding: '$3 $4', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', flexShrink: 0 }}>
         <Stack direction="row" align="center" justify="between">
           <Box>
-            <Heading size="small" css={{ color: '$white', fontWeight: '$bold', marginBottom: '2px' }}>Extract Variables</Heading>
+            <Heading size="small" css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '2px' }}>Extract Variables</Heading>
             <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.sm }}>
               {!(pat && owner && repo) && 'Configure GitHub (PAT, owner, repo) in Settings to compare with remote'}
               {pat && owner && repo && hasDrift === true && '⚠ Local drift detected'}
@@ -852,7 +862,7 @@ export default function ExtractTab() {
             </Button>
           </Stack>
         </Stack>
-      </Section>
+      </Box>
 
       {/* ── Settings Panel (collapsible) ── */}
       {showSettings && (
@@ -888,7 +898,7 @@ export default function ExtractTab() {
         </Section>
       )}
 
-      {/* ── JSON Preview Toggle ── */}
+      {/* ── JSON Comparison Toggle ── */}
       {(jsonResult || oldJsonPreview) && (
         <Section css={{ flexGrow: 1 }}>
           <Stack direction="row" align="center" justify="between" css={{ marginBottom: showJsonPreviews ? '$3' : '0' }}>
@@ -905,17 +915,95 @@ export default function ExtractTab() {
               {showJsonPreviews ? 'Hide' : 'Show'}
             </Button>
           </Stack>
+          
           {showJsonPreviews && (
-            <Stack direction="row" gap={3}>
-              <Box css={{ flex: 1 }}>
-                <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.06em', marginBottom: '$1', display: 'block' }}>OLD (GITHUB)</Text>
-                <StyledTextarea readOnly value={oldJsonPreview} />
+            <Box css={{ 
+              backgroundColor: '$bgSubtle', 
+              borderRadius: '$medium', 
+              border: '1px solid $borderSubtle',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              {/* Summary Header */}
+              <Box css={{ 
+                padding: '$2 $3', 
+                borderBottom: '1px solid $borderSubtle',
+                backgroundColor: '$bgCanvas',
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '$3',
+                alignItems: 'center',
+                fontSize: FONT_SIZE.xs,
+                color: '$fgSubtle',
+                fontFamily: '$mono'
+              }}>
+                <Text css={{ fontFamily: 'inherit' }}>
+                  GitHub API returned string length: {oldJsonPreview.length}
+                </Text>
+                <Text css={{ color: '$borderSubtle' }}>|</Text>
+                <Text css={{ fontFamily: 'inherit' }}>
+                  Old Variables Count: {oldVariablesCount}
+                </Text>
+                <Text css={{ color: '$borderSubtle' }}>|</Text>
+                <Text css={{ fontFamily: 'inherit' }}>
+                  New Variables Count: {newVariablesCount}
+                </Text>
+                {diff && (
+                  <>
+                    <Text css={{ color: '$borderSubtle' }}>|</Text>
+                    <Text css={{ fontFamily: 'inherit' }}>
+                      Diff {`=>`} Added: <span style={{ color: '#81C784' }}>{diff.added.length}</span>, Removed: <span style={{ color: '#EF9A9A' }}>{diff.removed.length}</span>, Modified: <span style={{ color: '#90CAF9' }}>{diff.changed.length}</span>
+                    </Text>
+                  </>
+                )}
               </Box>
-              <Box css={{ flex: 1 }}>
-                <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.06em', marginBottom: '$1', display: 'block' }}>NEW (CANVAS)</Text>
-                <StyledTextarea readOnly value={jsonResult} />
-              </Box>
-            </Stack>
+
+              <Stack direction="row" gap={0} css={{ height: '400px' }}>
+                <Box css={{ flex: 1, borderRight: '1px solid $borderSubtle', display: 'flex', flexDirection: 'column' }}>
+                  <Text css={{ padding: '$2 $3', color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.06em', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', display: 'block' }}>OLD (GITHUB)</Text>
+                  <Box as="textarea" readOnly value={oldJsonPreview} css={{ 
+                    flex: 1, 
+                    width: '100%', 
+                    padding: '$3', 
+                    fontFamily: '$mono', 
+                    fontSize: FONT_SIZE.xs, 
+                    lineHeight: 1.5,
+                    color: '$fgMuted',
+                    backgroundColor: '$bgDefault', 
+                    border: 'none', 
+                    resize: 'none',
+                    outline: 'none',
+                    whiteSpace: 'pre',
+                    overflow: 'auto',
+                    '&::-webkit-scrollbar': { width: '8px', height: '8px' },
+                    '&::-webkit-scrollbar-track': { background: 'transparent' },
+                    '&::-webkit-scrollbar-thumb': { background: '$borderMuted', borderRadius: '4px' },
+                  }} />
+                </Box>
+                <Box css={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <Text css={{ padding: '$2 $3', color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.06em', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', display: 'block' }}>NEW (CANVAS)</Text>
+                  <Box as="textarea" readOnly value={jsonResult} css={{ 
+                    flex: 1, 
+                    width: '100%', 
+                    padding: '$3', 
+                    fontFamily: '$mono', 
+                    fontSize: FONT_SIZE.xs, 
+                    lineHeight: 1.5,
+                    color: '$fgDefault',
+                    backgroundColor: '$bgDefault', 
+                    border: 'none', 
+                    resize: 'none',
+                    outline: 'none',
+                    whiteSpace: 'pre',
+                    overflow: 'auto',
+                    '&::-webkit-scrollbar': { width: '8px', height: '8px' },
+                    '&::-webkit-scrollbar-track': { background: 'transparent' },
+                    '&::-webkit-scrollbar-thumb': { background: '$borderMuted', borderRadius: '4px' },
+                  }} />
+                </Box>
+              </Stack>
+            </Box>
           )}
         </Section>
       )}

@@ -73,8 +73,9 @@ export default function Footer() {
         alignItems: 'center',
         justifyContent: 'space-between',
         flexShrink: 0,
-        padding: '$3',
-        borderTop: '1px solid $borderMuted',
+        padding: '$3 $4',
+        borderTop: '1px solid $borderSubtle',
+        backgroundColor: '$bgDefault',
         overflow: 'hidden',
         gap: '$2',
       }}

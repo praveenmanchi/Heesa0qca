@@ -43,15 +43,16 @@ function App() {
               overflow: 'hidden',
             }}
           >
-            <Box
-              css={{
-                display: 'flex',
-                flexDirection: 'column',
-                flexGrow: 1,
-                height: '100%',
-                overflow: 'hidden',
-              }}
-            >
+          <Box
+            css={{
+              display: 'flex',
+              flexDirection: 'column',
+              flexGrow: 1,
+              height: '100%',
+              overflow: 'hidden',
+              backgroundColor: '$bgDefault',
+            }}
+          >
               {activeTab === 'loading' && <FigmaLoading />}
               {activeTab !== 'start' && activeTab !== 'loading' && <Navbar />}
               {activeTab === 'start' && <StartScreen />}

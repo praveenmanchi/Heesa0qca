@@ -291,7 +291,7 @@ function VariableUsageSearch() {
         <Box css={{ gap: '$2', flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
             {/* ── Search Header ─────────────────────────────── */}
-            <Box css={{ padding: '$3', borderBottom: '1px solid $borderMuted', display: 'flex', flexDirection: 'column', gap: '$2' }}>
+            <Box css={{ padding: '$3 $4', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', display: 'flex', flexDirection: 'column', gap: '$3' }}>
 
                 {/* Search row */}
                 <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
@@ -419,20 +419,40 @@ function VariableUsageSearch() {
             }}>
                 {/* Loading */}
                 {isLoading && (
-                    <Box css={{ padding: '$4', textAlign: 'center', color: '$fgSubtle', fontSize: '$bodySm' }}>
-                        {allPages ? 'Scanning all pages…' : 'Scanning page…'}
+                    <Box css={{
+                        padding: '$8',
+                        textAlign: 'center',
+                        color: '$fgSubtle',
+                        fontSize: '$bodySm',
+                        backgroundColor: '$bgSubtle',
+                        borderRadius: '$medium',
+                        margin: '$4',
+                        border: '1px solid $borderSubtle'
+                    }}>
+                        <Box css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '$2' }}>Scanning Document</Box>
+                        {allPages ? 'Scanning all pages…' : 'Scanning current page…'}
                     </Box>
                 )}
 
                 {/* Empty states */}
                 {!isLoading && hasSearched && filteredResults.length === 0 && (
-                    <Box css={{ padding: '$4', textAlign: 'center', color: '$fgSubtle', fontSize: '$bodySm' }}>
-                        No variables found.
+                    <Box css={{
+                        padding: '$8',
+                        textAlign: 'center',
+                        color: '$fgSubtle',
+                        fontSize: '$bodySm',
+                        backgroundColor: '$bgSubtle',
+                        borderRadius: '$medium',
+                        margin: '$4',
+                        border: '1px solid $borderSubtle'
+                    }}>
+                        <Box css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '$2' }}>No variables found</Box>
+                        Try searching for a different term or adjust your filters.
                         {filter !== 'all' && (
                             <Box
                                 as="button"
                                 onClick={() => setFilter('all')}
-                                css={{ display: 'block', margin: '$2 auto 0', color: '$accentDefault', fontSize: '$bodySm', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                                css={{ display: 'block', margin: '$3 auto 0', color: '$accentDefault', fontSize: '$bodySm', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                             >
                                 Clear filter
                             </Box>
@@ -441,10 +461,20 @@ function VariableUsageSearch() {
                 )}
 
                 {!isLoading && !hasSearched && (
-                    <Box css={{ padding: '$4', textAlign: 'center', color: '$fgSubtle', fontSize: '$bodySm' }}>
+                    <Box css={{
+                        padding: '$8',
+                        textAlign: 'center',
+                        color: '$fgSubtle',
+                        fontSize: '$bodySm',
+                        backgroundColor: '$bgSubtle',
+                        borderRadius: '$medium',
+                        margin: '$4',
+                        border: '1px solid $borderSubtle'
+                    }}>
+                        <Box css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '$2' }}>Search Variables</Box>
                         Type a variable name to search.
                         {allPages && (
-                            <Box css={{ marginTop: '$1', color: '$fgSubtle', fontSize: '$bodyXs' }}>
+                            <Box css={{ marginTop: '$2', color: '$fgSubtle', fontSize: '$bodyXs' }}>
                                 All-pages mode: scanning every page in the document.
                             </Box>
                         )}
@@ -453,9 +483,9 @@ function VariableUsageSearch() {
 
                 {/* Expand / Collapse controls */}
                 {!isLoading && visibleResults.length > 1 && (
-                    <Box css={{ display: 'flex', justifyContent: 'flex-end', gap: '$2', marginBottom: '$2' }}>
-                        <Box as="button" onClick={handleExpandAll} css={{ fontSize: '$bodyXs', color: '$accentDefault', background: 'none', border: 'none', cursor: 'pointer' }}>Expand all</Box>
-                        <Box as="button" onClick={handleCollapseAll} css={{ fontSize: '$bodyXs', color: '$fgMuted', background: 'none', border: 'none', cursor: 'pointer' }}>Collapse all</Box>
+                    <Box css={{ display: 'flex', justifyContent: 'flex-end', gap: '$3', marginBottom: '$3', padding: '0 $1' }}>
+                        <Box as="button" onClick={handleExpandAll} css={{ fontSize: '$bodyXs', fontWeight: 500, color: '$accentDefault', background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '$fgDefault' } }}>Expand all</Box>
+                        <Box as="button" onClick={handleCollapseAll} css={{ fontSize: '$bodyXs', fontWeight: 500, color: '$fgMuted', background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '$fgDefault' } }}>Collapse all</Box>
                     </Box>
                 )}
 
@@ -625,7 +655,7 @@ function VariableUsageSearch() {
 
             {/* ── Footer Summary ────────────────────────────── */}
             {!isLoading && hasSearched && results.length > 0 && (
-                <Box css={{ padding: '$2 $3', borderTop: '1px solid $borderMuted', fontSize: '$bodySm', color: '$fgSubtle', display: 'flex', justifyContent: 'space-between', flexShrink: 0 }}>
+                <Box css={{ padding: '$2 $4', borderTop: '1px solid $borderSubtle', fontSize: '$bodySm', color: '$fgSubtle', display: 'flex', justifyContent: 'space-between', flexShrink: 0 }}>
                     <span>
                         {filteredResults.length}
                         {filter !== 'all' ? ` ${filter}` : ''}
