@@ -147,14 +147,6 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
     dispatch.inspectState.setSelectedTokens(matches.map((v) => `${v.category}-${v.value}`));
   }, [selectPattern, filteredSelectionValues, dispatch.inspectState]);
 
-  const handleShowBulkRemap = React.useCallback(() => {
-    setShowBulkRemapModalVisible(true);
-  }, []);
-
-  const handleHideBulkRemap = React.useCallback(() => {
-    setShowBulkRemapModalVisible(false);
-  }, []);
-
   const handleAnnotate = React.useCallback((direction: Direction = Direction.LEFT) => {
     createAnnotation(uiState.mainNodeSelectionValues, direction);
   }, [uiState.mainNodeSelectionValues]);
@@ -188,10 +180,6 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }, [filteredSelectionValues, groupedSelectionValues, uiState.selectedLayers]);
-
-  const handleToggleDeepInspect = React.useCallback(() => {
-    dispatch.settings.setInspectDeep(!settings.inspectDeep);
-  }, [dispatch.settings, settings.inspectDeep]);
 
   // Keyboard: Escape clears search (handled by parent), Cmd/Ctrl+E exports
   React.useEffect(() => {
