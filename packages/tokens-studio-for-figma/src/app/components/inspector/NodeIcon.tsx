@@ -17,7 +17,7 @@ interface NodeIconProps {
   height?: number;
 }
 
-export default function NodeIcon({ type, width = 12, height = 12 }: NodeIconProps): JSX.Element | null {
+export default function NodeIcon({ type, width = 12, height = 12 }: NodeIconProps): JSX.Element {
   let icon;
   switch (type) {
     case 'TEXT':
@@ -27,9 +27,14 @@ export default function NodeIcon({ type, width = 12, height = 12 }: NodeIconProp
       icon = <FrameIcon width={width} height={height} />;
       break;
     case 'INSTANCE':
+    case 'COMPONENT':
+    case 'COMPONENT_SET':
       icon = <ComponentInstanceIcon width={width} height={height} />;
       break;
     case 'VECTOR':
+    case 'BOOLEAN_OPERATION':
+    case 'POLYGON':
+    case 'STAR':
       icon = <MixIcon width={width} height={height} />;
       break;
     case 'GROUP':
@@ -45,9 +50,9 @@ export default function NodeIcon({ type, width = 12, height = 12 }: NodeIconProp
       icon = <ValueIcon width={width} height={height} />;
       break;
     default:
+      icon = <BoxIcon width={width} height={height} />;
       break;
   }
-  if (!icon) return null;
   return (
     <Box
       css={{

@@ -4,8 +4,9 @@ import '@/app/assets/fonts/fonts.css';
 export const globalStyles = globalCss({
   body: {
     fontFamily: '$sans',
-    fontSize: '$xsmall',
-    letterSpacing: '0',
+    fontSize: '$bodySm',
+    lineHeight: 1.4,
+    letterSpacing: 0,
     color: '$fgDefault',
   },
   form: {

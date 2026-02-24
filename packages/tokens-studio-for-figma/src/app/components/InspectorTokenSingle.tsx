@@ -209,7 +209,7 @@ export default function InspectorTokenSingle({
         </Box>
         {/* Inline impact preview */}
         {(componentCount > 0 || modeCount > 1) && (
-          <Box css={{ fontSize: '$xxsmall', color: '$fgSubtle', paddingLeft: '24px', lineHeight: 1.3 }}>
+          <Box css={{ fontSize: '$label', color: '$fgSubtle', paddingLeft: '24px', lineHeight: 1.3 }}>
             Affects
             {' '}
             {componentCount > 0 && (

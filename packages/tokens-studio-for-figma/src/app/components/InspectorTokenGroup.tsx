@@ -43,7 +43,7 @@ export default function InspectorTokenGroup({ group, resolvedTokens, selectedMod
       >
         {isCollapsed ? <ChevronRightIcon width={14} height={14} /> : <ChevronDownIcon width={14} height={14} />}
         <Heading size="small" css={{ flex: 1, margin: 0 }}>{groupKey}</Heading>
-        <Box css={{ fontSize: '$xxsmall', color: '$fgSubtle' }}>
+        <Box css={{ fontSize: '$label', color: '$fgSubtle' }}>
           {groupValue.length}
           {' '}
           {groupValue.length === 1 ? 'variable' : 'variables'}

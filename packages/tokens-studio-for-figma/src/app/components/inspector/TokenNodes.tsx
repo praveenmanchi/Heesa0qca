@@ -48,18 +48,20 @@ export default function TokenNodes({ nodes }: { nodes: NodeInfo[] }) {
     : `${nodes.length} ${nodes.length === 1 ? 'node' : 'nodes'} using this variable`;
 
   const dropdownContent = (
-    <DropdownMenu.Content
-      css={{
-        width: `${DROPDOWN_WIDTH.md}px`,
-        background: '$contextMenuBg',
-        borderRadius: '$medium',
-        padding: '$2 0',
-        fontSize: '$small',
-        maxHeight: `${VISIBLE_VIEWPORT_NODES * NODE_HEIGHT + CONTAINER_PADDING}px`,
-      }}
-      sideOffset={4}
-      className={`content content-dark ${nodes.length > VISIBLE_VIEWPORT_NODES ? 'scroll-container' : null}`}
-    >
+    <DropdownMenu.Portal>
+      <DropdownMenu.Content
+        css={{
+          width: `${DROPDOWN_WIDTH.md}px`,
+          background: '$contextMenuBg',
+          borderRadius: '$medium',
+          padding: '$2 0',
+          fontSize: '$small',
+          maxHeight: `${VISIBLE_VIEWPORT_NODES * NODE_HEIGHT + CONTAINER_PADDING}px`,
+          zIndex: 100,
+        }}
+        sideOffset={4}
+        className={`content content-dark ${nodes.length > VISIBLE_VIEWPORT_NODES ? 'scroll-container' : null}`}
+      >
       {hasComponentInfo && componentCount > 0 && (
         <>
           {Array.from(componentGroups.entries()).map(([componentName, componentNodes]) => (
@@ -73,6 +75,7 @@ export default function TokenNodes({ nodes }: { nodes: NodeInfo[] }) {
                 color: '$contextMenuFg',
                 padding: '$1 $4',
                 gap: '$2',
+                minHeight: NODE_HEIGHT,
               }}
             >
               <Box
@@ -101,7 +104,8 @@ export default function TokenNodes({ nodes }: { nodes: NodeInfo[] }) {
       {nodes.map((node) => (
         <TokenNode key={node.id} {...node} />
       ))}
-    </DropdownMenu.Content>
+      </DropdownMenu.Content>
+    </DropdownMenu.Portal>
   );
 
   return (

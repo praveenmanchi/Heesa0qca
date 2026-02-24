@@ -22,7 +22,6 @@ import { StyleIdBackupKeys } from '@/constants/StyleIdBackupKeys';
 import BulkRemapModal from './modals/BulkRemapModal';
 import createAnnotation from './createAnnotation';
 import { Direction } from '@/constants/Direction';
-import { FONT_SIZE } from '@/constants/UIConstants';
 
 /** Map property to filter category */
 function getPropertyCategory(cat: string): 'color' | 'typography' | 'spacing' | 'other' {
@@ -234,7 +233,7 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
         >
           {/* Selection summary */}
           <Box css={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '$2' }}>
-            <Box css={{ fontSize: FONT_SIZE.sm, color: '$fgMuted' }}>
+            <Box css={{ fontSize: '$bodyXs', color: '$fgMuted' }}>
               <strong>{uniqueVarCount}</strong>
               {' '}
               variable
@@ -259,7 +258,7 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
               )}
             </Box>
             <Box css={{ display: 'flex', alignItems: 'center', gap: '$2', flexWrap: 'wrap' }}>
-              <Button size="small" variant="secondary" onClick={handleToggleDeepInspect} css={{ fontSize: FONT_SIZE.xs }}>
+              <Button size="small" variant="secondary" onClick={handleToggleDeepInspect} css={{ fontSize: '$label' }}>
                 {settings.inspectDeep ? '✓ Deep Inspect' : 'Deep Inspect'}
               </Button>
               <IconButton icon={<Download width={14} height={14} />} size="small" variant="invisible" onClick={handleExportSelection} title="Export (⌘E)" />
@@ -276,7 +275,7 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
                   onClick={() => setTypeFilter(f)}
                   css={{
                     padding: '$1 $2',
-                    fontSize: FONT_SIZE.xs,
+                    fontSize: '$label',
                     border: '1px solid',
                     borderRadius: '$small',
                     cursor: 'pointer',
@@ -296,7 +295,7 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
               onClick={() => setModeFilter((m) => (m === 'all' ? 'modeDependent' : 'all'))}
               css={{
                 padding: '$1 $2',
-                fontSize: FONT_SIZE.xs,
+                fontSize: '$label',
                 border: '1px solid',
                 borderRadius: '$small',
                 cursor: 'pointer',
@@ -326,7 +325,7 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
                   value={selectPattern}
                   onChange={(e) => setSelectPattern(e.target.value)}
                   placeholder="Select by pattern (e.g. *button*)"
-                  css={{ width: '180px', fontSize: FONT_SIZE.xs, height: '24px' }}
+                  css={{ width: '180px', fontSize: '$label', height: '24px' }}
                 />
                 <Button size="small" variant="secondary" onClick={handleSelectByPattern} disabled={!selectPattern.trim()}>
                   Select

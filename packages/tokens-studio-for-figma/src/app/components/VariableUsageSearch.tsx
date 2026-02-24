@@ -6,7 +6,6 @@ import { Search, Xmark, MultiWindow } from 'iconoir-react';
 import Box from './Box';
 import Stack from './Stack';
 import { AsyncMessageChannel } from '@/AsyncMessageChannel';
-import { FONT_SIZE } from '@/constants/UIConstants';
 import { AsyncMessageTypes, VariableUsageResult, TextStyleUsageResult } from '@/types/AsyncMessages';
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -42,7 +41,7 @@ const ComponentUsageItem = React.memo(({
                 gap: '$2',
             }}
         >
-            <Box css={{ fontSize: '$xsmall', color: '$fgDefault', flexGrow: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <Box css={{ fontSize: '$bodySm', color: '$fgDefault', flexGrow: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {componentName}
             </Box>
             <Badge>
@@ -93,7 +92,7 @@ const SuggestionDropdown = React.memo(({
                         width: '100%',
                         textAlign: 'left',
                         padding: '$2 $3',
-                        fontSize: '$xsmall',
+                        fontSize: '$bodySm',
                         color: '$fgDefault',
                         background: 'transparent',
                         border: 'none',
@@ -340,7 +339,7 @@ function VariableUsageSearch() {
                             border: 'none',
                             borderRadius: '$small',
                             cursor: 'pointer',
-                            fontSize: '$xsmall',
+                            fontSize: '$bodySm',
                             fontWeight: '$sansBold',
                             flexShrink: 0,
                             '&:hover': { opacity: 0.9 },
@@ -367,7 +366,7 @@ function VariableUsageSearch() {
                             borderColor: allPages ? '$accentDefault' : '$borderMuted',
                             background: allPages ? '$accentMuted' : 'transparent',
                             color: allPages ? '$accentDefault' : '$fgMuted',
-                            fontSize: FONT_SIZE.sm,
+                            fontSize: '$bodyXs',
                             cursor: 'pointer',
                             fontWeight: allPages ? '$sansBold' : '$sans',
                             transition: 'all 0.15s',
@@ -388,7 +387,7 @@ function VariableUsageSearch() {
                                     onClick={() => setFilter(f)}
                                     css={{
                                         padding: '$1 $2',
-                                        fontSize: FONT_SIZE.sm,
+                                        fontSize: '$bodyXs',
                                         border: '1px solid',
                                         borderRadius: '$small',
                                         cursor: 'pointer',
@@ -420,20 +419,20 @@ function VariableUsageSearch() {
             }}>
                 {/* Loading */}
                 {isLoading && (
-                    <Box css={{ padding: '$4', textAlign: 'center', color: '$fgSubtle', fontSize: '$xsmall' }}>
+                    <Box css={{ padding: '$4', textAlign: 'center', color: '$fgSubtle', fontSize: '$bodySm' }}>
                         {allPages ? 'Scanning all pages…' : 'Scanning page…'}
                     </Box>
                 )}
 
                 {/* Empty states */}
                 {!isLoading && hasSearched && filteredResults.length === 0 && (
-                    <Box css={{ padding: '$4', textAlign: 'center', color: '$fgSubtle', fontSize: '$xsmall' }}>
+                    <Box css={{ padding: '$4', textAlign: 'center', color: '$fgSubtle', fontSize: '$bodySm' }}>
                         No variables found.
                         {filter !== 'all' && (
                             <Box
                                 as="button"
                                 onClick={() => setFilter('all')}
-                                css={{ display: 'block', margin: '$2 auto 0', color: '$accentDefault', fontSize: '$xsmall', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                                css={{ display: 'block', margin: '$2 auto 0', color: '$accentDefault', fontSize: '$bodySm', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                             >
                                 Clear filter
                             </Box>
@@ -442,10 +441,10 @@ function VariableUsageSearch() {
                 )}
 
                 {!isLoading && !hasSearched && (
-                    <Box css={{ padding: '$4', textAlign: 'center', color: '$fgSubtle', fontSize: '$xsmall' }}>
+                    <Box css={{ padding: '$4', textAlign: 'center', color: '$fgSubtle', fontSize: '$bodySm' }}>
                         Type a variable name to search.
                         {allPages && (
-                            <Box css={{ marginTop: '$1', color: '$fgSubtle', fontSize: FONT_SIZE.sm }}>
+                            <Box css={{ marginTop: '$1', color: '$fgSubtle', fontSize: '$bodyXs' }}>
                                 All-pages mode: scanning every page in the document.
                             </Box>
                         )}
@@ -455,8 +454,8 @@ function VariableUsageSearch() {
                 {/* Expand / Collapse controls */}
                 {!isLoading && visibleResults.length > 1 && (
                     <Box css={{ display: 'flex', justifyContent: 'flex-end', gap: '$2', marginBottom: '$2' }}>
-                        <Box as="button" onClick={handleExpandAll} css={{ fontSize: FONT_SIZE.sm, color: '$accentDefault', background: 'none', border: 'none', cursor: 'pointer' }}>Expand all</Box>
-                        <Box as="button" onClick={handleCollapseAll} css={{ fontSize: FONT_SIZE.sm, color: '$fgMuted', background: 'none', border: 'none', cursor: 'pointer' }}>Collapse all</Box>
+                        <Box as="button" onClick={handleExpandAll} css={{ fontSize: '$bodyXs', color: '$accentDefault', background: 'none', border: 'none', cursor: 'pointer' }}>Expand all</Box>
+                        <Box as="button" onClick={handleCollapseAll} css={{ fontSize: '$bodyXs', color: '$fgMuted', background: 'none', border: 'none', cursor: 'pointer' }}>Collapse all</Box>
                     </Box>
                 )}
 
@@ -496,8 +495,8 @@ function VariableUsageSearch() {
                                     <Box css={{ fontSize: '$small', fontWeight: '$sansBold', color: '$fgDefault', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         {itemName}
                                     </Box>
-                                    <Box css={{ fontSize: '$xxsmall', color: '$fgSubtle', display: 'flex', gap: '$2', alignItems: 'center', flexWrap: 'wrap' }}>
-                                        <Badge variant={item.itemType === 'textStyle' ? 'accent' : undefined} css={{ fontSize: FONT_SIZE.xs }}>
+                                    <Box css={{ fontSize: '$label', color: '$fgSubtle', display: 'flex', gap: '$2', alignItems: 'center', flexWrap: 'wrap' }}>
+                                        <Badge variant={item.itemType === 'textStyle' ? 'accent' : undefined} css={{ fontSize: '$label' }}>
                                             {item.itemType === 'variable' ? 'Variable' : 'Text Style'}
                                         </Badge>
                                         <span>{collectionLabel}</span>
@@ -518,7 +517,7 @@ function VariableUsageSearch() {
                                             </span>
                                         )}
                                         {item.pageName && allPages && (
-                                            <Badge variant="accent" css={{ fontSize: FONT_SIZE.xs }}>
+                                            <Badge variant="accent" css={{ fontSize: '$label' }}>
                                                 {item.pageName}
                                             </Badge>
                                         )}
@@ -537,7 +536,7 @@ function VariableUsageSearch() {
                                             {(item as VariableUsageResult).modeCount === 1 ? 'mode' : 'modes'}
                                         </Badge>
                                     )}
-                                    <Box css={{ fontSize: '$xsmall', color: '$fgSubtle', transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                                    <Box css={{ fontSize: '$bodySm', color: '$fgSubtle', transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
                                         ▼
                                     </Box>
                                 </Stack>
@@ -548,7 +547,7 @@ function VariableUsageSearch() {
                                 <Box css={{ borderTop: '1px solid $borderMuted' }}>
                                     {componentsToShow.length > 0 && (
                                         <Box>
-                                            <Box css={{ padding: '$1 $3', fontSize: FONT_SIZE.sm, color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas' }}>
+                                            <Box css={{ padding: '$1 $3', fontSize: '$bodyXs', color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas' }}>
                                                 Components ({componentsToShow.length})
                                             </Box>
                                             {componentsToShow.map((comp) => (
@@ -564,16 +563,16 @@ function VariableUsageSearch() {
 
                                     {framesOnly.length > 0 && (
                                         <Box>
-                                            <Box css={{ padding: '$1 $3', fontSize: FONT_SIZE.sm, color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas', borderTop: componentsToShow.length > 0 ? '1px solid $borderMuted' : 'none' }}>
+                                            <Box css={{ padding: '$1 $3', fontSize: '$bodyXs', color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas', borderTop: componentsToShow.length > 0 ? '1px solid $borderMuted' : 'none' }}>
                                                 Frames / Groups ({framesOnly[0].nodeIds.length} nodes)
                                             </Box>
-                                            <Box css={{ padding: '$2 $3', fontSize: '$xsmall', color: '$fgMuted' }}>
+                                            <Box css={{ padding: '$2 $3', fontSize: '$bodySm', color: '$fgMuted' }}>
                                                 Used in unstyled frames or groups.
                                                 {' '}
                                                 <Box
                                                     as="button"
                                                     onClick={() => handleSelectNodes(framesOnly[0].nodeIds)}
-                                                    css={{ background: 'none', border: 'none', color: '$accentDefault', cursor: 'pointer', fontSize: '$xsmall', textDecoration: 'underline' }}
+                                                    css={{ background: 'none', border: 'none', color: '$accentDefault', cursor: 'pointer', fontSize: '$bodySm', textDecoration: 'underline' }}
                                                 >
                                                     Select all
                                                 </Box>
@@ -582,7 +581,7 @@ function VariableUsageSearch() {
                                     )}
 
                                     {componentsToShow.length === 0 && framesOnly.length === 0 && (
-                                        <Box css={{ padding: '$2 $3', fontSize: '$xsmall', color: '$fgSubtle' }}>
+                                        <Box css={{ padding: '$2 $3', fontSize: '$bodySm', color: '$fgSubtle' }}>
                                             No usage found on this page.
                                         </Box>
                                     )}
@@ -602,7 +601,7 @@ function VariableUsageSearch() {
                             width: '100%',
                             padding: '$2',
                             textAlign: 'center',
-                            fontSize: '$xsmall',
+                            fontSize: '$bodySm',
                             color: '$accentDefault',
                             background: 'transparent',
                             border: '1px solid $borderMuted',
@@ -626,7 +625,7 @@ function VariableUsageSearch() {
 
             {/* ── Footer Summary ────────────────────────────── */}
             {!isLoading && hasSearched && results.length > 0 && (
-                <Box css={{ padding: '$2 $3', borderTop: '1px solid $borderMuted', fontSize: '$xsmall', color: '$fgSubtle', display: 'flex', justifyContent: 'space-between', flexShrink: 0 }}>
+                <Box css={{ padding: '$2 $3', borderTop: '1px solid $borderMuted', fontSize: '$bodySm', color: '$fgSubtle', display: 'flex', justifyContent: 'space-between', flexShrink: 0 }}>
                     <span>
                         {filteredResults.length}
                         {filter !== 'all' ? ` ${filter}` : ''}

@@ -45,17 +45,9 @@ import type { Dispatch } from '@/app/store';
 import { FONT_SIZE, CONTROL_HEIGHT, ICON_SIZE, DROPDOWN_WIDTH } from '@/constants/UIConstants';
 import { triggerTeamsWebhook } from '@/utils/teamsWebhookHandler';
 import { styled } from '@/stitches.config';
+import { TabRoot } from '@/app/components/ui';
 
 // ─── Styled components ───────────────────────────────────────────────────────
-
-const TabRoot = styled(Box, {
-  display: 'flex',
-  flexDirection: 'column',
-  height: '100%',
-  overflowY: 'auto',
-  backgroundColor: '$bgDefault',
-  color: '$fgDefault',
-});
 
 const Section = styled(Box, {
   padding: '$4',
@@ -70,12 +62,12 @@ const SectionHeader = styled(Stack, {
 const StatChip = styled(Box, {
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '4px',
-  padding: '2px 8px',
-  borderRadius: '20px',
-  fontSize: FONT_SIZE.sm,
-  fontWeight: '$bold',
-  letterSpacing: '0.05em',
+  gap: '$1',
+  padding: '$1 $2',
+  borderRadius: '$full',
+  fontSize: '$bodyXs',
+  fontWeight: '$sansBold',
+  letterSpacing: '$wider',
   variants: {
     type: {
       added: { backgroundColor: 'rgba(46,125,50,0.25)', color: '#81C784', border: '1px solid #2E7D32' },
@@ -97,11 +89,11 @@ const VarRow = styled(Box, {
 });
 
 const Badge = styled(Box, {
-  padding: '1px 6px',
-  borderRadius: '3px',
-  fontSize: FONT_SIZE.xs,
-  fontWeight: '$bold',
-  letterSpacing: '0.08em',
+  padding: '$1 $2',
+  borderRadius: '$small',
+  fontSize: '$label',
+  fontWeight: '$sansBold',
+  letterSpacing: '$widest',
   variants: {
     type: {
       added: { backgroundColor: '#1B5E20', color: '#A5D6A7' },
@@ -116,7 +108,7 @@ const StyledTextarea = styled('textarea', {
   border: '1px solid $borderMuted',
   color: '$fgMuted',
   fontFamily: '$mono',
-  fontSize: FONT_SIZE.xs,
+  fontSize: '$label',
   height: '120px',
   padding: '$2 $3',
   width: '100%',

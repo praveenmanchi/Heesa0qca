@@ -1,6 +1,7 @@
 /**
  * UI consistency constants for the Figma plugin.
  * Use these across all tabs for consistent buttons, icons, fonts, and controls.
+ * Aligns with stitches theme type scale: caption(8), label(9), bodyXs(10), bodySm(11), body(12), bodyLg(13), subtitle(14), title(16).
  */
 
 /** Icon sizes - use for all iconoir-react and SVG icons */
@@ -11,8 +12,17 @@ export const ICON_SIZE = {
   lg: 16,
 } as const;
 
-/** Font sizes - align with design tokens ($xsmall=11px, $small=12px) */
+/** Font sizes - maps to stitches type scale ($caption, $label, $bodySm, $body, etc.) */
 export const FONT_SIZE = {
+  caption: '8px',
+  label: '9px',
+  bodyXs: '10px',
+  bodySm: '11px',
+  body: '12px',
+  bodyLg: '13px',
+  subtitle: '14px',
+  title: '16px',
+  /** Legacy aliases */
   xxs: '8px',
   xs: '9px',
   sm: '10px',
@@ -36,7 +46,16 @@ export const DROPDOWN_WIDTH = {
   lg: 240,
 } as const;
 
-/** Monaco editor font size (matches $xsmall / 11px) */
+/** Spacing scale - use $1-$9 from stitches, this is for inline styles */
+export const SPACING = {
+  xs: 2,
+  sm: 4,
+  md: 8,
+  lg: 12,
+  xl: 16,
+} as const;
+
+/** Monaco editor font size (matches $bodySm / 11px) */
 export const MONACO_FONT_SIZE = 11;
 
 /** JSON/code block font size */
