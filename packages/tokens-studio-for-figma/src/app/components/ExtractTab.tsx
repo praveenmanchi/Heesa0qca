@@ -32,7 +32,7 @@ import {
 import Text from './Text';
 import Stack from './Stack';
 import { AsyncMessageChannel } from '@/AsyncMessageChannel';
-import { AsyncMessageTypes, type VariableUsageResult } from '@/types/AsyncMessages';
+import { AsyncMessageTypes, type VariableUsageResult, type CollectionInfo } from '@/types/AsyncMessages';
 import { track } from '@/utils/analytics';
 import { compareVariables, type VariableDiff, type VariableExport } from '@/utils/compareVariables';
 import {
@@ -42,6 +42,7 @@ import {
 } from '@/app/store/providers/github/githubPrHandler';
 import { settingsStateSelector } from '@/selectors';
 import type { Dispatch } from '@/app/store';
+import { FONT_SIZE, CONTROL_HEIGHT, ICON_SIZE, DROPDOWN_WIDTH } from '@/constants/UIConstants';
 import { triggerTeamsWebhook } from '@/utils/teamsWebhookHandler';
 import { styled } from '@/stitches.config';
 
@@ -72,7 +73,7 @@ const StatChip = styled(Box, {
   gap: '4px',
   padding: '2px 8px',
   borderRadius: '20px',
-  fontSize: '10px',
+  fontSize: FONT_SIZE.sm,
   fontWeight: '$bold',
   letterSpacing: '0.05em',
   variants: {
@@ -98,7 +99,7 @@ const VarRow = styled(Box, {
 const Badge = styled(Box, {
   padding: '1px 6px',
   borderRadius: '3px',
-  fontSize: '9px',
+  fontSize: FONT_SIZE.xs,
   fontWeight: '$bold',
   letterSpacing: '0.08em',
   variants: {
@@ -115,7 +116,7 @@ const StyledTextarea = styled('textarea', {
   border: '1px solid $borderMuted',
   color: '$fgMuted',
   fontFamily: '$mono',
-  fontSize: '9px',
+  fontSize: FONT_SIZE.xs,
   height: '120px',
   padding: '$2 $3',
   width: '100%',
@@ -140,7 +141,7 @@ const ToggleRow = styled(Box, {
 });
 
 const Toggle = styled(Box, {
-  width: '32px',
+  width: `${CONTROL_HEIGHT.lg}px`,
   height: '18px',
   borderRadius: '9px',
   cursor: 'pointer',
@@ -151,8 +152,8 @@ const Toggle = styled(Box, {
     content: '""',
     position: 'absolute',
     top: '2px',
-    width: '14px',
-    height: '14px',
+    width: `${ICON_SIZE.md}px`,
+    height: `${ICON_SIZE.md}px`,
     borderRadius: '50%',
     backgroundColor: '$fgOnEmphasis',
     transition: 'left 0.2s',
@@ -294,6 +295,109 @@ function getChangeCategory(varType: string, collectionName: string): ChangeCateg
   return 'other';
 }
 
+/** Build mode -> { added, removed, modified } counts from diff + collectionsInfo */
+function buildChangesByMode(
+  diff: VariableDiff,
+  collectionsInfo: CollectionInfo[],
+): Array<{ modeName: string; added: number; removed: number; modified: number }> {
+  const collectionMap = new Map(collectionsInfo.map((c) => [c.id, c]));
+  const modeIdToName = new Map<string, string>();
+  for (const coll of collectionsInfo) {
+    for (const m of coll.modes) {
+      modeIdToName.set(m.modeId, m.name);
+    }
+  }
+
+  const modeCounts = new Map<string, { added: number; removed: number; modified: number }>();
+
+  function ensureMode(name: string) {
+    if (!modeCounts.has(name)) modeCounts.set(name, { added: 0, removed: 0, modified: 0 });
+    return modeCounts.get(name)!;
+  }
+
+  for (const v of diff.added) {
+    const coll = v.collectionId ? collectionMap.get(v.collectionId) : null;
+    const modeIds = coll ? coll.modes.map((m) => m.modeId) : Object.keys(v.valuesByMode || {});
+    for (const modeId of modeIds) {
+      const name = modeIdToName.get(modeId) || modeId;
+      ensureMode(name).added += 1;
+    }
+  }
+  for (const v of diff.removed) {
+    const coll = v.collectionId ? collectionMap.get(v.collectionId) : null;
+    const modeIds = coll ? coll.modes.map((m) => m.modeId) : Object.keys(v.valuesByMode || {});
+    for (const modeId of modeIds) {
+      const name = modeIdToName.get(modeId) || modeId;
+      ensureMode(name).removed += 1;
+    }
+  }
+  for (const { old: oldVar, new: newVar } of diff.changed) {
+    const coll = (newVar.collectionId && collectionMap.get(newVar.collectionId))
+      || (oldVar.collectionId && collectionMap.get(oldVar.collectionId));
+    const modeIds = coll ? coll.modes.map((m) => m.modeId) : [...new Set([...Object.keys(newVar.valuesByMode || {}), ...Object.keys(oldVar.valuesByMode || {})])];
+    for (const modeId of modeIds) {
+      const name = modeIdToName.get(modeId) || modeId;
+      ensureMode(name).modified += 1;
+    }
+  }
+
+  return Array.from(modeCounts.entries())
+    .map(([modeName, counts]) => ({ modeName, ...counts }))
+    .filter((r) => r.added > 0 || r.removed > 0 || r.modified > 0)
+    .sort((a, b) => a.modeName.localeCompare(b.modeName));
+}
+
+/** Build rich PR body with mode breakdown and component impact */
+function buildPrBody(
+  diff: VariableDiff,
+  changesByMode: Array<{ modeName: string; added: number; removed: number; modified: number }>,
+  componentImpacts: ComponentImpact[],
+): string {
+  const lines: string[] = [
+    '## Design Tokens Update from Figma',
+    '',
+    '### Summary',
+    `- **Added:** ${diff.added.length} variable${diff.added.length !== 1 ? 's' : ''}`,
+    `- **Removed:** ${diff.removed.length} variable${diff.removed.length !== 1 ? 's' : ''}`,
+    `- **Modified:** ${diff.changed.length} variable${diff.changed.length !== 1 ? 's' : ''}`,
+    '',
+  ];
+
+  if (changesByMode.length > 0) {
+    lines.push('### Changes by Mode', '');
+    for (const m of changesByMode) {
+      const parts: string[] = [];
+      if (m.added > 0) parts.push(`+${m.added} added`);
+      if (m.removed > 0) parts.push(`-${m.removed} removed`);
+      if (m.modified > 0) parts.push(`~${m.modified} modified`);
+      if (parts.length > 0) {
+        lines.push(`- **${m.modeName}:** ${parts.join(', ')}`);
+      }
+    }
+    lines.push('');
+  }
+
+  if (componentImpacts.length > 0) {
+    lines.push('### Component Impact', '');
+    lines.push(`${componentImpacts.length} component${componentImpacts.length !== 1 ? 's' : ''} affected by these variable changes.`, '');
+    for (const comp of componentImpacts.slice(0, 15)) {
+      lines.push(`- **${comp.componentName}** (${comp.nodeCount} node${comp.nodeCount !== 1 ? 's' : ''})`);
+      for (const ch of comp.changes.slice(0, 5)) {
+        const changeStr = ch.newValue != null ? `${ch.oldValue} → ${ch.newValue}` : ch.oldValue;
+        lines.push(`  - ${ch.variableName}: ${changeStr}`);
+      }
+      if (comp.changes.length > 5) {
+        lines.push(`  - ... and ${comp.changes.length - 5} more`);
+      }
+    }
+    if (componentImpacts.length > 15) {
+      lines.push(`- ... and ${componentImpacts.length - 15} more components`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
 const CATEGORY_LABELS: Record<ChangeCategory, string> = {
   color: 'Colors',
   typography: 'Typography',
@@ -413,6 +517,7 @@ export default function ExtractTab() {
   const [isLoadingBranches, setIsLoadingBranches] = useState(false);
 
   const [diff, setDiff] = useState<VariableDiff | null>(null);
+  const [collectionsInfo, setCollectionsInfo] = useState<CollectionInfo[]>([]);
   const [impactData, setImpactData] = useState<VariableUsageResult[]>([]);
   const [variableIdToName, setVariableIdToName] = useState<Map<string, string>>(new Map());
   const [hasDrift, setHasDrift] = useState<boolean | null>(null);
@@ -473,6 +578,7 @@ export default function ExtractTab() {
     setIsLoading(true);
     setError(null);
     setDiff(null);
+    setCollectionsInfo([]);
     setJsonResult('');
     setOldJsonPreview('');
     setImpactData([]);
@@ -483,6 +589,7 @@ export default function ExtractTab() {
         type: AsyncMessageTypes.EXTRACT_VARIABLES_TO_CANVAS,
       });
       const freshJson = extractResponse.jsonString || '[]';
+      setCollectionsInfo((extractResponse as { collectionsInfo?: CollectionInfo[] }).collectionsInfo || []);
       const { data: newVars, error: extractErr } = safeParseJson(freshJson, []);
       if (extractErr) {
         setError(`Invalid extract JSON: ${extractErr}`);
@@ -550,6 +657,11 @@ export default function ExtractTab() {
     setWebhookUrlDev(savedWebhookUrlDev);
   }, [savedWebhookUrl, savedWebhookUrlDev]);
 
+  const hasAnalysis = diff !== null;
+  const totalChanges = hasAnalysis ? diff.added.length + diff.removed.length + diff.changed.length : 0;
+  const changesByMode = hasAnalysis && diff && collectionsInfo.length > 0 ? buildChangesByMode(diff, collectionsInfo) : [];
+  const rawComponentImpacts = hasAnalysis && diff && impactData.length > 0 ? buildComponentImpactList(impactData, diff, variableIdToName) : [];
+
   const handleCreatePr = useCallback(async () => {
     if (!jsonResult || !pat || !owner || !repo || !targetBranch) {
       setError('Please fill all required fields and extract JSON first.');
@@ -559,10 +671,13 @@ export default function ExtractTab() {
     setIsCreatingPr(true);
     setPrUrl(null);
     try {
+      const prBody = diff
+        ? buildPrBody(diff, changesByMode, rawComponentImpacts)
+        : 'Automated PR containing updated Figma variables.';
       const url = await createGitHubPullRequest({
         pat, owner, repo, baseBranch, targetBranch,
         title: 'Design Tokens Update from Figma',
-        body: 'Automated PR containing updated Figma variables.',
+        body: prBody,
         files: [{ path: filePath, content: jsonResult }],
         commitMessage: commitMessage || 'chore: update design tokens',
       });
@@ -582,7 +697,7 @@ export default function ExtractTab() {
     } finally {
       setIsCreatingPr(false);
     }
-  }, [jsonResult, pat, owner, repo, baseBranch, targetBranch, filePath, commitMessage, notifyDevTeam, notifyDS, webhookUrlDev, webhookUrlInput, diff]);
+  }, [jsonResult, pat, owner, repo, baseBranch, targetBranch, filePath, commitMessage, notifyDevTeam, notifyDS, webhookUrlDev, webhookUrlInput, diff, changesByMode, rawComponentImpacts]);
 
   const handleDownload = useCallback(() => {
     if (!jsonResult) return;
@@ -613,10 +728,6 @@ export default function ExtractTab() {
     dispatch.settings.setGithubExtractConfig({ webhookUrlDev: val });
   }, [dispatch]);
   const handleCommitChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setCommitMessage(e.target.value), []);
-
-  const hasAnalysis = diff !== null;
-  const totalChanges = hasAnalysis ? diff.added.length + diff.removed.length + diff.changed.length : 0;
-  const rawComponentImpacts = hasAnalysis && diff && impactData.length > 0 ? buildComponentImpactList(impactData, diff, variableIdToName) : [];
 
   const componentImpacts = rawComponentImpacts.filter((comp) => {
     const matchesSearch = !componentSearchFilter || comp.componentName.toLowerCase().includes(componentSearchFilter.toLowerCase());
@@ -700,7 +811,7 @@ export default function ExtractTab() {
         <Stack direction="row" align="center" justify="between">
           <Box>
             <Heading size="small" css={{ color: '$white', fontWeight: '$bold', marginBottom: '2px' }}>Extract Variables</Heading>
-            <Text css={{ color: '$fgMuted', fontSize: '10px' }}>
+            <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.sm }}>
               {!(pat && owner && repo) && 'Configure GitHub (PAT, owner, repo) in Settings to compare with remote'}
               {pat && owner && repo && hasDrift === true && '⚠ Local drift detected'}
               {pat && owner && repo && hasDrift === false && '✓ Synced with GitHub'}
@@ -711,7 +822,7 @@ export default function ExtractTab() {
           <Stack direction="row" gap={1} align="center">
             {/* Download */}
             <IconButton
-              icon={<Download width={14} height={14} />}
+              icon={<Download width={ICON_SIZE.md} height={ICON_SIZE.md} />}
               variant="invisible"
               size="small"
               onClick={handleDownload}
@@ -721,7 +832,7 @@ export default function ExtractTab() {
             />
             {/* Refresh */}
             <IconButton
-              icon={<RefreshDouble width={14} height={14} />}
+              icon={<RefreshDouble width={ICON_SIZE.md} height={ICON_SIZE.md} />}
               variant="invisible"
               size="small"
               onClick={handleExtractAndAnalyze}
@@ -731,7 +842,7 @@ export default function ExtractTab() {
             />
             {/* Settings */}
             <IconButton
-              icon={<Settings width={14} height={14} />}
+              icon={<Settings width={ICON_SIZE.md} height={ICON_SIZE.md} />}
               variant="invisible"
               size="small"
               onClick={() => setShowSettings((s) => !s)}
@@ -743,7 +854,7 @@ export default function ExtractTab() {
               variant="primary"
               onClick={handleExtractAndAnalyze}
               disabled={isLoading}
-              css={{ backgroundColor: '$accentDefault', height: '28px', fontSize: '11px', padding: '0 $3', marginLeft: '$2' }}
+              css={{ backgroundColor: '$accentDefault', height: `${CONTROL_HEIGHT.md}px`, fontSize: FONT_SIZE.md, padding: '0 $3', marginLeft: '$2' }}
             >
               {isLoading ? 'Extracting...' : 'Extract JSON'}
             </Button>
@@ -755,30 +866,30 @@ export default function ExtractTab() {
       {showSettings && (
         <Section css={{ backgroundColor: '$bgSubtle' }}>
           <Stack direction="row" align="center" justify="between" css={{ marginBottom: '$3' }}>
-            <Heading size="small" css={{ color: '$accentDefault', fontSize: '11px', fontWeight: '$bold' }}>⚙ Webhook Settings</Heading>
-            <IconButton icon={<Xmark width={12} height={12} />} variant="invisible" size="small" css={{ color: '$fgSubtle' }} onClick={() => setShowSettings(false)} />
+            <Heading size="small" css={{ color: '$accentDefault', fontSize: FONT_SIZE.md, fontWeight: '$bold' }}>⚙ Webhook Settings</Heading>
+            <IconButton icon={<Xmark width={ICON_SIZE.sm} height={ICON_SIZE.sm} />} variant="invisible" size="small" css={{ color: '$fgSubtle' }} onClick={() => setShowSettings(false)} />
           </Stack>
           <Stack direction="column" gap={3}>
             <Box>
-              <Label css={{ color: '$fgMuted', fontSize: '9px', fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$1' }}>
+              <Label css={{ color: '$fgMuted', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$1' }}>
                 DS TEAM WEBHOOK URL
               </Label>
               <TextInput
                 value={webhookUrlInput}
                 onChange={handleWebhookUrlChange}
                 placeholder="https://teams.webhook.url/ds"
-                css={{ backgroundColor: '$bgSubtle', border: '1px solid $borderMuted', color: '$fgDefault', fontSize: '11px', height: '30px' }}
+                css={{ backgroundColor: '$bgSubtle', border: '1px solid $borderMuted', color: '$fgDefault', fontSize: FONT_SIZE.md, height: `${CONTROL_HEIGHT.md + 2}px` }}
               />
             </Box>
             <Box>
-              <Label css={{ color: '$fgMuted', fontSize: '9px', fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$1' }}>
+              <Label css={{ color: '$fgMuted', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$1' }}>
                 DEV TEAM WEBHOOK URL
               </Label>
               <TextInput
                 value={webhookUrlDev}
                 onChange={handleWebhookDevChange}
                 placeholder="https://teams.webhook.url/dev"
-                css={{ backgroundColor: '$bgSubtle', border: '1px solid $borderMuted', color: '$fgDefault', fontSize: '11px', height: '30px' }}
+                css={{ backgroundColor: '$bgSubtle', border: '1px solid $borderMuted', color: '$fgDefault', fontSize: FONT_SIZE.md, height: `${CONTROL_HEIGHT.md + 2}px` }}
               />
             </Box>
           </Stack>
@@ -790,14 +901,14 @@ export default function ExtractTab() {
         <Section css={{ flexGrow: 1 }}>
           <Stack direction="row" align="center" justify="between" css={{ marginBottom: showJsonPreviews ? '$3' : '0' }}>
             <Stack direction="row" align="center" gap={2}>
-              <Code width={12} height={12} style={{ color: 'var(--colors-fgSubtle)' }} />
-              <Text css={{ color: '$fgMuted', fontSize: '10px', fontWeight: '$bold' }}>JSON Comparison</Text>
+              <Code width={ICON_SIZE.sm} height={ICON_SIZE.sm} style={{ color: 'var(--colors-fgSubtle)' }} />
+              <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.sm, fontWeight: '$bold' }}>JSON Comparison</Text>
             </Stack>
             <Button
               variant="invisible"
               size="small"
               onClick={() => setShowJsonPreviews((p) => !p)}
-              css={{ color: '$accentDefault', fontSize: '10px' }}
+              css={{ color: '$accentDefault', fontSize: FONT_SIZE.sm }}
             >
               {showJsonPreviews ? 'Hide' : 'Show'}
             </Button>
@@ -805,11 +916,11 @@ export default function ExtractTab() {
           {showJsonPreviews && (
             <Stack direction="row" gap={3}>
               <Box css={{ flex: 1 }}>
-                <Text css={{ color: '$fgSubtle', fontSize: '9px', fontWeight: '$bold', letterSpacing: '0.06em', marginBottom: '$1', display: 'block' }}>OLD (GITHUB)</Text>
+                <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.06em', marginBottom: '$1', display: 'block' }}>OLD (GITHUB)</Text>
                 <StyledTextarea readOnly value={oldJsonPreview} />
               </Box>
               <Box css={{ flex: 1 }}>
-                <Text css={{ color: '$fgSubtle', fontSize: '9px', fontWeight: '$bold', letterSpacing: '0.06em', marginBottom: '$1', display: 'block' }}>NEW (CANVAS)</Text>
+                <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.06em', marginBottom: '$1', display: 'block' }}>NEW (CANVAS)</Text>
                 <StyledTextarea readOnly value={jsonResult} />
               </Box>
             </Stack>
@@ -822,26 +933,26 @@ export default function ExtractTab() {
         <SectionHeader direction="row" align="center" justify="between">
           <Box>
             <Heading size="small" css={{ color: '$white', fontWeight: '$bold', marginBottom: '2px' }}>Analysis Summary</Heading>
-            <Text css={{ color: '$fgSubtle', fontSize: '10px' }}>
+            <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.sm }}>
               {hasAnalysis ? `${totalChanges} total change${totalChanges !== 1 ? 's' : ''} found` : 'Run Extract JSON to see changes'}
             </Text>
           </Box>
           {hasAnalysis && (
             <Stack direction="row" gap={2} css={{ flexWrap: 'wrap' }}>
               <StatChip type="added">
-                <Check width={9} height={9} />
+                <Check width={ICON_SIZE.xs} height={ICON_SIZE.xs} />
                 {diff!.added.length} added
               </StatChip>
               <StatChip type="removed">
-                <Xmark width={9} height={9} />
+                <Xmark width={ICON_SIZE.xs} height={ICON_SIZE.xs} />
                 {diff!.removed.length} removed
               </StatChip>
               <StatChip type="modified">
-                <NavArrowDown width={9} height={9} />
+                <NavArrowDown width={ICON_SIZE.xs} height={ICON_SIZE.xs} />
                 {diff!.changed.length} modified
               </StatChip>
               {impactData.length > 0 && (
-                <Box css={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '20px', fontSize: '10px', fontWeight: '$bold', letterSpacing: '0.05em', backgroundColor: 'rgba(156,39,176,0.2)', color: '#CE93D8', border: '1px solid #7B1FA2' }}>
+                <Box css={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '20px', fontSize: FONT_SIZE.sm, fontWeight: '$bold', letterSpacing: '0.05em', backgroundColor: 'rgba(156,39,176,0.2)', color: '#CE93D8', border: '1px solid #7B1FA2' }}>
                   {impactData.reduce((sum, v) => sum + v.componentCount, 0)}
                   {' '}
                   components affected
@@ -851,27 +962,55 @@ export default function ExtractTab() {
           )}
         </SectionHeader>
 
+        {/* Changes by mode summary */}
+        {hasAnalysis && changesByMode.length > 0 && (
+          <Box css={{ marginBottom: '$3', padding: '$3', backgroundColor: '$bgSubtle', borderRadius: '$medium', border: '1px solid $borderMuted' }}>
+            <Text css={{ fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.05em', color: '$fgMuted', marginBottom: '$2', display: 'block' }}>CHANGES BY MODE</Text>
+            <Stack direction="row" gap={2} css={{ flexWrap: 'wrap' }}>
+              {changesByMode.map((m) => (
+                <Box
+                  key={m.modeName}
+                  css={{
+                    padding: '$2 $3',
+                    borderRadius: '$small',
+                    backgroundColor: '$bgDefault',
+                    border: '1px solid $borderMuted',
+                    fontSize: FONT_SIZE.xs,
+                  }}
+                >
+                  <Text css={{ fontWeight: '$bold', color: '$fgDefault', display: 'block', marginBottom: '$1' }}>{m.modeName}</Text>
+                  <Stack direction="row" gap={2} css={{ fontSize: FONT_SIZE.xxs, color: '$fgSubtle' }}>
+                    {m.added > 0 && <span style={{ color: '#81C784' }}>+{m.added} added</span>}
+                    {m.removed > 0 && <span style={{ color: '#EF9A9A' }}>-{m.removed} removed</span>}
+                    {m.modified > 0 && <span style={{ color: '#90CAF9' }}>~{m.modified} modified</span>}
+                  </Stack>
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+        )}
+
         <Box css={{ border: '1px solid $borderMuted', borderRadius: '6px', overflow: 'hidden' }}>
           {!hasAnalysis && (
             <Box css={{ padding: '$8', textAlign: 'center' }}>
               <InfoCircle width={28} height={28} style={{ color: 'var(--colors-fgSubtle)', marginBottom: '8px', display: 'block', margin: '0 auto 8px' }} />
-              <Text css={{ color: '$fgMuted', fontSize: '11px' }}>No analysis data yet.</Text>
-              <Text css={{ color: '$fgSubtle', fontSize: '10px', marginTop: '$1' }}>{'Click "Extract JSON" to load and compare variables.'}</Text>
+              <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.md }}>No analysis data yet.</Text>
+              <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.sm, marginTop: '$1' }}>{'Click "Extract JSON" to load and compare variables.'}</Text>
             </Box>
           )}
 
           {hasAnalysis && totalChanges === 0 && (
             <Box css={{ padding: '$8', textAlign: 'center' }}>
               <Check width={28} height={28} style={{ color: '#2E7D32', margin: '0 auto 8px', display: 'block' }} />
-              <Text css={{ color: '$successFg', fontSize: '11px' }}>No changes detected.</Text>
-              <Text css={{ color: '$fgMuted', fontSize: '10px', marginTop: '$1' }}>Canvas is in sync with GitHub.</Text>
+              <Text css={{ color: '$successFg', fontSize: FONT_SIZE.md }}>No changes detected.</Text>
+              <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.sm, marginTop: '$1' }}>Canvas is in sync with GitHub.</Text>
             </Box>
           )}
 
           {hasAnalysis && totalChanges > 0 && impactData.length === 0 && (
             <Box css={{ padding: '$4 $6', backgroundColor: 'rgba(156,39,176,0.1)', borderTop: '1px solid $borderMuted' }}>
               <InfoCircle width={16} height={16} style={{ color: '#CE93D8', display: 'inline-block', marginRight: '6px', verticalAlign: 'middle' }} />
-              <Text css={{ color: '#CE93D8', fontSize: '10px' }}>
+              <Text css={{ color: '#CE93D8', fontSize: FONT_SIZE.sm }}>
                 Changed variables are not used in any components yet. Components Affected will appear when modified/removed variables are bound to component instances.
               </Text>
             </Box>
@@ -880,13 +1019,13 @@ export default function ExtractTab() {
           {hasAnalysis && diff!.added.length > 0 && (
             <>
               <Box css={{ padding: '$1 $4', backgroundColor: '$bgSubtle', borderBottom: '1px solid $borderMuted' }}>
-                <Text css={{ color: '$successFg', fontSize: '9px', fontWeight: '$bold', letterSpacing: '0.08em' }}>ADDED</Text>
+                <Text css={{ color: '$successFg', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em' }}>ADDED</Text>
               </Box>
               {diff!.added.map((v) => (
                 <VarRow key={v.id}>
                   <Box>
-                    <Text css={{ color: '$white', fontSize: '11px', fontWeight: '$medium' }}>{v.name}</Text>
-                    <Text css={{ color: '$fgSubtle', fontSize: '9px' }}>{v.collectionName}</Text>
+                    <Text css={{ color: '$white', fontSize: FONT_SIZE.md, fontWeight: '$medium' }}>{v.name}</Text>
+                    <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xs }}>{v.collectionName}</Text>
                   </Box>
                   <Badge type="added">NEW</Badge>
                 </VarRow>
@@ -897,19 +1036,21 @@ export default function ExtractTab() {
           {hasAnalysis && diff!.changed.length > 0 && (
             <>
               <Box css={{ padding: '$1 $4', backgroundColor: '$bgSubtle', borderBottom: '1px solid $borderMuted', borderTop: diff!.added.length > 0 ? '1px solid $borderMuted' : 'none' }}>
-                <Text css={{ color: '$accentDefault', fontSize: '9px', fontWeight: '$bold', letterSpacing: '0.08em' }}>MODIFIED</Text>
+                <Text css={{ color: '$accentDefault', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em' }}>MODIFIED</Text>
               </Box>
               {diff!.changed.map((v) => {
                 const oldVal = Object.values(v.old.valuesByMode)[0];
                 const newVal = Object.values(v.new.valuesByMode)[0];
+                const oldDisplay = formatValueForDesigner(oldVal, v.old.type, variableIdToName);
+                const newDisplay = formatValueForDesigner(newVal, v.new.type, variableIdToName);
                 return (
                   <VarRow key={v.new.id}>
                     <Box>
-                      <Text css={{ color: '$white', fontSize: '11px', fontWeight: '$medium' }}>{v.new.name}</Text>
+                      <Text css={{ color: '$white', fontSize: FONT_SIZE.md, fontWeight: '$medium' }}>{v.new.name}</Text>
                       <Stack direction="row" align="center" gap={2} css={{ marginTop: '2px' }}>
-                        <Text css={{ color: '$dangerFg', fontSize: '9px', textDecoration: 'line-through' }}>{String(oldVal)}</Text>
-                        <Text css={{ color: '$fgSubtle', fontSize: '9px' }}>→</Text>
-                        <Text css={{ color: '$successFg', fontSize: '9px', fontWeight: '$bold' }}>{String(newVal)}</Text>
+                        <Text css={{ color: '$dangerFg', fontSize: FONT_SIZE.xs, textDecoration: 'line-through' }}>{oldDisplay}</Text>
+                        <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xs }}>→</Text>
+                        <Text css={{ color: '$successFg', fontSize: FONT_SIZE.xs, fontWeight: '$bold' }}>{newDisplay}</Text>
                       </Stack>
                     </Box>
                     <Badge type="modified">MODIFIED</Badge>
@@ -922,13 +1063,13 @@ export default function ExtractTab() {
           {hasAnalysis && diff!.removed.length > 0 && (
             <>
               <Box css={{ padding: '$1 $4', backgroundColor: '$bgSubtle', borderBottom: '1px solid $borderMuted', borderTop: (diff!.added.length > 0 || diff!.changed.length > 0) ? '1px solid $borderMuted' : 'none' }}>
-                <Text css={{ color: '$dangerFg', fontSize: '9px', fontWeight: '$bold', letterSpacing: '0.08em' }}>REMOVED</Text>
+                <Text css={{ color: '$dangerFg', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em' }}>REMOVED</Text>
               </Box>
               {diff!.removed.map((v) => (
                 <VarRow key={v.id}>
                   <Box>
-                    <Text css={{ color: '$fgMuted', fontSize: '11px', fontWeight: '$medium' }}>{v.name}</Text>
-                    <Text css={{ color: '$fgSubtle', fontSize: '9px' }}>{v.collectionName}</Text>
+                    <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.md, fontWeight: '$medium' }}>{v.name}</Text>
+                    <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xs }}>{v.collectionName}</Text>
                   </Box>
                   <Badge type="removed">REMOVED</Badge>
                 </VarRow>
@@ -954,7 +1095,7 @@ export default function ExtractTab() {
                   cursor: 'pointer',
                   border: 'none',
                   color: '#CE93D8',
-                  fontSize: '9px',
+                  fontSize: FONT_SIZE.xs,
                   fontWeight: '$bold',
                   letterSpacing: '0.08em',
                   '&:hover': { backgroundColor: 'rgba(156,39,176,0.25)' },
@@ -981,7 +1122,7 @@ export default function ExtractTab() {
                           value={componentSearchFilter}
                           onChange={(e) => setComponentSearchFilter(e.target.value)}
                           placeholder="Search components…"
-                          css={{ paddingLeft: '24px', height: '28px', fontSize: '10px' }}
+                          css={{ paddingLeft: '24px', height: `${CONTROL_HEIGHT.md}px`, fontSize: FONT_SIZE.sm }}
                         />
                         {componentSearchFilter && (
                           <Box
@@ -995,12 +1136,12 @@ export default function ExtractTab() {
                       </Box>
                       <DropdownMenu>
                         <DropdownMenu.Trigger asChild>
-                          <Button variant="invisible" size="small" css={{ height: '28px', fontSize: '9px' }}>
+                          <Button variant="invisible" size="small" css={{ height: `${CONTROL_HEIGHT.md}px`, fontSize: FONT_SIZE.xs }}>
                             {componentChangeTypeFilter === 'all' ? 'All changes' : componentChangeTypeFilter}
                           </Button>
                         </DropdownMenu.Trigger>
                         <DropdownMenu.Portal>
-                          <DropdownMenu.Content css={{ minWidth: '120px' }}>
+                          <DropdownMenu.Content css={{ minWidth: `${DROPDOWN_WIDTH.xxs}px` }}>
                             <DropdownMenu.Item onSelect={() => setComponentChangeTypeFilter('all')}>All changes</DropdownMenu.Item>
                             <DropdownMenu.Item onSelect={() => setComponentChangeTypeFilter('modified')}>Modified only</DropdownMenu.Item>
                             <DropdownMenu.Item onSelect={() => setComponentChangeTypeFilter('removed')}>Removed only</DropdownMenu.Item>
@@ -1009,12 +1150,12 @@ export default function ExtractTab() {
                       </DropdownMenu>
                       <DropdownMenu>
                         <DropdownMenu.Trigger asChild>
-                          <Button variant="invisible" size="small" css={{ height: '28px', fontSize: '9px' }}>
+                          <Button variant="invisible" size="small" css={{ height: `${CONTROL_HEIGHT.md}px`, fontSize: FONT_SIZE.xs }}>
                             {componentVarTypeFilter === 'all' ? 'All types' : componentVarTypeFilter}
                           </Button>
                         </DropdownMenu.Trigger>
                         <DropdownMenu.Portal>
-                          <DropdownMenu.Content css={{ minWidth: '120px' }}>
+                          <DropdownMenu.Content css={{ minWidth: `${DROPDOWN_WIDTH.xxs}px` }}>
                             <DropdownMenu.Item onSelect={() => setComponentVarTypeFilter('all')}>All types</DropdownMenu.Item>
                             <DropdownMenu.Item onSelect={() => setComponentVarTypeFilter('color')}>Colors</DropdownMenu.Item>
                             <DropdownMenu.Item onSelect={() => setComponentVarTypeFilter('typography')}>Typography</DropdownMenu.Item>
@@ -1032,12 +1173,12 @@ export default function ExtractTab() {
                       />
                     </Stack>
                     {copyFeedback && (
-                      <Text css={{ color: '$successFg', fontSize: '9px' }}>{copyFeedback}</Text>
+                      <Text css={{ color: '$successFg', fontSize: FONT_SIZE.xs }}>{copyFeedback}</Text>
                     )}
                   </Box>
                   {componentImpacts.length === 0 ? (
                     <Box css={{ padding: '$4', textAlign: 'center' }}>
-                      <Text css={{ color: '$fgMuted', fontSize: '10px' }}>No components match the current filters.</Text>
+                      <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.sm }}>No components match the current filters.</Text>
                     </Box>
                   ) : (
                     componentImpacts.map((comp) => {
@@ -1070,8 +1211,8 @@ export default function ExtractTab() {
                           >
                             <Stack direction="row" align="center" gap={2}>
                               {isExpanded ? <NavArrowUp width={10} height={10} style={{ color: 'var(--colors-fgSubtle)' }} /> : <NavArrowDown width={10} height={10} style={{ color: 'var(--colors-fgSubtle)' }} />}
-                              <Text css={{ color: '$white', fontSize: '11px', fontWeight: '$bold' }}>{comp.componentName}</Text>
-                              <Text css={{ color: '$fgSubtle', fontSize: '9px' }}>
+                              <Text css={{ color: '$white', fontSize: FONT_SIZE.md, fontWeight: '$bold' }}>{comp.componentName}</Text>
+                              <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xs }}>
                                 (
                                 {comp.nodeCount}
                                 {' '}
@@ -1082,7 +1223,7 @@ export default function ExtractTab() {
                                 css={{
                                   padding: '1px 6px',
                                   borderRadius: '4px',
-                                  fontSize: '8px',
+                                  fontSize: FONT_SIZE.xxs,
                                   fontWeight: '$bold',
                                   backgroundColor: impactLevel === 'high' ? 'rgba(198,40,40,0.3)' : impactLevel === 'medium' ? 'rgba(255,152,0,0.3)' : 'rgba(76,175,80,0.3)',
                                   color: impactLevel === 'high' ? '#EF9A9A' : impactLevel === 'medium' ? '#FFE082' : '#A5D6A7',
@@ -1115,7 +1256,7 @@ export default function ExtractTab() {
                                 if (changes.length === 0) return null;
                                 return (
                                   <Box key={cat} css={{ marginBottom: '$2' }}>
-                                    <Text css={{ color: '$fgMuted', fontSize: '8px', fontWeight: '$bold', letterSpacing: '0.08em', marginBottom: '$1', display: 'block' }}>{CATEGORY_LABELS[cat]}</Text>
+                                    <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.xxs, fontWeight: '$bold', letterSpacing: '0.08em', marginBottom: '$1', display: 'block' }}>{CATEGORY_LABELS[cat]}</Text>
                                     {changes.map((ch) => (
                                       <Box
                                         key={ch.variableName}
@@ -1130,8 +1271,8 @@ export default function ExtractTab() {
                                         title={ch.description || undefined}
                                       >
                                         <Stack direction="row" align="center" gap={2} css={{ marginBottom: '4px' }}>
-                                          <Text css={{ color: '$white', fontSize: '10px', fontWeight: '$medium' }}>{ch.variableName}</Text>
-                                          <Text css={{ color: '$fgSubtle', fontSize: '8px' }}>{ch.collectionName}</Text>
+                                          <Text css={{ color: '$white', fontSize: FONT_SIZE.sm, fontWeight: '$medium' }}>{ch.variableName}</Text>
+                                          <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xxs }}>{ch.collectionName}</Text>
                                           <Badge type={ch.changeType} css={{ marginLeft: 'auto' }}>
                                             {ch.changeType.toUpperCase()}
                                           </Badge>
@@ -1156,7 +1297,7 @@ export default function ExtractTab() {
                                               }}
                                             />
                                           )}
-                                          <Text css={{ color: '$dangerFg', fontSize: '9px', textDecoration: ch.changeType === 'modified' ? 'line-through' : 'none' }}>
+                                          <Text css={{ color: '$dangerFg', fontSize: FONT_SIZE.xs, textDecoration: ch.changeType === 'modified' ? 'line-through' : 'none' }}>
                                             {ch.oldValue}
                                           </Text>
                                           {ch.changeType === 'modified' && ch.newValue != null && (
@@ -1173,16 +1314,16 @@ export default function ExtractTab() {
                                                   }}
                                                 />
                                               )}
-                                              <Text css={{ color: '$fgSubtle', fontSize: '9px' }}>→</Text>
-                                              <Text css={{ color: '$successFg', fontSize: '9px', fontWeight: '$bold' }}>{ch.newValue}</Text>
+                                              <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xs }}>→</Text>
+                                              <Text css={{ color: '$successFg', fontSize: FONT_SIZE.xs, fontWeight: '$bold' }}>{ch.newValue}</Text>
                                             </>
                                           )}
                                         </Stack>
                                         {ch.valuesByMode && Object.keys(ch.valuesByMode).length > 1 && (
                                           <Box css={{ marginTop: '4px' }}>
-                                            <Text css={{ color: '$fgMuted', fontSize: '8px', fontWeight: '$bold', display: 'block' }}>By mode:</Text>
+                                            <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.xxs, fontWeight: '$bold', display: 'block' }}>By mode:</Text>
                                             {Object.entries(ch.valuesByMode).map(([modeId, val]) => (
-                                              <Text key={modeId} css={{ color: '$fgSubtle', fontSize: '8px' }}>
+                                              <Text key={modeId} css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xxs }}>
                                                 {modeId}
                                                 :
                                                 {' '}
@@ -1191,7 +1332,7 @@ export default function ExtractTab() {
                                             ))}
                                           </Box>
                                         )}
-                                        <Text css={{ color: '$fgMuted', fontSize: '8px', marginTop: '2px' }}>
+                                        <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.xxs, marginTop: '2px' }}>
                                           {getDesignerFriendlyType(ch.varType, ch.collectionName)}
                                         </Text>
                                       </Box>
@@ -1217,13 +1358,13 @@ export default function ExtractTab() {
         <Stack direction="row" align="center" justify="between" css={{ marginBottom: '$4' }}>
           <Stack direction="row" align="center" gap={2}>
             <GitPullRequest width={13} height={13} style={{ color: 'var(--colors-fgSubtle)' }} />
-            <Heading size="small" css={{ color: '$white', fontWeight: '$bold', fontSize: '12px' }}>Pull Request</Heading>
+            <Heading size="small" css={{ color: '$white', fontWeight: '$bold', fontSize: FONT_SIZE.lg }}>Pull Request</Heading>
           </Stack>
           <Button
             variant="invisible"
             size="small"
             onClick={fetchBranches}
-            css={{ color: '$accentDefault', fontSize: '10px' }}
+            css={{ color: '$accentDefault', fontSize: FONT_SIZE.sm }}
           >
             {isLoadingBranches ? 'Loading...' : 'Refresh branches'}
           </Button>
@@ -1232,7 +1373,7 @@ export default function ExtractTab() {
         <Stack direction="column" gap={3}>
           {/* Target Branch — proper dropdown */}
           <Box>
-            <Label css={{ color: '$fgMuted', fontSize: '9px', fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$2' }}>
+            <Label css={{ color: '$fgMuted', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$2' }}>
               TARGET BRANCH
             </Label>
             <DropdownMenu>
@@ -1241,12 +1382,12 @@ export default function ExtractTab() {
                   as="button"
                   css={{
                     width: '100%',
-                    height: '32px',
+                    height: `${CONTROL_HEIGHT.lg}px`,
                     backgroundColor: '$bgDefault',
                     border: '1px solid $borderMuted',
                     borderRadius: '4px',
                     color: targetBranch ? '$fgDefault' : '$fgSubtle',
-                    fontSize: '11px',
+                    fontSize: FONT_SIZE.md,
                     padding: '0 $3',
                     display: 'flex',
                     alignItems: 'center',
@@ -1255,7 +1396,7 @@ export default function ExtractTab() {
                     '&:hover': { borderColor: '$borderDefault' },
                   }}
                 >
-                  <Text css={{ color: targetBranch ? '$fgDefault' : '$fgSubtle', fontSize: '11px' }}>
+                  <Text css={{ color: targetBranch ? '$fgDefault' : '$fgSubtle', fontSize: FONT_SIZE.md }}>
                     {targetBranch || 'Select a branch...'}
                   </Text>
                   <NavArrowDown width={12} height={12} style={{ color: 'var(--colors-fgSubtle)' }} />
@@ -1268,7 +1409,7 @@ export default function ExtractTab() {
                 >
                   {availableBranches.length === 0 && (
                     <Box css={{ padding: '$3', textAlign: 'center' }}>
-                      <Text css={{ color: '$fgSubtle', fontSize: '10px' }}>
+                      <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.sm }}>
                         {isLoadingBranches ? 'Loading branches...' : 'No branches loaded. Click "Refresh branches"'}
                       </Text>
                     </Box>
@@ -1279,7 +1420,7 @@ export default function ExtractTab() {
                       onSelect={() => setTargetBranch(branch)}
                     >
                       <Stack direction="row" align="center" justify="between">
-                        <Text css={{ color: '#ccc', fontSize: '11px' }}>{branch}</Text>
+                        <Text css={{ color: '#ccc', fontSize: FONT_SIZE.md }}>{branch}</Text>
                         {targetBranch === branch && <Check width={10} height={10} style={{ color: 'var(--colors-accentDefault)' }} />}
                       </Stack>
                     </BranchOption>
@@ -1293,7 +1434,7 @@ export default function ExtractTab() {
           {targetBranch && (
             <Stack direction="row" gap={2} align="center">
               <Link width={10} height={10} style={{ color: '#555' }} />
-              <Text css={{ color: '#555', fontSize: '10px' }}>
+              <Text css={{ color: '#555', fontSize: FONT_SIZE.sm }}>
                 Merge
                 {' '}
                 <Box as="span" css={{ color: '#90CAF9' }}>{targetBranch}</Box>
@@ -1307,28 +1448,28 @@ export default function ExtractTab() {
 
           {/* Commit message */}
           <Box>
-            <Label css={{ color: '#666', fontSize: '9px', fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$2' }}>
+            <Label css={{ color: '#666', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$2' }}>
               COMMIT MESSAGE
             </Label>
             <TextInput
               value={commitMessage}
               onChange={handleCommitChange}
               placeholder="chore: update design tokens"
-              css={{ backgroundColor: '#1A1A1A', border: '1px solid #2A2A2A', color: '$white', fontSize: '11px', height: '32px' }}
+              css={{ backgroundColor: '#1A1A1A', border: '1px solid #2A2A2A', color: '$white', fontSize: FONT_SIZE.md, height: `${CONTROL_HEIGHT.lg}px` }}
             />
           </Box>
 
           {/* Notification Toggles */}
           <Box>
-            <Text css={{ color: '#666', fontSize: '9px', fontWeight: '$bold', letterSpacing: '0.08em', marginBottom: '$2', display: 'block' }}>
+            <Text css={{ color: '#666', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.08em', marginBottom: '$2', display: 'block' }}>
               NOTIFICATIONS
             </Text>
             <ToggleRow>
               <Stack direction="row" align="center" gap={3}>
                 <Telegram width={14} height={14} style={{ color: '#90CAF9' }} />
                 <Box>
-                  <Text css={{ color: '$white', fontSize: '11px', fontWeight: '$medium' }}>Inform Dev Team</Text>
-                  <Text css={{ color: '#555', fontSize: '9px' }}>Send PR details to dev webhook</Text>
+                  <Text css={{ color: '$white', fontSize: FONT_SIZE.md, fontWeight: '$medium' }}>Inform Dev Team</Text>
+                  <Text css={{ color: '#555', fontSize: FONT_SIZE.xs }}>Send PR details to dev webhook</Text>
                 </Box>
               </Stack>
               <Toggle active={notifyDevTeam} onClick={() => setNotifyDevTeam((v) => !v)} />
@@ -1337,8 +1478,8 @@ export default function ExtractTab() {
               <Stack direction="row" align="center" gap={3}>
                 <BellNotification width={14} height={14} style={{ color: '#CE93D8' }} />
                 <Box>
-                  <Text css={{ color: '$white', fontSize: '11px', fontWeight: '$medium' }}>Notify Design System</Text>
-                  <Text css={{ color: '#555', fontSize: '9px' }}>Send PR details to DS webhook</Text>
+                  <Text css={{ color: '$white', fontSize: FONT_SIZE.md, fontWeight: '$medium' }}>Notify Design System</Text>
+                  <Text css={{ color: '#555', fontSize: FONT_SIZE.xs }}>Send PR details to DS webhook</Text>
                 </Box>
               </Stack>
               <Toggle active={notifyDS} onClick={() => setNotifyDS((v) => !v)} />
@@ -1348,7 +1489,7 @@ export default function ExtractTab() {
           {/* Error / Success */}
           {error && (
             <Box css={{ padding: '$2 $3', backgroundColor: 'rgba(229,57,53,0.12)', borderRadius: '4px', border: '1px solid rgba(229,57,53,0.3)' }}>
-              <Text css={{ color: '#EF9A9A', fontSize: '10px' }}>{error}</Text>
+              <Text css={{ color: '#EF9A9A', fontSize: FONT_SIZE.sm }}>{error}</Text>
             </Box>
           )}
 
@@ -1356,7 +1497,7 @@ export default function ExtractTab() {
             <Box css={{ padding: '$3', backgroundColor: 'rgba(46,125,50,0.12)', borderRadius: '4px', border: '1px solid rgba(46,125,50,0.3)' }}>
               <Stack direction="row" gap={2} align="center">
                 <Check width={13} height={13} style={{ color: '#81C784' }} />
-                <Text css={{ color: '#81C784', fontSize: '10px' }}>
+                <Text css={{ color: '#81C784', fontSize: FONT_SIZE.sm }}>
                   {'PR created: '}
                   <a href={prUrl} target="_blank" rel="noreferrer" style={{ color: '#90CAF9', textDecoration: 'underline' }}>{prUrl}</a>
                 </Text>
@@ -1369,7 +1510,7 @@ export default function ExtractTab() {
             variant="primary"
             onClick={handleCreatePr}
             disabled={isCreatingPr || !jsonResult || !targetBranch}
-            css={{ backgroundColor: '#1565C0', height: '36px', fontWeight: '$bold', fontSize: '12px', marginTop: '$1' }}
+            css={{ backgroundColor: '#1565C0', height: '36px', fontWeight: '$bold', fontSize: FONT_SIZE.lg, marginTop: '$1' }}
           >
             {isCreatingPr ? 'Creating PR...' : 'Create Pull Request'}
           </Button>

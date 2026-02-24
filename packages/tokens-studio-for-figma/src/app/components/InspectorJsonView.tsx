@@ -12,6 +12,7 @@ import { AsyncMessageChannel } from '@/AsyncMessageChannel';
 import { AsyncMessageTypes } from '@/types/AsyncMessages';
 import { compareVariables, type VariableDiff } from '@/utils/compareVariables';
 import { getGitHubFileContent } from '@/app/store/providers/github/githubPrHandler';
+import { CODE_FONT_SIZE } from '@/constants/UIConstants';
 
 export default function InspectorJsonView({
   resolvedTokens,
@@ -195,7 +196,7 @@ export default function InspectorJsonView({
           p: '$4',
           backgroundColor: '$bgSubtle',
           borderRadius: '$medium',
-          fontSize: '$xsmall',
+          fontSize: `${CODE_FONT_SIZE}px`,
           overflowX: 'auto',
           color: '$text',
         }}
@@ -272,7 +273,7 @@ export default function InspectorJsonView({
                   {diff.added.length} variables
                 </Text>
                 {diff.added.length > 0 && (
-                  <ul style={{ margin: '4px 0 8px 0', paddingLeft: '20px', fontSize: '11px' }}>
+                  <ul style={{ margin: '4px 0 8px 0', paddingLeft: '20px', fontSize: `${CODE_FONT_SIZE}px` }}>
                     {diff.added.map((v) => (
                       <li key={v.id || v.name}>
                         {v.name} <span style={{ opacity: 0.7 }}>({v.collectionName})</span>
@@ -287,7 +288,7 @@ export default function InspectorJsonView({
                   {diff.removed.length} variables
                 </Text>
                 {diff.removed.length > 0 && (
-                  <ul style={{ margin: '4px 0 8px 0', paddingLeft: '20px', fontSize: '11px' }}>
+                  <ul style={{ margin: '4px 0 8px 0', paddingLeft: '20px', fontSize: `${CODE_FONT_SIZE}px` }}>
                     {diff.removed.map((v) => (
                       <li key={v.id || v.name}>
                         {v.name} <span style={{ opacity: 0.7 }}>({v.collectionName})</span>
@@ -302,7 +303,7 @@ export default function InspectorJsonView({
                   {diff.changed.length} variables
                 </Text>
                 {diff.changed.length > 0 && (
-                  <ul style={{ margin: '4px 0 8px 0', paddingLeft: '20px', fontSize: '11px' }}>
+                  <ul style={{ margin: '4px 0 8px 0', paddingLeft: '20px', fontSize: `${CODE_FONT_SIZE}px` }}>
                     {diff.changed.map((v) => {
                       const formatVal = (val: any) => {
                         if (typeof val === 'object' && val !== null) {

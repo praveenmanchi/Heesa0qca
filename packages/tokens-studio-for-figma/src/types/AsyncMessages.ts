@@ -454,6 +454,10 @@ export interface VariableUsageResult {
   componentCount: number;
   components: VariableComponentUsage[];
   pageName?: string;
+  /** Number of modes this variable affects (from its collection) */
+  modeCount?: number;
+  /** Mode names for display (e.g. ["Gap 1.0", "Old Navy 2.0"]) */
+  modeNames?: string[];
 }
 
 export interface TextStyleUsageResult {

@@ -10,6 +10,7 @@ export async function searchVariableUsage(
     const localVariables = await figma.variables.getLocalVariablesAsync();
     const collections = await figma.variables.getLocalVariableCollectionsAsync();
     const collectionMap = new Map(collections.map((c) => [c.id, c.name]));
+    const collectionModesMap = new Map(collections.map((c) => [c.id, c.modes]));
 
     // 2. Get local text styles (async API for reliability across Figma environments)
     const localTextStyles = await figma.getLocalTextStylesAsync();
@@ -173,6 +174,9 @@ export async function searchVariableUsage(
             });
         }
 
+        const modes = collectionModesMap.get(v.variableCollectionId) || [];
+        const modeNames = modes.map((m) => m.name);
+
         return {
             variableName: v.name,
             variableId: v.id,
@@ -181,6 +185,8 @@ export async function searchVariableUsage(
             componentCount: components.length,
             components,
             pageName: usage ? usage.pageName : undefined,
+            modeCount: modeNames.length,
+            modeNames,
         };
     });
 

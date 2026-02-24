@@ -12,6 +12,7 @@ import SecondSceen from './SecondScreen';
 import Footer from './Footer';
 import Box from './Box';
 import { activeTabSelector } from '@/selectors';
+import { ICON_SIZE } from '@/constants/UIConstants';
 import PluginResizerWrapper from './PluginResizer';
 import LoadingBar from './LoadingBar';
 import { ConvertToDTCGModal } from './ConvertToDTCGModal';
@@ -28,8 +29,8 @@ function App() {
         iconProps={{
           color: '$fgDefault',
           strokeWidth: 1.5,
-          width: '1rem',
-          height: '1rem',
+          width: `${ICON_SIZE.lg}px`,
+          height: `${ICON_SIZE.lg}px`,
         }}
       >
         {activeTab !== 'loading' && <LoadingBar />}

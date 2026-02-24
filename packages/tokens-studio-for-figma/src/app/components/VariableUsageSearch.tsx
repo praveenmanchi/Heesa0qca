@@ -6,6 +6,7 @@ import { Search, Xmark, MultiWindow } from 'iconoir-react';
 import Box from './Box';
 import Stack from './Stack';
 import { AsyncMessageChannel } from '@/AsyncMessageChannel';
+import { FONT_SIZE } from '@/constants/UIConstants';
 import { AsyncMessageTypes, VariableUsageResult, TextStyleUsageResult } from '@/types/AsyncMessages';
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -366,7 +367,7 @@ function VariableUsageSearch() {
                             borderColor: allPages ? '$accentDefault' : '$borderMuted',
                             background: allPages ? '$accentMuted' : 'transparent',
                             color: allPages ? '$accentDefault' : '$fgMuted',
-                            fontSize: '10px',
+                            fontSize: FONT_SIZE.sm,
                             cursor: 'pointer',
                             fontWeight: allPages ? '$sansBold' : '$sans',
                             transition: 'all 0.15s',
@@ -387,7 +388,7 @@ function VariableUsageSearch() {
                                     onClick={() => setFilter(f)}
                                     css={{
                                         padding: '$1 $2',
-                                        fontSize: '10px',
+                                        fontSize: FONT_SIZE.sm,
                                         border: '1px solid',
                                         borderRadius: '$small',
                                         cursor: 'pointer',
@@ -444,7 +445,7 @@ function VariableUsageSearch() {
                     <Box css={{ padding: '$4', textAlign: 'center', color: '$fgSubtle', fontSize: '$xsmall' }}>
                         Type a variable name to search.
                         {allPages && (
-                            <Box css={{ marginTop: '$1', color: '$fgSubtle', fontSize: '10px' }}>
+                            <Box css={{ marginTop: '$1', color: '$fgSubtle', fontSize: FONT_SIZE.sm }}>
                                 All-pages mode: scanning every page in the document.
                             </Box>
                         )}
@@ -454,8 +455,8 @@ function VariableUsageSearch() {
                 {/* Expand / Collapse controls */}
                 {!isLoading && visibleResults.length > 1 && (
                     <Box css={{ display: 'flex', justifyContent: 'flex-end', gap: '$2', marginBottom: '$2' }}>
-                        <Box as="button" onClick={handleExpandAll} css={{ fontSize: '10px', color: '$accentDefault', background: 'none', border: 'none', cursor: 'pointer' }}>Expand all</Box>
-                        <Box as="button" onClick={handleCollapseAll} css={{ fontSize: '10px', color: '$fgMuted', background: 'none', border: 'none', cursor: 'pointer' }}>Collapse all</Box>
+                        <Box as="button" onClick={handleExpandAll} css={{ fontSize: FONT_SIZE.sm, color: '$accentDefault', background: 'none', border: 'none', cursor: 'pointer' }}>Expand all</Box>
+                        <Box as="button" onClick={handleCollapseAll} css={{ fontSize: FONT_SIZE.sm, color: '$fgMuted', background: 'none', border: 'none', cursor: 'pointer' }}>Collapse all</Box>
                     </Box>
                 )}
 
@@ -496,28 +497,46 @@ function VariableUsageSearch() {
                                         {itemName}
                                     </Box>
                                     <Box css={{ fontSize: '$xxsmall', color: '$fgSubtle', display: 'flex', gap: '$2', alignItems: 'center', flexWrap: 'wrap' }}>
-                                        <Badge variant={item.itemType === 'textStyle' ? 'accent' : undefined} css={{ fontSize: '9px' }}>
+                                        <Badge variant={item.itemType === 'textStyle' ? 'accent' : undefined} css={{ fontSize: FONT_SIZE.xs }}>
                                             {item.itemType === 'variable' ? 'Variable' : 'Text Style'}
                                         </Badge>
                                         <span>{collectionLabel}</span>
-                                        {item.pageName && allPages && (
-                                            <Badge variant="accent" css={{ fontSize: '9px' }}>
-                                                {item.pageName}
-                                            </Badge>
-                                        )}
-                                        <span>
+                                        <span title="Used by N components">
+                                            <strong>Used by</strong>
+                                            {' '}
                                             {componentsToShow.length}
                                             {' '}
                                             {componentsToShow.length === 1 ? 'component' : 'components'}
                                         </span>
+                                        {item.itemType === 'variable' && (item as VariableUsageResult).modeCount != null && (item as VariableUsageResult).modeCount! > 0 && (
+                                            <span title={(item as VariableUsageResult).modeNames?.join(', ') || ''}>
+                                                <strong>Affects</strong>
+                                                {' '}
+                                                {(item as VariableUsageResult).modeCount}
+                                                {' '}
+                                                {(item as VariableUsageResult).modeCount === 1 ? 'mode' : 'modes'}
+                                            </span>
+                                        )}
+                                        {item.pageName && allPages && (
+                                            <Badge variant="accent" css={{ fontSize: FONT_SIZE.xs }}>
+                                                {item.pageName}
+                                            </Badge>
+                                        )}
                                     </Box>
                                 </Stack>
                                 <Stack direction="row" gap={2} align="center" css={{ flexShrink: 0 }}>
-                                    <Badge variant={item.totalCount > 0 ? 'accent' : undefined}>
+                                    <Badge variant={item.totalCount > 0 ? 'accent' : undefined} title="Total node instances">
                                         {item.totalCount}
                                         {' '}
                                         {item.totalCount === 1 ? 'use' : 'uses'}
                                     </Badge>
+                                    {item.itemType === 'variable' && (item as VariableUsageResult).modeCount != null && (item as VariableUsageResult).modeCount! > 0 && (
+                                        <Badge title={`Affects ${(item as VariableUsageResult).modeNames?.join(', ') || 'these modes'}`}>
+                                            {(item as VariableUsageResult).modeCount}
+                                            {' '}
+                                            {(item as VariableUsageResult).modeCount === 1 ? 'mode' : 'modes'}
+                                        </Badge>
+                                    )}
                                     <Box css={{ fontSize: '$xsmall', color: '$fgSubtle', transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
                                         ▼
                                     </Box>
@@ -529,7 +548,7 @@ function VariableUsageSearch() {
                                 <Box css={{ borderTop: '1px solid $borderMuted' }}>
                                     {componentsToShow.length > 0 && (
                                         <Box>
-                                            <Box css={{ padding: '$1 $3', fontSize: '10px', color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas' }}>
+                                            <Box css={{ padding: '$1 $3', fontSize: FONT_SIZE.sm, color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas' }}>
                                                 Components ({componentsToShow.length})
                                             </Box>
                                             {componentsToShow.map((comp) => (
@@ -545,7 +564,7 @@ function VariableUsageSearch() {
 
                                     {framesOnly.length > 0 && (
                                         <Box>
-                                            <Box css={{ padding: '$1 $3', fontSize: '10px', color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas', borderTop: componentsToShow.length > 0 ? '1px solid $borderMuted' : 'none' }}>
+                                            <Box css={{ padding: '$1 $3', fontSize: FONT_SIZE.sm, color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas', borderTop: componentsToShow.length > 0 ? '1px solid $borderMuted' : 'none' }}>
                                                 Frames / Groups ({framesOnly[0].nodeIds.length} nodes)
                                             </Box>
                                             <Box css={{ padding: '$2 $3', fontSize: '$xsmall', color: '$fgMuted' }}>

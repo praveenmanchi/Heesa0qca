@@ -8,6 +8,7 @@ import IconLayers from '@/icons/layers.svg';
 import { selectNodes } from '@/utils/figma/selectNodes';
 import { NodeInfo } from '@/types/NodeInfo';
 import TokenNode from './TokenNode';
+import { DROPDOWN_WIDTH } from '@/constants/UIConstants';
 
 const NODE_HEIGHT = 22;
 const VISIBLE_VIEWPORT_NODES = 10;
@@ -42,10 +43,14 @@ export default function TokenNodes({ nodes }: { nodes: NodeInfo[] }) {
     return `${nodes.length} ${nodes.length === 1 ? 'node' : 'nodes'}`;
   }, [hasComponentInfo, componentCount, nodes.length]);
 
+  const tooltipLabel = hasComponentInfo && componentCount > 0
+    ? `Used by ${componentCount} component${componentCount === 1 ? '' : 's'}`
+    : `${nodes.length} ${nodes.length === 1 ? 'node' : 'nodes'} using this variable`;
+
   const dropdownContent = (
     <DropdownMenu.Content
       css={{
-        width: '200px',
+        width: `${DROPDOWN_WIDTH.md}px`,
         background: '$contextMenuBg',
         borderRadius: '$medium',
         padding: '$2 0',
@@ -115,7 +120,7 @@ export default function TokenNodes({ nodes }: { nodes: NodeInfo[] }) {
           }}
         >
           <DropdownMenu.Trigger asChild>
-            <Button variant="invisible" size="small" icon={<IconLayers />}>
+            <Button variant="invisible" size="small" icon={<IconLayers />} title={tooltipLabel}>
               {badgeLabel}
             </Button>
           </DropdownMenu.Trigger>

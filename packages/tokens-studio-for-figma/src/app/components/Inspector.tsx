@@ -68,6 +68,14 @@ function Inspector() {
     setSearchInputValue(event.target.value);
   }, []);
 
+  React.useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSearchInputValue('');
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   return (
     <Box css={{
       gap: '$2', flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden',
@@ -89,7 +97,7 @@ function Inspector() {
             value={searchInputValue}
             onChange={handleSearchInputChange}
             type="text"
-            placeholder={`${t('search')}…`}
+            placeholder={`${t('search')}… (Esc to clear)`}
             leadingVisual={<Search />}
           />
         </Box>

@@ -7,6 +7,7 @@ import { activeApiProviderSelector, activeTokenSetReadOnlySelector, editProhibit
 import useTokens from '../store/useTokens';
 import { useFigmaTheme } from '@/hooks/useFigmaTheme';
 import { StorageProviderType } from '@/constants/StorageProviderType';
+import { MONACO_FONT_SIZE } from '@/constants/UIConstants';
 
 type Props = {
   stringTokens: string;
@@ -66,7 +67,7 @@ function JSONEditor({
             enabled: false,
           },
           lineNumbers: 'on',
-          fontSize: 11,
+          fontSize: MONACO_FONT_SIZE,
           wordWrap: 'on',
           contextmenu: false,
           readOnly: editProhibited || activeTokenSetReadOnly || isTokensStudioProvider,

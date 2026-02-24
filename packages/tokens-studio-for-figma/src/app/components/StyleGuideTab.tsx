@@ -4,8 +4,9 @@ import {
     Button, Heading, TextInput, Label, IconButton,
 } from '@tokens-studio/ui';
 import {
-    Check, Settings, Xmark, NavArrowDown, Search, Download, RefreshDouble,
+    Check, Settings, Xmark, Search, Download, RefreshDouble,
 } from 'iconoir-react';
+import { ICON_SIZE, CONTROL_HEIGHT, CODE_FONT_SIZE } from '@/constants/UIConstants';
 import { AsyncMessageTypes } from '@/types/AsyncMessages';
 import { AsyncMessageChannel } from '@/AsyncMessageChannel';
 import {
@@ -76,7 +77,7 @@ const CollectionBtn = styled(Box, {
     padding: '$2 $3',
     borderRadius: '4px',
     cursor: 'pointer',
-    fontSize: '$xsmall',
+    fontSize: '$small',
     transition: 'background 0.1s',
     marginBottom: '2px',
     border: 'none',
@@ -93,7 +94,7 @@ const ModeBtn = styled(Box, {
     padding: '2px $2',
     borderRadius: '3px',
     cursor: 'pointer',
-    fontSize: '10px',
+    fontSize: '$xsmall',
     border: '1px solid $borderMuted',
     transition: 'all 0.1s',
     variants: {
@@ -147,8 +148,8 @@ const VarRow = styled(Box, {
 });
 
 const ColorSwatch = styled(Box, {
-    width: '28px',
-    height: '28px',
+    width: `${CONTROL_HEIGHT.md}px`,
+    height: `${CONTROL_HEIGHT.md}px`,
     borderRadius: '4px',
     flexShrink: 0,
     border: '1px solid $borderMuted',
@@ -164,7 +165,7 @@ const TypographySample = styled(Box, {
     backgroundColor: '$bgSubtle',
     borderRadius: '3px',
     border: '1px solid $borderMuted',
-    fontSize: '11px',
+    fontSize: '$xsmall',
     color: '$fgMuted',
     fontStyle: 'italic',
     flex: 1,
@@ -533,9 +534,9 @@ export default function StyleGuideTab() {
                 {/* Header */}
                 <SidebarSection>
                     <Stack direction="row" align="center" justify="between" css={{ marginBottom: '$2' }}>
-                        <Heading size="small" css={{ color: '$fgDefault', fontSize: '11px', fontWeight: '$bold' }}>Collections</Heading>
+                        <Heading size="small" css={{ color: '$fgDefault', fontSize: '$small', fontWeight: '$bold' }}>Collections</Heading>
                         <IconButton
-                            icon={<RefreshDouble width={12} height={12} />}
+                            icon={<RefreshDouble width={ICON_SIZE.sm} height={ICON_SIZE.sm} />}
                             variant="invisible"
                             size="small"
                             onClick={loadVariables}
@@ -544,9 +545,9 @@ export default function StyleGuideTab() {
                             css={{ color: '$fgSubtle' }}
                         />
                     </Stack>
-                    {isLoadingVars && <Text css={{ color: '$fgSubtle', fontSize: '10px' }}>Loading...</Text>}
+                    {isLoadingVars && <Text css={{ color: '$fgSubtle', fontSize: '$xsmall' }}>Loading...</Text>}
                     {!isLoadingVars && collections.length === 0 && (
-                        <Text css={{ color: '$fgSubtle', fontSize: '10px' }}>
+                        <Text css={{ color: '$fgSubtle', fontSize: '$xsmall' }}>
                             No variable collections found on canvas.
                         </Text>
                     )}
@@ -558,10 +559,10 @@ export default function StyleGuideTab() {
                                 onClick={() => setSelectedCollectionId(col.id)}
                                 as="button"
                             >
-                                <Text css={{ fontSize: '11px', color: 'inherit', fontWeight: selectedCollectionId === col.id ? '$bold' : '$regular' }}>
-                                    {col.name}
+                                <Text css={{ fontSize: '$small', color: 'inherit', fontWeight: selectedCollectionId === col.id ? '$bold' : '$regular' }}>
+                                {col.name}
                                 </Text>
-                                <Text css={{ fontSize: '9px', color: '$fgSubtle' }}>
+                                <Text css={{ fontSize: '$xsmall', color: '$fgSubtle' }}>
                                     {col.variables.length}
                                     {' '}
                                     vars
@@ -574,7 +575,7 @@ export default function StyleGuideTab() {
                 {/* Mode selector */}
                 {selectedCollection && selectedCollection.modes.length > 0 && (
                     <SidebarSection>
-                        <Text css={{ color: '$fgSubtle', fontSize: '9px', fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$2' }}>MODE</Text>
+                        <Text css={{ color: '$fgSubtle', fontSize: '$xsmall', fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$2' }}>MODE</Text>
                         <Stack direction="column" gap={1}>
                             {selectedCollection.modes.map((mode) => (
                                 <ModeBtn
@@ -584,7 +585,7 @@ export default function StyleGuideTab() {
                                     as="button"
                                     css={{ width: '100%', textAlign: 'left' }}
                                 >
-                                    <Text css={{ fontSize: '10px', color: 'inherit' }}>
+                                    <Text css={{ fontSize: '$xsmall', color: 'inherit' }}>
                                         {mode.name || mode.modeId}
                                     </Text>
                                 </ModeBtn>
@@ -595,7 +596,7 @@ export default function StyleGuideTab() {
                             size="small"
                             onClick={handleGenerateFromVariables}
                             disabled={isGeneratingFromVars || filteredVariables.length === 0}
-                            css={{ width: '100%', marginTop: '$2', fontSize: '10px' }}
+                            css={{ width: '100%', marginTop: '$2', fontSize: '$xsmall' }}
                         >
                             {isGeneratingFromVars ? 'Generating...' : `Generate for ${selectedCollection.modes.find((m) => m.modeId === activeModeId)?.name || 'mode'}`}
                         </Button>
@@ -611,12 +612,12 @@ export default function StyleGuideTab() {
                                 if (!count) return null;
                                 return (
                                     <Stack key={type} direction="row" align="center" justify="between">
-                                        <Text css={{ fontSize: '10px', color: '$fgMuted' }}>
+                                        <Text css={{ fontSize: '$xsmall', color: '$fgMuted' }}>
                                             {typeIcon(type)}
                                             {' '}
                                             {typeLabel(type)}
                                         </Text>
-                                        <Text css={{ fontSize: '10px', color: '$fgSubtle' }}>{count}</Text>
+                                        <Text css={{ fontSize: '$xsmall', color: '$fgSubtle' }}>{count}</Text>
                                     </Stack>
                                 );
                             })}
@@ -630,7 +631,7 @@ export default function StyleGuideTab() {
                 {/* Search bar + group toggle */}
                 <MainHeader>
                     <Stack direction="row" align="center" gap={2} css={{ flexWrap: 'wrap' }}>
-                        <Search width={12} height={12} style={{ color: 'var(--colors-fgSubtle)', flexShrink: 0 }} />
+                        <Search width={ICON_SIZE.sm} height={ICON_SIZE.sm} style={{ color: 'var(--colors-fgSubtle)', flexShrink: 0 }} />
                         <input
                             type="text"
                             placeholder={selectedCollection ? `Search in ${selectedCollection.name}...` : 'Select a collection'}
@@ -641,13 +642,13 @@ export default function StyleGuideTab() {
                                 background: 'transparent',
                                 border: 'none',
                                 outline: 'none',
-                                fontSize: '11px',
+                                fontSize: `${CODE_FONT_SIZE}px`,
                                 color: 'var(--colors-fgDefault)',
                             }}
                         />
                         {searchQuery && (
                             <IconButton
-                                icon={<Xmark width={10} height={10} />}
+                                icon={<Xmark width={ICON_SIZE.xs} height={ICON_SIZE.xs} />}
                                 variant="invisible"
                                 size="small"
                                 onClick={() => setSearchQuery('')}
@@ -658,7 +659,7 @@ export default function StyleGuideTab() {
                             as="button"
                             onClick={() => setGroupByPath((b) => !b)}
                             css={{
-                                fontSize: '9px',
+                                fontSize: '$xsmall',
                                 color: '$fgSubtle',
                                 background: 'transparent',
                                 border: '1px solid $borderMuted',
@@ -672,7 +673,7 @@ export default function StyleGuideTab() {
                             {groupByPath ? 'By path' : 'By type'}
                         </Box>
                         <IconButton
-                            icon={<Download width={12} height={12} />}
+                            icon={<Download width={ICON_SIZE.sm} height={ICON_SIZE.sm} />}
                             variant="invisible"
                             size="small"
                             onClick={downloadJson}
@@ -687,10 +688,10 @@ export default function StyleGuideTab() {
                 <ScrollArea>
                     {!selectedCollection && (
                         <Box css={{ padding: '$8', textAlign: 'center' }}>
-                            <Text css={{ color: '$fgMuted', fontSize: '12px', display: 'block', marginBottom: '$1' }}>
+                            <Text css={{ color: '$fgMuted', fontSize: '$small', display: 'block', marginBottom: '$1' }}>
                                 ← Select a collection
                             </Text>
-                            <Text css={{ color: '$fgSubtle', fontSize: '10px' }}>
+                            <Text css={{ color: '$fgSubtle', fontSize: '$xsmall' }}>
                                 Choose a variable collection from the left panel to browse its tokens.
                             </Text>
                         </Box>
@@ -698,7 +699,7 @@ export default function StyleGuideTab() {
 
                     {selectedCollection && filteredVariables.length === 0 && searchQuery && (
                         <Box css={{ padding: '$6', textAlign: 'center' }}>
-                            <Text css={{ color: '$fgMuted', fontSize: '11px' }}>
+                            <Text css={{ color: '$fgMuted', fontSize: '$xsmall' }}>
                                 No variables match
                                 {' '}
                                 &quot;
@@ -711,10 +712,10 @@ export default function StyleGuideTab() {
                     {grouped.map(({ type, items }) => (
                         <Box key={type} css={{ marginBottom: '$5' }}>
                             <GroupHeader>
-                                <Text css={{ fontSize: '10px', fontWeight: '$bold', color: '$fgMuted', letterSpacing: '0.08em' }}>
+                                <Text css={{ fontSize: '$xsmall', fontWeight: '$bold', color: '$fgMuted', letterSpacing: '0.08em' }}>
                                     {groupByPath ? type : `${typeIcon(type)}  ${typeLabel(type).toUpperCase()}`}
                                 </Text>
-                                <Text css={{ fontSize: '9px', color: '$fgSubtle', marginLeft: 'auto' }}>
+                                <Text css={{ fontSize: '$xsmall', color: '$fgSubtle', marginLeft: 'auto' }}>
                                     {items.length}
                                 </Text>
                             </GroupHeader>
@@ -731,14 +732,14 @@ export default function StyleGuideTab() {
                                             />
                                         </ColorSwatch>
                                         <Box css={{ flex: 1, minWidth: 0 }}>
-                                            <Text css={{ fontSize: '11px', color: '$fgDefault', fontWeight: '$medium', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            <Text css={{ fontSize: '$small', color: '$fgDefault', fontWeight: '$medium', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 {v.name.split('/').pop()}
                                             </Text>
-                                            <Text css={{ fontSize: '9px', color: '$fgSubtle', display: 'block' }}>
+                                            <Text css={{ fontSize: '$xsmall', color: '$fgSubtle', display: 'block' }}>
                                                 {v.name.includes('/') ? v.name.split('/').slice(0, -1).join('/') : ''}
                                             </Text>
                                         </Box>
-                                        <Text css={{ fontSize: '10px', color: '$fgMuted', fontFamily: '$mono', flexShrink: 0 }}>
+                                        <Text css={{ fontSize: '$xsmall', color: '$fgMuted', fontFamily: '$mono', flexShrink: 0 }}>
                                             {label}
                                         </Text>
                                     </VarRow>
@@ -756,10 +757,10 @@ export default function StyleGuideTab() {
                                             {display}
                                         </TypographySample>
                                         <Box css={{ flex: 1, minWidth: 0, marginLeft: '$2' }}>
-                                            <Text css={{ fontSize: '11px', color: '$fgDefault', fontWeight: '$medium', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            <Text css={{ fontSize: '$small', color: '$fgDefault', fontWeight: '$medium', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 {v.name.split('/').pop()}
                                             </Text>
-                                            <Text css={{ fontSize: '9px', color: '$fgSubtle' }}>
+                                            <Text css={{ fontSize: '$xsmall', color: '$fgSubtle' }}>
                                                 {v.name.includes('/') ? v.name.split('/').slice(0, -1).join('/') : ''}
                                             </Text>
                                         </Box>
@@ -774,8 +775,8 @@ export default function StyleGuideTab() {
                                     <VarRow key={v.id}>
                                         <Box
                                             css={{
-                                                width: '28px',
-                                                height: '28px',
+                                                width: `${CONTROL_HEIGHT.md}px`,
+                                                height: `${CONTROL_HEIGHT.md}px`,
                                                 borderRadius: '4px',
                                                 backgroundColor: '$bgSubtle',
                                                 border: '1px solid $borderMuted',
@@ -783,7 +784,7 @@ export default function StyleGuideTab() {
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
                                                 flexShrink: 0,
-                                                fontSize: '10px',
+                                                fontSize: '$xsmall',
                                                 color: '$fgMuted',
                                                 fontFamily: '$mono',
                                             }}
@@ -791,14 +792,14 @@ export default function StyleGuideTab() {
                                             {typeIcon(type)}
                                         </Box>
                                         <Box css={{ flex: 1, minWidth: 0 }}>
-                                            <Text css={{ fontSize: '11px', color: '$fgDefault', fontWeight: '$medium', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            <Text css={{ fontSize: '$small', color: '$fgDefault', fontWeight: '$medium', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 {v.name.split('/').pop()}
                                             </Text>
-                                            <Text css={{ fontSize: '9px', color: '$fgSubtle' }}>
+                                            <Text css={{ fontSize: '$xsmall', color: '$fgSubtle' }}>
                                                 {v.name.includes('/') ? v.name.split('/').slice(0, -1).join('/') : ''}
                                             </Text>
                                         </Box>
-                                        <Text css={{ fontSize: '10px', color: '$fgMuted', fontFamily: '$mono', flexShrink: 0 }}>
+                                        <Text css={{ fontSize: '$xsmall', color: '$fgMuted', fontFamily: '$mono', flexShrink: 0 }}>
                                             {display}
                                         </Text>
                                     </VarRow>
@@ -814,9 +815,9 @@ export default function StyleGuideTab() {
                 {/* Title + settings toggle */}
                 <Box css={{ padding: '$3 $3 0', flexShrink: 0 }}>
                     <Stack direction="row" align="center" justify="between" css={{ marginBottom: '$1' }}>
-                        <Heading size="small" css={{ fontSize: '12px', fontWeight: '$bold', color: '$fgDefault' }}>Style Guide</Heading>
+                        <Heading size="small" css={{ fontSize: '$small', fontWeight: '$bold', color: '$fgDefault' }}>Style Guide</Heading>
                         <IconButton
-                            icon={<Settings width={13} height={13} />}
+                            icon={<Settings width={ICON_SIZE.md} height={ICON_SIZE.md} />}
                             variant="invisible"
                             size="small"
                             onClick={() => setShowSettings((s) => !s)}
@@ -824,7 +825,7 @@ export default function StyleGuideTab() {
                             title="Publish settings"
                         />
                     </Stack>
-                    <Text css={{ color: '$fgSubtle', fontSize: '10px' }}>
+                    <Text css={{ color: '$fgSubtle', fontSize: '$xsmall' }}>
                         Generate a style guide on canvas from your tokens.
                     </Text>
                 </Box>
@@ -833,16 +834,16 @@ export default function StyleGuideTab() {
                 {showSettings && (
                     <Box css={{ margin: '$3', padding: '$3', backgroundColor: '$bgSubtle', borderRadius: '6px', border: '1px solid $borderMuted' }}>
                         <Stack direction="row" align="center" justify="between" css={{ marginBottom: '$2' }}>
-                            <Text css={{ fontSize: '10px', fontWeight: '$bold', color: '$fgMuted', letterSpacing: '0.06em' }}>EXPORT / PUBLISH</Text>
-                            <IconButton icon={<Xmark width={10} height={10} />} variant="invisible" size="small" onClick={() => setShowSettings(false)} css={{ color: '$fgSubtle' }} />
+                            <Text css={{ fontSize: '$xsmall', fontWeight: '$bold', color: '$fgMuted', letterSpacing: '0.06em' }}>EXPORT / PUBLISH</Text>
+                            <IconButton icon={<Xmark width={ICON_SIZE.xs} height={ICON_SIZE.xs} />} variant="invisible" size="small" onClick={() => setShowSettings(false)} css={{ color: '$fgSubtle' }} />
                         </Stack>
 
                         {/* Info: correct Zeroheight sync method */}
                         <Box css={{ padding: '$2', backgroundColor: '$bgDefault', borderRadius: '4px', border: '1px solid $borderMuted', marginBottom: '$3' }}>
-                            <Text css={{ fontSize: '10px', color: '$fgMuted', display: 'block', marginBottom: '$1', fontWeight: '$bold' }}>
+                            <Text css={{ fontSize: '$xsmall', color: '$fgMuted', display: 'block', marginBottom: '$1', fontWeight: '$bold' }}>
                                 ℹ️ How to sync with Zeroheight
                             </Text>
-                            <Text css={{ fontSize: '10px', color: '$fgSubtle', lineHeight: 1.5 }}>
+                            <Text css={{ fontSize: '$xsmall', color: '$fgSubtle', lineHeight: 1.5 }}>
                                 The Zeroheight API cannot push variables — use their official
                                 {' '}
                                 <Box
@@ -864,14 +865,14 @@ export default function StyleGuideTab() {
                             variant="secondary"
                             size="small"
                             onClick={handleDownloadStyleDictionary}
-                            css={{ width: '100%', fontSize: '10px', marginBottom: '$2' }}
+                            css={{ width: '100%', fontSize: '$xsmall', marginBottom: '$2' }}
                         >
                             ↓ Download Style Dictionary JSON
                         </Button>
 
                         {/* Optional: Zeroheight API token for page status reads */}
                         <Box css={{ marginBottom: '$2' }}>
-                            <Label css={{ fontSize: '9px', color: '$fgSubtle', fontWeight: '$bold', letterSpacing: '0.06em', display: 'block', marginBottom: '$1' }}>
+                            <Label css={{ fontSize: '$xsmall', color: '$fgSubtle', fontWeight: '$bold', letterSpacing: '0.06em', display: 'block', marginBottom: '$1' }}>
                                 ZEROHEIGHT API TOKEN (OPTIONAL)
                             </Label>
                             <TextInput
@@ -879,9 +880,9 @@ export default function StyleGuideTab() {
                                 placeholder="Enterprise Bearer token..."
                                 value={settings.zeroheightAPIKey || ''}
                                 onChange={handleAPIKeyChange}
-                                css={{ fontSize: '11px', height: '28px', backgroundColor: '$bgDefault' }}
+                                css={{ fontSize: '$xsmall', height: '28px', backgroundColor: '$bgDefault' }}
                             />
-                            <Text css={{ fontSize: '9px', color: '$fgSubtle', marginTop: '$1', display: 'block' }}>
+                            <Text css={{ fontSize: '$xsmall', color: '$fgSubtle', marginTop: '$1', display: 'block' }}>
                                 Only needed for reading styleguide page statuses (Enterprise plan).
                             </Text>
                         </Box>
@@ -892,10 +893,10 @@ export default function StyleGuideTab() {
                 {statusMsg && (
                     <Box css={{ padding: '0 $3' }}>
                         <StatusBanner type={statusMsg.type}>
-                            {statusMsg.type === 'error' && <Xmark width={11} height={11} />}
-                            {statusMsg.type === 'success' && <Check width={11} height={11} />}
-                            <Text css={{ fontSize: '10px', color: 'inherit', flex: 1 }}>{statusMsg.text}</Text>
-                            <IconButton icon={<Xmark width={9} height={9} />} variant="invisible" size="small" onClick={() => setStatusMsg(null)} css={{ color: 'inherit', flexShrink: 0 }} />
+            {statusMsg.type === 'error' && <Xmark width={ICON_SIZE.sm} height={ICON_SIZE.sm} />}
+            {statusMsg.type === 'success' && <Check width={ICON_SIZE.sm} height={ICON_SIZE.sm} />}
+                            <Text css={{ fontSize: '$xsmall', color: 'inherit', flex: 1 }}>{statusMsg.text}</Text>
+                            <IconButton icon={<Xmark width={ICON_SIZE.xs} height={ICON_SIZE.xs} />} variant="invisible" size="small" onClick={() => setStatusMsg(null)} css={{ color: 'inherit', flexShrink: 0 }} />
                         </StatusBanner>
                     </Box>
                 )}
@@ -903,26 +904,26 @@ export default function StyleGuideTab() {
                 {/* Progress */}
                 {(isGenerating || isUpdating) && progressMsg && (
                     <Box css={{ padding: '0 $3 $2' }}>
-                        <Text css={{ color: '$fgSubtle', fontSize: '10px', fontStyle: 'italic' }}>{progressMsg}</Text>
+                        <Text css={{ color: '$fgSubtle', fontSize: '$xsmall', fontStyle: 'italic' }}>{progressMsg}</Text>
                     </Box>
                 )}
 
                 <Box css={{ padding: '$3', borderBottom: '1px solid $borderMuted', flexShrink: 0 }}>
                     {/* Themes section */}
                     <Stack direction="row" align="center" justify="between" css={{ marginBottom: '$2' }}>
-                        <Text css={{ fontSize: '9px', fontWeight: '$bold', color: '$fgMuted', letterSpacing: '0.06em' }}>THEMES</Text>
+                        <Text css={{ fontSize: '$xsmall', fontWeight: '$bold', color: '$fgMuted', letterSpacing: '0.06em' }}>THEMES</Text>
                         <Stack direction="row" gap={2}>
                             <Box
                                 as="button"
-                                css={{ fontSize: '9px', color: '$accentDefault', cursor: 'pointer', border: 'none', background: 'none', padding: 0 }}
+                                css={{ fontSize: '$xsmall', color: '$accentDefault', cursor: 'pointer', border: 'none', background: 'none', padding: 0 }}
                                 onClick={handleSelectAll}
                             >
                                 All
                             </Box>
-                            <Text css={{ fontSize: '9px', color: '$fgSubtle' }}>·</Text>
+                            <Text css={{ fontSize: '$xsmall', color: '$fgSubtle' }}>·</Text>
                             <Box
                                 as="button"
-                                css={{ fontSize: '9px', color: '$fgSubtle', cursor: 'pointer', border: 'none', background: 'none', padding: 0 }}
+                                css={{ fontSize: '$xsmall', color: '$fgSubtle', cursor: 'pointer', border: 'none', background: 'none', padding: 0 }}
                                 onClick={handleDeselectAll}
                             >
                                 None
@@ -932,7 +933,7 @@ export default function StyleGuideTab() {
 
                     {themes.length === 0 && (
                         <Box css={{ padding: '$3', backgroundColor: '$bgSubtle', borderRadius: '4px', border: '1px solid $borderMuted' }}>
-                            <Text css={{ color: '$fgSubtle', fontSize: '10px' }}>
+                            <Text css={{ color: '$fgSubtle', fontSize: '$xsmall' }}>
                                 No themes found. Create themes in the Themes tab first.
                             </Text>
                         </Box>
@@ -957,7 +958,7 @@ export default function StyleGuideTab() {
                                 >
                                     <Box
                                         css={{
-                                            width: '14px',
+                                            width: `${ICON_SIZE.md}px`,
                                             height: '14px',
                                             borderRadius: '3px',
                                             border: '1px solid $borderMuted',
@@ -968,9 +969,9 @@ export default function StyleGuideTab() {
                                             backgroundColor: isSelected ? '$accentDefault' : 'transparent',
                                         }}
                                     >
-                                        {isSelected && <Check width={9} height={9} style={{ color: 'var(--colors-fgOnEmphasis)' }} />}
+                                        {isSelected && <Check width={ICON_SIZE.xs} height={ICON_SIZE.xs} style={{ color: 'var(--colors-fgOnEmphasis)' }} />}
                                     </Box>
-                                    <Text css={{ fontSize: '11px', color: '$fgDefault' }}>{theme.name}</Text>
+                                    <Text css={{ fontSize: '$small', color: '$fgDefault' }}>{theme.name}</Text>
                                 </Stack>
                             );
                         })}
@@ -984,7 +985,7 @@ export default function StyleGuideTab() {
                             variant="primary"
                             onClick={handleGenerate}
                             disabled={isGenerating || selectedThemeIds.length === 0}
-                            css={{ width: '100%', fontSize: '11px' }}
+                            css={{ width: '100%', fontSize: '$small' }}
                         >
                             {isGenerating
                                 ? progressMsg || 'Generating...'
@@ -994,12 +995,12 @@ export default function StyleGuideTab() {
                             variant="secondary"
                             onClick={handleUpdate}
                             disabled={isUpdating || isGenerating || selectedThemeIds.length === 0}
-                            css={{ width: '100%', fontSize: '11px' }}
+                            css={{ width: '100%', fontSize: '$small' }}
                         >
                             {isUpdating ? 'Updating...' : 'Update Existing'}
                         </Button>
                     </Stack>
-                    <Text css={{ color: '$fgSubtle', fontSize: '9px', marginTop: '$2', display: 'block', textAlign: 'center' }}>
+                    <Text css={{ color: '$fgSubtle', fontSize: '$xsmall', marginTop: '$2', display: 'block', textAlign: 'center' }}>
                         Press Enter to generate
                     </Text>
                 </Box>

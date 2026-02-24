@@ -114,6 +114,19 @@ export default function InspectorTokenSingle({
   const modeKeys = token.modes ? Object.keys(token.modes) : [];
   const isModeDependent = modeKeys.length > 1;
 
+  // Impact: component count and shared status
+  const componentGroups = React.useMemo(() => {
+    const map = new Map<string, number>();
+    for (const n of token.nodes) {
+      const key = n.componentName ?? '(Unstyled / Frame)';
+      map.set(key, (map.get(key) ?? 0) + 1);
+    }
+    return map;
+  }, [token.nodes]);
+  const componentCount = componentGroups.size;
+  const isShared = componentCount >= 2;
+  const modeCount = modeKeys.length;
+
   return (
     <Box
       css={{
@@ -126,14 +139,16 @@ export default function InspectorTokenSingle({
       }}
       data-testid={`inspector-token-single-${token.category}`}
     >
-      <Box
-        css={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: '$4',
-        }}
-      >
+        <Box
+          css={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '$1',
+            flex: 1,
+            minWidth: 0,
+          }}
+        >
+        <Box css={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '$4' }}>
         <Checkbox
           style={{ flexShrink: 0 }}
           checked={isChecked}
@@ -160,6 +175,11 @@ export default function InspectorTokenSingle({
           {token.appliedType === 'variable' && <Tooltip label={t('appliedVariable')}><IconVariable /></Tooltip>}
           {token.appliedType === 'style' && <Tooltip label={t('appliedStyle')}><StyleIcon /></Tooltip>}
           <Box css={{ fontSize: '$small' }}>{token.value}</Box>
+          {isShared && (
+            <Badge size="small" variant="accent" title="Shared by multiple components">
+              Shared
+            </Badge>
+          )}
           {isModeDependent && (
             <Tooltip label={t('modeDependent', { modes: modeKeys.join(', ') })}>
               <Badge size="small" variant="accent">
@@ -186,6 +206,29 @@ export default function InspectorTokenSingle({
               />
             )
           }
+        </Box>
+        {/* Inline impact preview */}
+        {(componentCount > 0 || modeCount > 1) && (
+          <Box css={{ fontSize: '$xxsmall', color: '$fgSubtle', paddingLeft: '24px', lineHeight: 1.3 }}>
+            Affects
+            {' '}
+            {componentCount > 0 && (
+              <>
+                {componentCount}
+                {' '}
+                {componentCount === 1 ? 'component' : 'components'}
+                {modeCount > 1 ? ' in ' : ''}
+              </>
+            )}
+            {modeCount > 1 && (
+              <>
+                {modeCount}
+                {' '}
+                modes
+              </>
+            )}
+          </Box>
+        )}
         </Box>
         {
           showDialog && (
