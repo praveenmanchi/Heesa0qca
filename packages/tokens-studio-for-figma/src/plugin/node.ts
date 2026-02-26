@@ -209,9 +209,36 @@ export function selectNodes(ids: string[]) {
   const nodes = compact(ids.map(figma.getNodeById)).filter((node) => (
     node.type !== 'PAGE' && node.type !== 'DOCUMENT'
   )) as (Exclude<BaseNode, PageNode | DocumentNode>)[];
-  figma.currentPage.selection = nodes;
+
+  // Determine primary page (page of the first resolved node)
+  let primaryPage: PageNode | null = null;
   if (nodes.length > 0) {
-    figma.viewport.scrollAndZoomIntoView(nodes);
+    let current: BaseNode | null = nodes[0];
+    while (current && current.type !== 'PAGE' && current.type !== 'DOCUMENT') {
+      current = current.parent;
+    }
+    if (current && current.type === 'PAGE') {
+      primaryPage = current as PageNode;
+    }
+  }
+
+  const nodesOnPrimaryPage = primaryPage
+    ? nodes.filter((node) => {
+      let current: BaseNode | null = node;
+      while (current && current.type !== 'PAGE' && current.type !== 'DOCUMENT') {
+        current = current.parent;
+      }
+      return current && current.type === 'PAGE' && current.id === primaryPage!.id;
+    })
+    : nodes;
+
+  if (primaryPage) {
+    figma.currentPage = primaryPage;
+  }
+
+  figma.currentPage.selection = nodesOnPrimaryPage;
+  if (nodesOnPrimaryPage.length > 0) {
+    figma.viewport.scrollAndZoomIntoView(nodesOnPrimaryPage);
   }
 }
 // Tokens: The full token object

@@ -109,6 +109,61 @@ function Settings() {
                     placeholder="AIza..."
                   />
                 </Stack>
+                <Divider />
+                <Stack direction="column" gap={3} css={{ width: '100%' }}>
+                  <Heading size="small">Dual File Mode</Heading>
+                  <Text css={{ fontSize: '$1', color: '$fgMuted' }}>
+                    Configure separate Variables and Components Figma files so UXAI can analyze cross-file
+                    variable and component usage via the Figma REST API.
+                  </Text>
+                  <Stack direction="row" justify="between" align="center" css={{ width: '100%' }}>
+                    <Label>Enable Dual File Mode</Label>
+                    <Switch
+                      checked={settings.uxaiDualFileEnabled ?? false}
+                      onCheckedChange={(checked) => dispatch.settings.setUxaiDualFileEnabled(checked as CheckedState as boolean)}
+                    />
+                  </Stack>
+                  {settings.uxaiDualFileEnabled && (
+                    <Stack direction="column" gap={3} css={{ width: '100%' }}>
+                      <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                        <Label>Variables File ID</Label>
+                        <TextInput
+                          type="text"
+                          value={settings.uxaiVariablesFileId ?? ''}
+                          onChange={(e) => dispatch.settings.setUxaiVariablesFileId(e.target.value)}
+                          placeholder="Figma file key for your Variables library"
+                        />
+                      </Stack>
+                      <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                        <Label>Variables File API Key</Label>
+                        <TextInput
+                          type="password"
+                          value={settings.uxaiVariablesFileApiKey ?? ''}
+                          onChange={(e) => dispatch.settings.setUxaiVariablesFileApiKey(e.target.value)}
+                          placeholder="Personal access token with file_variables:read"
+                        />
+                      </Stack>
+                      <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                        <Label>Components File ID</Label>
+                        <TextInput
+                          type="text"
+                          value={settings.uxaiComponentsFileId ?? ''}
+                          onChange={(e) => dispatch.settings.setUxaiComponentsFileId(e.target.value)}
+                          placeholder="Figma file key for your Components library"
+                        />
+                      </Stack>
+                      <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                        <Label>Components File API Key</Label>
+                        <TextInput
+                          type="password"
+                          value={settings.uxaiComponentsFileApiKey ?? ''}
+                          onChange={(e) => dispatch.settings.setUxaiComponentsFileApiKey(e.target.value)}
+                          placeholder="Personal access token with file_variables:read"
+                        />
+                      </Stack>
+                    </Stack>
+                  )}
+                </Stack>
               </>
             )}
           </Stack>

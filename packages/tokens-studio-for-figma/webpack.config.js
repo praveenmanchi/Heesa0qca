@@ -206,6 +206,7 @@ module.exports = wrapper((env, argv) => {
         filename: 'index.html',
         chunks: ['ui'],
         cache: argv.mode === 'production',
+        scriptLoading: 'blocking',
       }),
       argv.PREVIEW_ENV !== 'browser' && new HtmlInlineScriptPlugin({
         assetPreservePattern: [/\.js$/],

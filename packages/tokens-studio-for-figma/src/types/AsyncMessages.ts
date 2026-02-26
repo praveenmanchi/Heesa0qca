@@ -230,13 +230,41 @@ export type StyleGuideVariableData = {
   collectionId: string;
   collectionName: string;
   resolvedValue: any;
+  /**
+   * Raw Figma values by modeId. Used so the plugin side can
+   * re-resolve VARIABLE_ALIAS chains for the active mode.
+   */
   valuesByMode?: Record<string, any>;
+};
+
+export type StyleGuideGroupsConfig = {
+  /**
+   * Ordered list of group identifiers (typically the first path segment,
+   * e.g. "BorderRadius", "Size", "Space"). Groups not present here fall
+   * back to alphabetical order after the ordered ones.
+   */
+  order?: string[];
+  /**
+   * Group identifiers that should be hidden entirely from the generated
+   * style guide for this collection + mode.
+   */
+  hidden?: string[];
 };
 
 export type GenerateStyleGuideFromVariablesAsyncMessage = AsyncMessage<AsyncMessageTypes.GENERATE_STYLE_GUIDE_FROM_VARIABLES, {
   variables: StyleGuideVariableData[];
   collectionName: string;
   modeName: string;
+  /**
+   * The Figma modeId for which we’re generating the style guide.
+   * This allows the plugin to correctly resolve aliases per mode.
+   */
+  modeId: string;
+  /**
+   * Optional configuration describing how variable groups should be ordered
+   * and which groups should be hidden for this collection + mode.
+   */
+  groupsConfig?: StyleGuideGroupsConfig;
 }>;
 export type GenerateStyleGuideFromVariablesAsyncMessageResult = AsyncMessage<AsyncMessageTypes.GENERATE_STYLE_GUIDE_FROM_VARIABLES>;
 

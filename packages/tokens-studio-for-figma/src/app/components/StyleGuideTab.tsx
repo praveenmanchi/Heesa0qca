@@ -6,7 +6,7 @@ import {
   Button, Heading, TextInput, Label, IconButton,
 } from '@tokens-studio/ui';
 import {
-  Check, Settings, Xmark, Search, Download, RefreshDouble,
+  Check, Settings, Xmark, Search, Download, RefreshDouble, NavArrowUp, NavArrowDown, EyeClosed,
 } from 'iconoir-react';
 import { ICON_SIZE, CONTROL_HEIGHT, CODE_FONT_SIZE } from '@/constants/UIConstants';
 import { AsyncMessageTypes } from '@/types/AsyncMessages';
@@ -281,6 +281,7 @@ export default function StyleGuideTab() {
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [selectedModeId, setSelectedModeId] = useState<string | null>(null);
   const [groupByPath, setGroupByPath] = useState(true);
+  const [groupLayoutByKey, setGroupLayoutByKey] = useState<Record<string, { order: string[]; hidden: string[] }>>({});
 
   // ── Collections derived from variables ───────────────────────────────────
   const collections: Collection[] = useMemo(() => {
@@ -341,6 +342,84 @@ export default function StyleGuideTab() {
     });
     return order.filter((t) => g[t]).map((t) => ({ type: t, items: g[t] }));
   }, [filteredVariables, groupByPath]);
+
+  const activeModeId = selectedModeId || (selectedCollection?.modes[0]?.modeId ?? null);
+  const layoutKey = useMemo(
+    () => (selectedCollection && activeModeId ? `${selectedCollection.id}::${activeModeId}` : null),
+    [selectedCollection, activeModeId],
+  );
+
+  const displayGroups = useMemo(() => {
+    if (!groupByPath || !layoutKey) return grouped;
+    const layout = groupLayoutByKey[layoutKey];
+    if (!layout) return grouped;
+
+    const hiddenSet = new Set(layout.hidden || []);
+    const order = layout.order || [];
+    const base = grouped.filter((g) => !hiddenSet.has(g.type));
+
+    if (!order.length) {
+      return base;
+    }
+
+    const indexMap = new Map(order.map((name, idx) => [name, idx]));
+    return [...base].sort((a, b) => {
+      const ia = indexMap.has(a.type) ? indexMap.get(a.type)! : Number.MAX_SAFE_INTEGER;
+      const ib = indexMap.has(b.type) ? indexMap.get(b.type)! : Number.MAX_SAFE_INTEGER;
+      if (ia !== ib) return ia - ib;
+      return a.type.localeCompare(b.type);
+    });
+  }, [grouped, groupByPath, layoutKey, groupLayoutByKey]);
+
+  const handleMoveGroup = useCallback((groupType: string, direction: 'up' | 'down') => {
+    if (!groupByPath || !layoutKey) return;
+    setGroupLayoutByKey((prev) => {
+      const current = prev[layoutKey] || {
+        order: grouped.map((g) => g.type),
+        hidden: [],
+      };
+      const order = current.order && current.order.length ? [...current.order] : grouped.map((g) => g.type);
+      let index = order.indexOf(groupType);
+      if (index === -1) {
+        order.push(groupType);
+        index = order.length - 1;
+      }
+      const newIndex = direction === 'up' ? Math.max(0, index - 1) : Math.min(order.length - 1, index + 1);
+      if (newIndex === index) return prev;
+      const [item] = order.splice(index, 1);
+      order.splice(newIndex, 0, item);
+      return {
+        ...prev,
+        [layoutKey]: {
+          ...current,
+          order,
+        },
+      };
+    });
+  }, [groupByPath, layoutKey, grouped]);
+
+  const handleToggleGroupVisibility = useCallback((groupType: string) => {
+    if (!groupByPath || !layoutKey) return;
+    setGroupLayoutByKey((prev) => {
+      const current = prev[layoutKey] || {
+        order: grouped.map((g) => g.type),
+        hidden: [],
+      };
+      const hidden = new Set(current.hidden || []);
+      if (hidden.has(groupType)) {
+        hidden.delete(groupType);
+      } else {
+        hidden.add(groupType);
+      }
+      return {
+        ...prev,
+        [layoutKey]: {
+          ...current,
+          hidden: Array.from(hidden),
+        },
+      };
+    });
+  }, [groupByPath, layoutKey, grouped]);
 
   // ── Load variables from canvas ────────────────────────────────────────
   const loadVariables = useCallback(async () => {
@@ -485,8 +564,6 @@ export default function StyleGuideTab() {
     if (e.key === 'Enter') handleGenerate();
   }, [handleGenerate]);
 
-  const activeModeId = selectedModeId || (selectedCollection?.modes[0]?.modeId ?? null);
-
   // Generate style guide from selected collection + mode (Figma Variables)
   const [isGeneratingFromVars, setIsGeneratingFromVars] = useState(false);
   const handleGenerateFromVariables = useCallback(async () => {
@@ -507,11 +584,27 @@ export default function StyleGuideTab() {
         resolvedValue: v.resolvedValue,
         valuesByMode: v.valuesByMode,
       }));
+
+      let groupsConfig;
+      if (groupByPath && layoutKey) {
+        const layout = groupLayoutByKey[layoutKey];
+        const allTypes = grouped.map((g) => g.type);
+        const hidden = layout?.hidden || [];
+        const visibleOrderBase = (layout?.order && layout.order.length ? layout.order : allTypes)
+          .filter((t) => allTypes.includes(t) && !hidden.includes(t));
+        const order = visibleOrderBase.concat(allTypes.filter((t) => !visibleOrderBase.includes(t) && !hidden.includes(t)));
+        groupsConfig = {
+          order,
+          hidden,
+        };
+      }
       await AsyncMessageChannel.ReactInstance.message({
         type: AsyncMessageTypes.GENERATE_STYLE_GUIDE_FROM_VARIABLES,
         variables,
         collectionName: selectedCollection.name,
         modeName,
+        modeId: activeModeId,
+        groupsConfig,
       });
       setStatusMsg({ type: 'success', text: `Style guide generated for ${modeName}!` });
     } catch (err: any) {
@@ -721,7 +814,7 @@ export default function StyleGuideTab() {
             </Box>
           )}
 
-          {grouped.map(({ type, items }) => (
+          {displayGroups.map(({ type, items }) => (
             <Box key={type} css={{ marginBottom: '$5' }}>
               <GroupHeader>
                 <Text css={{
@@ -733,6 +826,31 @@ export default function StyleGuideTab() {
                 <Text css={{ fontSize: '$xsmall', color: '$fgSubtle', marginLeft: 'auto' }}>
                   {items.length}
                 </Text>
+                {groupByPath && (
+                  <Stack direction="row" gap={1} css={{ marginLeft: '$2' }}>
+                    <IconButton
+                      icon={<NavArrowUp width={ICON_SIZE.xs} height={ICON_SIZE.xs} />}
+                      variant="invisible"
+                      size="small"
+                      onClick={() => handleMoveGroup(type, 'up')}
+                      css={{ color: '$fgSubtle' }}
+                    />
+                    <IconButton
+                      icon={<NavArrowDown width={ICON_SIZE.xs} height={ICON_SIZE.xs} />}
+                      variant="invisible"
+                      size="small"
+                      onClick={() => handleMoveGroup(type, 'down')}
+                      css={{ color: '$fgSubtle' }}
+                    />
+                    <IconButton
+                      icon={<EyeClosed width={ICON_SIZE.xs} height={ICON_SIZE.xs} />}
+                      variant="invisible"
+                      size="small"
+                      onClick={() => handleToggleGroupVisibility(type)}
+                      css={{ color: '$fgSubtle' }}
+                    />
+                  </Stack>
+                )}
               </GroupHeader>
 
               {type === 'COLOR' && items.map((v) => {

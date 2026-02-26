@@ -19,6 +19,7 @@ import { AsyncMessageChannel } from '@/AsyncMessageChannel';
 import { AsyncMessageTypes } from '@/types/AsyncMessages';
 import { settingsStateSelector } from '@/selectors';
 import { getAiAnalysis, getAiStructuredChanges, type AiAnalysisResult } from '@/app/services/aiService';
+import { getDualFileUsageSummary } from '@/app/services/figmaRestService';
 import { FONT_SIZE, ICON_SIZE } from '@/constants/UIConstants';
 
 const MAX_HISTORY = 10;
@@ -166,6 +167,7 @@ export default function UXAITab() {
         : 'No collections.';
 
       let usageSummary = '';
+      let dualFileError: string | undefined;
       try {
         const searchRes = await AsyncMessageChannel.ReactInstance.message({
           type: AsyncMessageTypes.SEARCH_VARIABLE_USAGE,
@@ -184,6 +186,23 @@ export default function UXAITab() {
         // Ignore search errors
       }
 
+      // Dual-file cross-document usage (Components file via REST API)
+      if (settings?.uxaiDualFileEnabled) {
+        const dualRes = await getDualFileUsageSummary({
+          enabled: !!settings.uxaiDualFileEnabled,
+          variablesFileId: settings.uxaiVariablesFileId,
+          variablesFileApiKey: settings.uxaiVariablesFileApiKey,
+          componentsFileId: settings.uxaiComponentsFileId,
+          componentsFileApiKey: settings.uxaiComponentsFileApiKey,
+        });
+        if (dualRes.summary) {
+          usageSummary = `${usageSummary || ''}\n\n### Cross-file Variable Usage (Components file)\n${dualRes.summary}`.trim();
+        }
+        if (dualRes.error) {
+          dualFileError = dualRes.error;
+        }
+      }
+
       const analysis = await getAiAnalysis(provider, apiKey, prompt.trim(), {
         variablesSummary,
         collectionsSummary,
@@ -199,6 +218,9 @@ export default function UXAITab() {
       setResult(analysis);
       setActiveHistoryId(entry.id);
       setHistory((prev) => [entry, ...prev].slice(0, MAX_HISTORY));
+      if (dualFileError) {
+        setError((prev) => (prev ? `${prev}\n${dualFileError}` : dualFileError || null));
+      }
     } catch (err: any) {
       const msg = err?.message ?? 'Analysis failed.';
       const isNetwork = /failed to fetch|networkerror|cors/i.test(String(msg));

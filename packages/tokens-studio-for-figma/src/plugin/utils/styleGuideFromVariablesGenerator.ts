@@ -1,6 +1,6 @@
 import { figmaRGBToHex } from '@figma-plugin/helpers';
 import { convertToFigmaColor } from '../figmaTransforms/colors';
-import type { StyleGuideVariableData } from '@/types/AsyncMessages';
+import type { StyleGuideGroupsConfig, StyleGuideVariableData } from '@/types/AsyncMessages';
 
 const white = { r: 1, g: 1, b: 1 };
 const black = { r: 0, g: 0, b: 0 };
@@ -49,6 +49,43 @@ async function createTextNode(
   return text;
 }
 
+function isVariableAlias(val: any): val is { type: 'VARIABLE_ALIAS'; id: string } {
+  return !!val && typeof val === 'object' && val.type === 'VARIABLE_ALIAS' && typeof val.id === 'string';
+}
+
+function getValueFromMapForMode(valuesByMode: Record<string, any> | undefined, modeId?: string) {
+  if (!valuesByMode || Object.keys(valuesByMode).length === 0) return undefined;
+  if (modeId && modeId in valuesByMode) return valuesByMode[modeId];
+  const firstKey = Object.keys(valuesByMode)[0];
+  return valuesByMode[firstKey];
+}
+
+async function resolveAliasChain(input: any, modeId?: string, depth: number = 0): Promise<any> {
+  if (!isVariableAlias(input) || depth > 5) return input;
+
+  try {
+    const variable = figma.variables.getVariableById(input.id);
+    if (!variable) return input;
+    const raw = getValueFromMapForMode(variable.valuesByMode as Record<string, any>, modeId);
+    if (!raw) return input;
+    if (isVariableAlias(raw)) {
+      return resolveAliasChain(raw, modeId, depth + 1);
+    }
+    return raw;
+  } catch {
+    return input;
+  }
+}
+
+async function getResolvedValueForMode(v: StyleGuideVariableData, modeId?: string): Promise<any> {
+  const base = getValueFromMapForMode(v.valuesByMode, modeId);
+  if (!base) return v.resolvedValue;
+  if (isVariableAlias(base)) {
+    return resolveAliasChain(base, modeId);
+  }
+  return base;
+}
+
 function resolveColorValue(val: any): { color: RGB; opacity: number } | null {
   if (!val) return null;
   if (typeof val === 'object' && 'r' in val && 'g' in val && 'b' in val) {
@@ -78,6 +115,32 @@ function groupVariablesByPath(variables: StyleGuideVariableData[]): Record<strin
     groups[topKey].push(v);
   }
   return groups;
+}
+
+function getOrderedPathGroups(
+  pathGroups: Record<string, StyleGuideVariableData[]>,
+  groupsConfig?: StyleGuideGroupsConfig,
+): [string, StyleGuideVariableData[]][] {
+  let entries = Object.entries(pathGroups);
+  if (!groupsConfig) {
+    return entries.sort(([a], [b]) => a.localeCompare(b));
+  }
+
+  const hiddenSet = new Set(groupsConfig.hidden || []);
+  entries = entries.filter(([name]) => !hiddenSet.has(name));
+
+  const order = groupsConfig.order || [];
+  if (!order.length) {
+    return entries.sort(([a], [b]) => a.localeCompare(b));
+  }
+
+  const indexMap = new Map(order.map((name, idx) => [name, idx]));
+  return entries.sort(([aName], [bName]) => {
+    const ia = indexMap.has(aName) ? indexMap.get(aName)! : Number.MAX_SAFE_INTEGER;
+    const ib = indexMap.has(bName) ? indexMap.get(bName)! : Number.MAX_SAFE_INTEGER;
+    if (ia !== ib) return ia - ib;
+    return aName.localeCompare(bName);
+  });
 }
 
 async function createColorSwatchFromVariable(v: StyleGuideVariableData): Promise<FrameNode | null> {
@@ -131,6 +194,7 @@ async function generateColorsSection(
   variables: StyleGuideVariableData[],
   container: FrameNode,
   modeName: string,
+  groupsConfig?: StyleGuideGroupsConfig,
 ) {
   const colorVars = variables.filter((v) => v.type === 'COLOR');
   if (colorVars.length === 0) return;
@@ -157,7 +221,8 @@ async function generateColorsSection(
   desc.layoutSizingHorizontal = 'FILL';
 
   const pathGroups = groupVariablesByPath(colorVars);
-  for (const [groupName, groupVars] of Object.entries(pathGroups)) {
+  const orderedGroups = getOrderedPathGroups(pathGroups, groupsConfig);
+  for (const [groupName, groupVars] of orderedGroups) {
     const topFrame = figma.createFrame();
     topFrame.layoutMode = 'VERTICAL';
     topFrame.itemSpacing = 24;
@@ -187,6 +252,7 @@ async function generateTypographySection(
   variables: StyleGuideVariableData[],
   container: FrameNode,
   modeName: string,
+  groupsConfig?: StyleGuideGroupsConfig,
 ) {
   const stringVars = variables.filter((v) => v.type === 'STRING');
   const fontVars = stringVars.filter(
@@ -216,7 +282,8 @@ async function generateTypographySection(
   desc.layoutSizingHorizontal = 'FILL';
 
   const pathGroups = groupVariablesByPath(fontVars);
-  for (const [groupName, groupVars] of Object.entries(pathGroups)) {
+  const orderedGroups = getOrderedPathGroups(pathGroups, groupsConfig);
+  for (const [groupName, groupVars] of orderedGroups) {
     const topFrame = figma.createFrame();
     topFrame.layoutMode = 'VERTICAL';
     topFrame.itemSpacing = 16;
@@ -262,6 +329,7 @@ async function generateNumbersSection(
   variables: StyleGuideVariableData[],
   container: FrameNode,
   modeName: string,
+  groupsConfig?: StyleGuideGroupsConfig,
 ) {
   const floatVars = variables.filter((v) => v.type === 'FLOAT');
   if (floatVars.length === 0) return;
@@ -288,7 +356,8 @@ async function generateNumbersSection(
   desc.layoutSizingHorizontal = 'FILL';
 
   const pathGroups = groupVariablesByPath(floatVars);
-  for (const [groupName, groupVars] of Object.entries(pathGroups)) {
+  const orderedGroups = getOrderedPathGroups(pathGroups, groupsConfig);
+  for (const [groupName, groupVars] of orderedGroups) {
     const topFrame = figma.createFrame();
     topFrame.layoutMode = 'VERTICAL';
     topFrame.itemSpacing = 12;
@@ -336,6 +405,8 @@ export async function generateStyleGuideFromVariables(
   variables: StyleGuideVariableData[],
   collectionName: string,
   modeName: string,
+  modeId?: string,
+  groupsConfig?: StyleGuideGroupsConfig,
 ) {
   try {
     if (!variables || variables.length === 0) {
@@ -343,6 +414,16 @@ export async function generateStyleGuideFromVariables(
       return;
     }
     await loadFonts();
+
+    // Normalize values so aliases are fully resolved for the current mode
+    const normalizedVariables: StyleGuideVariableData[] = [];
+    for (const v of variables) {
+      const resolved = await getResolvedValueForMode(v, modeId);
+      normalizedVariables.push({
+        ...v,
+        resolvedValue: resolved ?? v.resolvedValue,
+      });
+    }
 
     const frameName = `Style Guide — ${collectionName} (${modeName})`;
     let container = figma.currentPage.findOne((n) => n.name === frameName && n.type === 'FRAME') as FrameNode;
@@ -388,9 +469,9 @@ export async function generateStyleGuideFromVariables(
     heroLeft.appendChild(await createTextNode(collectionName, 16, 'Medium', muted));
     heroLeft.appendChild(await createTextNode(`${modeName}\nStyle Guide`, 56, 'Bold'));
 
-    await generateColorsSection(variables, container, modeName);
-    await generateTypographySection(variables, container, modeName);
-    await generateNumbersSection(variables, container, modeName);
+    await generateColorsSection(normalizedVariables, container, modeName, groupsConfig);
+    await generateTypographySection(normalizedVariables, container, modeName, groupsConfig);
+    await generateNumbersSection(normalizedVariables, container, modeName, groupsConfig);
 
     const footer = figma.createFrame();
     footer.layoutMode = 'VERTICAL';

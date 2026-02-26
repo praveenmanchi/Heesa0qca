@@ -75,6 +75,12 @@ export interface SettingsState {
   aiProvider?: 'claude' | 'gemini';
   aiClaudeApiKey?: string;
   aiGeminiApiKey?: string;
+  /** UXAI dual-file mode configuration */
+  uxaiDualFileEnabled?: boolean;
+  uxaiVariablesFileId?: string;
+  uxaiVariablesFileApiKey?: string;
+  uxaiComponentsFileId?: string;
+  uxaiComponentsFileApiKey?: string;
 }
 
 const setUI = (state: SettingsState) => {
@@ -134,6 +140,11 @@ export const settings = createModel<RootModel>()({
     aiProvider: 'claude' as const,
     aiClaudeApiKey: '',
     aiGeminiApiKey: '',
+    uxaiDualFileEnabled: false,
+    uxaiVariablesFileId: '',
+    uxaiVariablesFileApiKey: '',
+    uxaiComponentsFileId: '',
+    uxaiComponentsFileApiKey: '',
   } as SettingsState,
   reducers: {
     ...settingsStateReducers,
@@ -311,6 +322,21 @@ export const settings = createModel<RootModel>()({
     setAiGeminiApiKey(state, payload: string) {
       return { ...state, aiGeminiApiKey: payload };
     },
+    setUxaiDualFileEnabled(state, payload: boolean) {
+      return { ...state, uxaiDualFileEnabled: payload };
+    },
+    setUxaiVariablesFileId(state, payload: string) {
+      return { ...state, uxaiVariablesFileId: payload };
+    },
+    setUxaiVariablesFileApiKey(state, payload: string) {
+      return { ...state, uxaiVariablesFileApiKey: payload };
+    },
+    setUxaiComponentsFileId(state, payload: string) {
+      return { ...state, uxaiComponentsFileId: payload };
+    },
+    setUxaiComponentsFileApiKey(state, payload: string) {
+      return { ...state, uxaiComponentsFileApiKey: payload };
+    },
   },
   effects: () => ({
     setLanguage: (payload: string, rootState) => {
@@ -395,6 +421,21 @@ export const settings = createModel<RootModel>()({
       setUI(rootState.settings);
     },
     setAiGeminiApiKey: (payload: string, rootState) => {
+      setUI(rootState.settings);
+    },
+    setUxaiDualFileEnabled: (payload: boolean, rootState) => {
+      setUI(rootState.settings);
+    },
+    setUxaiVariablesFileId: (payload: string, rootState) => {
+      setUI(rootState.settings);
+    },
+    setUxaiVariablesFileApiKey: (payload: string, rootState) => {
+      setUI(rootState.settings);
+    },
+    setUxaiComponentsFileId: (payload: string, rootState) => {
+      setUI(rootState.settings);
+    },
+    setUxaiComponentsFileApiKey: (payload: string, rootState) => {
       setUI(rootState.settings);
     },
     ...Object.fromEntries(

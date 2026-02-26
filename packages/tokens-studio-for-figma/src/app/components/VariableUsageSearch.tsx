@@ -1,5 +1,5 @@
 import React, {
-  useCallback, useEffect, useRef, useState,
+  useCallback, useEffect, useRef, useState, startTransition,
 } from 'react';
 import { TextInput, Badge, Select } from '@tokens-studio/ui';
 import { Search, Xmark, MultiWindow } from 'iconoir-react';
@@ -125,9 +125,10 @@ function VariableUsageSearch() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [expandedVars, setExpandedVars] = useState<Set<string>>(new Set());
-  const [allPages, setAllPages] = useState(false);
+  const [allPages, setAllPages] = useState(true);
   const [filter, setFilter] = useState<FilterType>('all');
   const [displayCount, setDisplayCount] = useState(50);
+  const [progressText, setProgressText] = useState('');
 
   // Live suggestions state
   const [allVarNames, setAllVarNames] = useState<string[]>([]);
@@ -143,7 +144,7 @@ function VariableUsageSearch() {
     AsyncMessageChannel.ReactInstance.message({
       type: AsyncMessageTypes.SEARCH_VARIABLE_USAGE,
       query: '',
-      allPages: false,
+      allPages: true,
     }).then((resp) => {
       if (!cancelled) {
         const varNames = resp.variables.map((v) => v.variableName);
@@ -154,10 +155,23 @@ function VariableUsageSearch() {
     return () => { cancelled = true; };
   }, []);
 
+  // Listen for progress updates from plugin
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      const { pluginMessage } = event.data;
+      if (pluginMessage && pluginMessage.type === 'scan-progress') {
+        setProgressText(pluginMessage.text);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
   // Debounced full search
   const runSearch = useCallback(async (q: string, pages: boolean) => {
     setIsLoading(true);
     setHasSearched(true);
+    setProgressText('');
     setDisplayCount(50);
     try {
       const response = await AsyncMessageChannel.ReactInstance.message({
@@ -167,10 +181,11 @@ function VariableUsageSearch() {
       });
       const variableItems: SearchResultItem[] = (response.variables || []).map((v) => ({ ...v, itemType: 'variable' }));
       const textStyleItems: SearchResultItem[] = (response.textStyles || []).map((s) => ({ ...s, itemType: 'textStyle' }));
-      setResults([...variableItems, ...textStyleItems].sort((a, b) => (b.totalCount || 0) - (a.totalCount || 0)));
+      const sorted = [...variableItems, ...textStyleItems].sort((a, b) => (b.totalCount || 0) - (a.totalCount || 0));
+      setIsLoading(false);
+      startTransition(() => setResults(sorted));
     } catch (err) {
       setResults([]);
-    } finally {
       setIsLoading(false);
     }
   }, []);
@@ -211,7 +226,7 @@ function VariableUsageSearch() {
     // Debounced auto-search after 400ms of no typing
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     searchDebounceRef.current = setTimeout(() => {
-      if (val.trim().length >= 2) {
+      if (val.trim().length >= 1) {
         runSearch(val, allPages);
       } else if (val.trim().length === 0) {
         setResults([]);
@@ -316,27 +331,27 @@ function VariableUsageSearch() {
               placeholder="Search variables and text styles…"
               leadingVisual={<Search />}
               trailingAction={
-                                searchQuery
-                                  ? (
-                                    <Box
-                                      as="button"
-                                      onClick={handleClear}
-                                      css={{
-                                        background: 'none', border: 'none', cursor: 'pointer', color: '$fgSubtle', display: 'flex', alignItems: 'center', padding: '0 $1', '&:hover': { color: '$fgDefault' },
-                                      }}
-                                    >
-                                      <Xmark width={12} height={12} />
-                                    </Box>
-                                  )
-                                  : undefined
-                            }
+                searchQuery
+                  ? (
+                    <Box
+                      as="button"
+                      onClick={handleClear}
+                      css={{
+                        background: 'none', border: 'none', cursor: 'pointer', color: '$fgSubtle', display: 'flex', alignItems: 'center', padding: '0 $1', '&:hover': { color: '$fgDefault' },
+                      }}
+                    >
+                      <Xmark width={12} height={12} />
+                    </Box>
+                  )
+                  : undefined
+              }
             />
             {/* Live suggestions */}
             {showSuggestions && (
-            <SuggestionDropdown
-              suggestions={suggestions}
-              onSelect={handleSuggestionSelect}
-            />
+              <SuggestionDropdown
+                suggestions={suggestions}
+                onSelect={handleSuggestionSelect}
+              />
             )}
           </Box>
 
@@ -435,98 +450,98 @@ function VariableUsageSearch() {
       >
         {/* Loading */}
         {isLoading && (
-        <Box css={{
-          padding: '$8',
-          textAlign: 'center',
-          color: '$fgSubtle',
-          fontSize: '$bodySm',
-          backgroundColor: '$bgSubtle',
-          borderRadius: '$medium',
-          margin: '$4',
-          border: '1px solid $borderSubtle',
-        }}
-        >
-          <Box css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '$2' }}>Scanning Document</Box>
-          {allPages ? 'Scanning all pages…' : 'Scanning current page…'}
-        </Box>
+          <Box css={{
+            padding: '$8',
+            textAlign: 'center',
+            color: '$fgSubtle',
+            fontSize: '$bodySm',
+            backgroundColor: '$bgSubtle',
+            borderRadius: '$medium',
+            margin: '$4',
+            border: '1px solid $borderSubtle',
+          }}
+          >
+            <Box css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '$2' }}>Scanning Document</Box>
+            {progressText || (allPages ? 'Scanning all pages…' : 'Scanning current page…')}
+          </Box>
         )}
 
         {/* Empty states */}
         {!isLoading && hasSearched && filteredResults.length === 0 && (
-        <Box css={{
-          padding: '$8',
-          textAlign: 'center',
-          color: '$fgSubtle',
-          fontSize: '$bodySm',
-          backgroundColor: '$bgSubtle',
-          borderRadius: '$medium',
-          margin: '$4',
-          border: '1px solid $borderSubtle',
-        }}
-        >
-          <Box css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '$2' }}>No variables found</Box>
-          Try searching for a different term or adjust your filters.
-          {filter !== 'all' && (
-          <Box
-            as="button"
-            onClick={() => setFilter('all')}
-            css={{
-              display: 'block', margin: '$3 auto 0', color: '$accentDefault', fontSize: '$bodySm', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline',
-            }}
+          <Box css={{
+            padding: '$8',
+            textAlign: 'center',
+            color: '$fgSubtle',
+            fontSize: '$bodySm',
+            backgroundColor: '$bgSubtle',
+            borderRadius: '$medium',
+            margin: '$4',
+            border: '1px solid $borderSubtle',
+          }}
           >
-            Clear filter
+            <Box css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '$2' }}>No variables found</Box>
+            Try searching for a different term or adjust your filters.
+            {filter !== 'all' && (
+              <Box
+                as="button"
+                onClick={() => setFilter('all')}
+                css={{
+                  display: 'block', margin: '$3 auto 0', color: '$accentDefault', fontSize: '$bodySm', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline',
+                }}
+              >
+                Clear filter
+              </Box>
+            )}
           </Box>
-          )}
-        </Box>
         )}
 
         {!isLoading && !hasSearched && (
-        <Box css={{
-          padding: '$8',
-          textAlign: 'center',
-          color: '$fgSubtle',
-          fontSize: '$bodySm',
-          backgroundColor: '$bgSubtle',
-          borderRadius: '$medium',
-          margin: '$4',
-          border: '1px solid $borderSubtle',
-        }}
-        >
-          <Box css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '$2' }}>Search Variables</Box>
-          Type a variable name to search.
-          {allPages && (
-          <Box css={{ marginTop: '$2', color: '$fgSubtle', fontSize: '$bodyXs' }}>
-            All-pages mode: scanning every page in the document.
+          <Box css={{
+            padding: '$8',
+            textAlign: 'center',
+            color: '$fgSubtle',
+            fontSize: '$bodySm',
+            backgroundColor: '$bgSubtle',
+            borderRadius: '$medium',
+            margin: '$4',
+            border: '1px solid $borderSubtle',
+          }}
+          >
+            <Box css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '$2' }}>Search Variables</Box>
+            Type a variable name to search.
+            {allPages && (
+              <Box css={{ marginTop: '$2', color: '$fgSubtle', fontSize: '$bodyXs' }}>
+                All-pages mode: scanning every page in the document.
+              </Box>
+            )}
           </Box>
-          )}
-        </Box>
         )}
 
         {/* Expand / Collapse controls */}
         {!isLoading && visibleResults.length > 1 && (
-        <Box css={{
-          display: 'flex', justifyContent: 'flex-end', gap: '$3', marginBottom: '$3', padding: '0 $1',
-        }}
-        >
-          <Box
-            as="button"
-            onClick={handleExpandAll}
-            css={{
-              fontSize: '$bodyXs', fontWeight: 500, color: '$accentDefault', background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '$fgDefault' },
-            }}
+          <Box css={{
+            display: 'flex', justifyContent: 'flex-end', gap: '$3', marginBottom: '$3', padding: '0 $1',
+          }}
           >
-            Expand all
+            <Box
+              as="button"
+              onClick={handleExpandAll}
+              css={{
+                fontSize: '$bodyXs', fontWeight: 500, color: '$accentDefault', background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '$fgDefault' },
+              }}
+            >
+              Expand all
+            </Box>
+            <Box
+              as="button"
+              onClick={handleCollapseAll}
+              css={{
+                fontSize: '$bodyXs', fontWeight: 500, color: '$fgMuted', background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '$fgDefault' },
+              }}
+            >
+              Collapse all
+            </Box>
           </Box>
-          <Box
-            as="button"
-            onClick={handleCollapseAll}
-            css={{
-              fontSize: '$bodyXs', fontWeight: 500, color: '$fgMuted', background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '$fgDefault' },
-            }}
-          >
-            Collapse all
-          </Box>
-        </Box>
         )}
 
         {/* Result cards */}
@@ -575,30 +590,30 @@ function VariableUsageSearch() {
                   }}
                   >
                     <Badge variant={item.itemType === 'textStyle' ? 'accent' : undefined} css={{ fontSize: '$label' }}>
-                        {item.itemType === 'variable' ? 'Variable' : 'Text Style'}
-                      </Badge>
+                      {item.itemType === 'variable' ? 'Variable' : 'Text Style'}
+                    </Badge>
                     <span>{collectionLabel}</span>
                     <span title="Used by N components">
-                        <strong>Used by</strong>
-                        {' '}
-                        {componentsToShow.length}
-                        {' '}
-                        {componentsToShow.length === 1 ? 'component' : 'components'}
-                      </span>
+                      <strong>Used by</strong>
+                      {' '}
+                      {componentsToShow.length}
+                      {' '}
+                      {componentsToShow.length === 1 ? 'component' : 'components'}
+                    </span>
                     {item.itemType === 'variable' && (item as VariableUsageResult).modeCount != null && (item as VariableUsageResult).modeCount! > 0 && (
-                        <span title={(item as VariableUsageResult).modeNames?.join(', ') || ''}>
-                          <strong>Affects</strong>
-                          {' '}
-                          {(item as VariableUsageResult).modeCount}
-                          {' '}
-                          {(item as VariableUsageResult).modeCount === 1 ? 'mode' : 'modes'}
-                        </span>
-                      )}
+                      <span title={(item as VariableUsageResult).modeNames?.join(', ') || ''}>
+                        <strong>Affects</strong>
+                        {' '}
+                        {(item as VariableUsageResult).modeCount}
+                        {' '}
+                        {(item as VariableUsageResult).modeCount === 1 ? 'mode' : 'modes'}
+                      </span>
+                    )}
                     {item.pageName && allPages && (
-                        <Badge variant="accent" css={{ fontSize: '$label' }}>
-                          {item.pageName}
-                        </Badge>
-                      )}
+                      <Badge variant="accent" css={{ fontSize: '$label' }}>
+                        {item.pageName}
+                      </Badge>
+                    )}
                   </Box>
                 </Stack>
                 <Stack direction="row" gap={2} align="center" css={{ flexShrink: 0 }}>
@@ -618,7 +633,7 @@ function VariableUsageSearch() {
                     fontSize: '$bodySm', color: '$fgSubtle', transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s',
                   }}
                   >
-                                      ▼
+                    ▼
                   </Box>
                 </Stack>
               </Box>
@@ -627,57 +642,57 @@ function VariableUsageSearch() {
               {isExpanded && (
                 <Box css={{ borderTop: '1px solid $borderMuted' }}>
                   {componentsToShow.length > 0 && (
-                  <Box>
-                    <Box css={{
-                          padding: '$1 $3', fontSize: '$bodyXs', color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas',
-                        }}
-                        >
-                          Components (
-                          {componentsToShow.length}
-                          )
-                        </Box>
-                    {componentsToShow.map((comp) => (
-                          <ComponentUsageItem
-                            key={comp.componentName}
-                            componentName={comp.componentName}
-                            nodeIds={comp.nodeIds}
-                            onSelect={handleSelectNodes}
-                          />
-                        ))}
-                  </Box>
+                    <Box>
+                      <Box css={{
+                        padding: '$1 $3', fontSize: '$bodyXs', color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas',
+                      }}
+                      >
+                        Components (
+                        {componentsToShow.length}
+                        )
+                      </Box>
+                      {componentsToShow.map((comp) => (
+                        <ComponentUsageItem
+                          key={comp.componentName}
+                          componentName={comp.componentName}
+                          nodeIds={comp.nodeIds}
+                          onSelect={handleSelectNodes}
+                        />
+                      ))}
+                    </Box>
                   )}
 
                   {framesOnly.length > 0 && (
-                  <Box>
-                    <Box css={{
-                          padding: '$1 $3', fontSize: '$bodyXs', color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas', borderTop: componentsToShow.length > 0 ? '1px solid $borderMuted' : 'none',
-                        }}
+                    <Box>
+                      <Box css={{
+                        padding: '$1 $3', fontSize: '$bodyXs', color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas', borderTop: componentsToShow.length > 0 ? '1px solid $borderMuted' : 'none',
+                      }}
+                      >
+                        Frames / Groups (
+                        {framesOnly[0].nodeIds.length}
+                        {' '}
+                        nodes)
+                      </Box>
+                      <Box css={{ padding: '$2 $3', fontSize: '$bodySm', color: '$fgMuted' }}>
+                        Used in unstyled frames or groups.
+                        {' '}
+                        <Box
+                          as="button"
+                          onClick={() => handleSelectNodes(framesOnly[0].nodeIds)}
+                          css={{
+                            background: 'none', border: 'none', color: '$accentDefault', cursor: 'pointer', fontSize: '$bodySm', textDecoration: 'underline',
+                          }}
                         >
-                          Frames / Groups (
-                          {framesOnly[0].nodeIds.length}
-                          {' '}
-                          nodes)
+                          Select all
                         </Box>
-                    <Box css={{ padding: '$2 $3', fontSize: '$bodySm', color: '$fgMuted' }}>
-                          Used in unstyled frames or groups.
-                          {' '}
-                          <Box
-                            as="button"
-                            onClick={() => handleSelectNodes(framesOnly[0].nodeIds)}
-                            css={{
-                                  background: 'none', border: 'none', color: '$accentDefault', cursor: 'pointer', fontSize: '$bodySm', textDecoration: 'underline',
-                                }}
-                          >
-                                Select all
-                          </Box>
-                        </Box>
-                  </Box>
+                      </Box>
+                    </Box>
                   )}
 
                   {componentsToShow.length === 0 && framesOnly.length === 0 && (
-                  <Box css={{ padding: '$2 $3', fontSize: '$bodySm', color: '$fgSubtle' }}>
-                    No usage found on this page.
-                      </Box>
+                    <Box css={{ padding: '$2 $3', fontSize: '$bodySm', color: '$fgSubtle' }}>
+                      No usage found on this page.
+                    </Box>
                   )}
                 </Box>
               )}
@@ -687,33 +702,33 @@ function VariableUsageSearch() {
 
         {/* Load more */}
         {!isLoading && filteredResults.length > displayCount && (
-        <Box
-          as="button"
-          onClick={handleLoadMore}
-          css={{
-            display: 'block',
-            width: '100%',
-            padding: '$2',
-            textAlign: 'center',
-            fontSize: '$bodySm',
-            color: '$accentDefault',
-            background: 'transparent',
-            border: '1px solid $borderMuted',
-            borderRadius: '$small',
-            cursor: 'pointer',
-            marginTop: '$2',
-            '&:hover': { background: '$bgSubtle' },
-          }}
-        >
-          Load more (showing
-          {' '}
-          {displayCount}
-          {' '}
-          of
-          {' '}
-          {filteredResults.length}
-          )
-        </Box>
+          <Box
+            as="button"
+            onClick={handleLoadMore}
+            css={{
+              display: 'block',
+              width: '100%',
+              padding: '$2',
+              textAlign: 'center',
+              fontSize: '$bodySm',
+              color: '$accentDefault',
+              background: 'transparent',
+              border: '1px solid $borderMuted',
+              borderRadius: '$small',
+              cursor: 'pointer',
+              marginTop: '$2',
+              '&:hover': { background: '$bgSubtle' },
+            }}
+          >
+            Load more (showing
+            {' '}
+            {displayCount}
+            {' '}
+            of
+            {' '}
+            {filteredResults.length}
+            )
+          </Box>
         )}
       </Box>
 
