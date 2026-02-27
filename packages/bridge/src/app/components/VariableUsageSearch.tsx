@@ -5,6 +5,7 @@ import { TextInput, Badge, Select, Spinner } from '@tokens-studio/ui';
 import { Search, Xmark, MultiWindow } from 'iconoir-react';
 import Box from './Box';
 import Stack from './Stack';
+import { TabRoot } from '@/app/components/ui';
 import { AsyncMessageChannel } from '@/AsyncMessageChannel';
 import { AsyncMessageTypes, VariableUsageResult, TextStyleUsageResult } from '@/types/AsyncMessages';
 
@@ -196,7 +197,7 @@ function VariableUsageSearch() {
   const handleSearch = useCallback(() => {
     runSearch(searchQuery, allPages, includeLibraries);
     setShowSuggestions(false);
-  }, [runSearch, searchQuery, allPages, includeLibraries]);
+  }, [includeLibraries, runSearch, searchQuery, allPages]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -318,10 +319,7 @@ function VariableUsageSearch() {
   const visibleResults = filteredResults.slice(0, displayCount);
 
   return (
-    <Box css={{
-      gap: '$2', flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden',
-    }}
-    >
+    <TabRoot css={{ gap: '$2', overflow: 'hidden' }}>
 
       {/* ── Search Header ─────────────────────────────── */}
       <Box css={{
@@ -473,32 +471,34 @@ function VariableUsageSearch() {
       </Box>
 
       {/* ── Results ───────────────────────────────────── */}
-      <Box css={{
-        flexGrow: 1,
-        overflowY: 'auto',
-        padding: '$2',
-        '&::-webkit-scrollbar': { width: '4px' },
-        '&::-webkit-scrollbar-track': { background: 'var(--colors-bgSubtle)' },
-        '&::-webkit-scrollbar-thumb': { background: 'var(--colors-borderMuted)', borderRadius: '10px' },
-        '&::-webkit-scrollbar-thumb:hover': { background: 'var(--colors-borderDefault)' },
-      }}
+      <Box
+        css={{
+          flexGrow: 1,
+          overflowY: 'auto',
+          padding: '$2',
+          '&::-webkit-scrollbar': { width: '4px' },
+          '&::-webkit-scrollbar-track': { background: 'var(--colors-bgSubtle)' },
+          '&::-webkit-scrollbar-thumb': { background: 'var(--colors-borderMuted)', borderRadius: '10px' },
+          '&::-webkit-scrollbar-thumb:hover': { background: 'var(--colors-borderDefault)' },
+        }}
       >
         {/* Loading */}
         {isLoading && (
-          <Box css={{
-            padding: '$6 $4',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '$2',
-            color: '$fgSubtle',
-            fontSize: '$bodySm',
-            backgroundColor: '$bgSubtle',
-            borderRadius: '$medium',
-            margin: '$4',
-            border: '1px solid $borderSubtle',
-          }}
+          <Box
+            css={{
+              padding: '$6 $4',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '$2',
+              color: '$fgSubtle',
+              fontSize: '$bodySm',
+              backgroundColor: '$bgSubtle',
+              borderRadius: '$medium',
+              margin: '$4',
+              border: '1px solid $borderSubtle',
+            }}
           >
             <Spinner />
             <Box css={{ color: '$fgDefault', fontWeight: '$sansBold', marginTop: '$2' }}>
@@ -800,7 +800,7 @@ function VariableUsageSearch() {
           </span>
         </Box>
       )}
-    </Box>
+    </TabRoot>
   );
 }
 

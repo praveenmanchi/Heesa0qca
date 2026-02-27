@@ -1,0 +1,39 @@
+{
+  "name": "Bridge (Beta-V6.1)",
+  "id": "1588064189860517649",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "dist/index.html",
+  "editorType": [
+    "figma",
+    "dev"
+  ],
+  "permissions": [
+    "currentuser"
+  ],
+  "capabilities": [
+    "codegen"
+  ],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": [
+      "https://api.zeroheight.com",
+      "https://api.github.com",
+      "https://api.bitbucket.org",
+      "https://bitbucket.org",
+      "https://hooks.slack.com",
+      "https://outlook.office.com",
+      "https://*.webhook.office.com",
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com",
+      "https://www.figma.com"
+    ],
+    "reasoning": "We call Zeroheight and GitHub/Bitbucket APIs for syncing design tokens, Slack and Microsoft 365/Teams/Outlook webhooks for notifications, and Google Fonts for plugin UI typography."
+  },
+  "codegenLanguages": [
+    {
+      "label": "Tokens",
+      "value": "tokens"
+    }
+  ]
+}
