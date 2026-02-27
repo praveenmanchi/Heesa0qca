@@ -9,7 +9,7 @@ import { normalizeVariableName } from '@/utils/normalizeVariableName';
  * @param rawValue - The raw value from the token (e.g., "{accent.default}")
  * @returns true if the alias already points to the correct variable, false otherwise
  */
-export function checkVariableAliasEquality(existingValue: VariableValue, rawValue?: string): boolean {
+export async function checkVariableAliasEquality(existingValue: VariableValue, rawValue?: string): Promise<boolean> {
   // Only proceed if we have an alias reference and a rawValue with reference syntax
   if (
     !isVariableWithAliasReference(existingValue)
@@ -24,9 +24,8 @@ export function checkVariableAliasEquality(existingValue: VariableValue, rawValu
     // Extract reference name from token's rawValue (e.g., "{accent.default}" -> "accent.default")
     const referenceName = rawValue.slice(1, -1);
 
-    // Get the referenced variable name from the alias.
-    // Note: this helper is only used in contexts where synchronous variable access is allowed.
-    const referencedVariable = figma.variables.getVariableById(existingValue.id);
+    // Get the referenced variable name from the alias (async API for documentAccess: dynamic-page)
+    const referencedVariable = await figma.variables.getVariableByIdAsync(existingValue.id);
     const referencedVariableName = referencedVariable?.name;
 
     if (!referencedVariableName) {

@@ -35,7 +35,7 @@ export default async function createLocalVariablesWithoutModesInPlugin(tokens: R
   const updatedVariableCollections: VariableCollection[] = [];
   let updatedVariables: Variable[] = [];
   const figmaVariablesBeforeCreate = (await getVariablesWithoutZombies()).length;
-  const figmaVariableCollectionsBeforeCreate = figma.variables.getLocalVariableCollections().length;
+  const figmaVariableCollectionsBeforeCreate = (await figma.variables.getLocalVariableCollectionsAsync())?.length ?? 0;
 
   let figmaVariablesAfterCreate = 0;
 

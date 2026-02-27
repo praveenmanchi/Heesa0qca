@@ -66,6 +66,14 @@ export class NodeManager {
     } else if (updateMode === UpdateMode.SELECTION) {
       relevantNodes = findAll(figma.currentPage.selection, true, opts.nodesWithoutPluginData);
     } else {
+      // Full document scan: load all pages first (required with documentAccess: dynamic-page)
+      if ('loadAllPagesAsync' in figma && typeof figma.loadAllPagesAsync === 'function') {
+        try {
+          await (figma as any).loadAllPagesAsync();
+        } catch {
+          // Ignore if not supported
+        }
+      }
       relevantNodes = findAll([figma.root], false, opts.nodesWithoutPluginData);
     }
 

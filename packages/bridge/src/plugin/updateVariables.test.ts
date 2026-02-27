@@ -51,16 +51,29 @@ describe('updateVariables', () => {
     ],
   }]);
 
-  figma.variables.getVariableCollectionById = jest.fn().mockResolvedValue({
+  const existingVariable = {
+    name: 'existing/color',
+    remote: false,
+    resolvedType: 'COLOR',
+    setValueForMode: mockSetValueForMode,
+    remove: jest.fn(),
+    description: '',
+    key: 'VariableID:1:toremove',
+    variableCollectionId: 'VariableCollectionId:1:0',
+    valuesByMode: {},
+  };
+  figma.variables.getVariableCollectionByIdAsync = jest.fn().mockResolvedValue({
     id: 'VariableCollectionId:1:0',
     name: 'Collection 1',
     remote: false,
+    variableIds: ['VariableID:1:toremove'],
     modes: [
       { name: 'Default', modeId: '1:0' },
       { name: 'Dark', modeId: '1:1' },
       { name: 'Light', modeId: '1:2' },
     ],
   });
+  figma.variables.getVariableByIdAsync = jest.fn().mockResolvedValue(existingVariable);
   figma.variables.createVariable = jest.fn().mockReturnValue(newVariable);
 
   const collection = { id: 'VariableCollectionId:1:0' };

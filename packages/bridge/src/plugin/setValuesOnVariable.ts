@@ -103,7 +103,8 @@ export default async function setValuesOnVariable(
             } catch (e) {
               // If creation fails (e.g., duplicate name), try to find the existing variable by name one more time
               // This can happen if the variable was created in a previous run but the reference wasn't saved
-              const existingVariable = figma.variables.getLocalVariables().find(
+              const localVars = await figma.variables.getLocalVariablesAsync();
+              const existingVariable = localVars.find(
                 (v) => v.name === token.path && v.variableCollectionId === collection.id,
               );
               if (existingVariable) {
@@ -181,7 +182,7 @@ export default async function setValuesOnVariable(
             const rawValue = typeof token.rawValue === 'string' ? token.rawValue : undefined;
 
             // Check if the variable already has the correct alias reference before updating
-            if (!hasMetadataChanged && checkVariableAliasEquality(existingVariableValue, rawValue)) {
+            if (!hasMetadataChanged && await checkVariableAliasEquality(existingVariableValue, rawValue)) {
               // The alias already points to the correct variable, no update needed
               return;
             }

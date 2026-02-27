@@ -65,12 +65,12 @@ describe('SetValuesOnVariable - Alias Reference Testing', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCheckVariableAliasEquality.mockReturnValue(false); // Default to not matching
+    mockCheckVariableAliasEquality.mockResolvedValue(false); // Default to not matching
   });
 
   it('should not update any variables when all aliases already point to correct variables', async () => {
     // Mock all alias checks to return true (alias already points to correct variable)
-    mockCheckVariableAliasEquality.mockReturnValue(true);
+    mockCheckVariableAliasEquality.mockResolvedValue(true);
 
     const tokens = [
       {
@@ -118,7 +118,7 @@ describe('SetValuesOnVariable - Alias Reference Testing', () => {
 
   it('should update variables when aliases point to different variables', async () => {
     // Mock all alias checks to return false (alias points to wrong variable)
-    mockCheckVariableAliasEquality.mockReturnValue(false);
+    mockCheckVariableAliasEquality.mockResolvedValue(false);
 
     const tokens = [
       {

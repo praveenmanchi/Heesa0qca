@@ -81,7 +81,7 @@ export const applyUxaiChanges: AsyncMessageChannelHandlers[AsyncMessageTypes.APP
     try {
       let variable = await figma.variables.getVariableByIdAsync(u.variableId);
       if (!variable && u.variableName) {
-        const allVars = figma.variables.getLocalVariables();
+        const allVars = await figma.variables.getLocalVariablesAsync();
         variable = allVars.find((v) => v.name === u.variableName) ?? null;
       }
       if (!variable) {
@@ -122,7 +122,7 @@ export const applyUxaiChanges: AsyncMessageChannelHandlers[AsyncMessageTypes.APP
   // Create new variables
   for (const c of creates) {
     try {
-      const collection = figma.variables.getVariableCollectionById(c.collectionId);
+      const collection = await figma.variables.getVariableCollectionByIdAsync(c.collectionId);
       if (!collection) {
         errors.push(`Collection ${c.collectionId} not found for create ${c.variableName}`);
         continue;

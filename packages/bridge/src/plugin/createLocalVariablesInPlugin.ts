@@ -48,7 +48,7 @@ export default async function createLocalVariablesInPlugin(tokens: Record<string
     removed: [] as string[],
   };
   const figmaVariablesBeforeCreate = (await getVariablesWithoutZombies())?.length;
-  const figmaVariableCollectionsBeforeCreate = figma.variables.getLocalVariableCollections()?.length;
+  const figmaVariableCollectionsBeforeCreate = (await figma.variables.getLocalVariableCollectionsAsync())?.length ?? 0;
 
   let figmaVariablesAfterCreate = 0;
 
@@ -206,7 +206,7 @@ export default async function createLocalVariablesInPlugin(tokens: Record<string
   }
 
   figmaVariablesAfterCreate += (await getVariablesWithoutZombies())?.length ?? 0;
-  const figmaVariableCollectionsAfterCreate = figma.variables.getLocalVariableCollections()?.length;
+  const figmaVariableCollectionsAfterCreate = (await figma.variables.getLocalVariableCollectionsAsync())?.length ?? 0;
 
   if (figmaVariablesAfterCreate === figmaVariablesBeforeCreate) {
     notifyUI('No variables were created');

@@ -9,7 +9,7 @@ jest.mock('@/utils/normalizeVariableName');
 // Mock figma globals
 global.figma = {
   variables: {
-    getVariableById: jest.fn(),
+    getVariableByIdAsync: jest.fn(),
   },
 } as any;
 
@@ -18,18 +18,18 @@ describe('checkVariableAliasEquality', () => {
     typeof isVariableWithAliasReference
   >;
   const mockNormalizeVariableName = normalizeVariableName as jest.MockedFunction<typeof normalizeVariableName>;
-  const mockGetVariableById = figma.variables.getVariableById as jest.MockedFunction<
-    typeof figma.variables.getVariableById
+  const mockGetVariableByIdAsync = figma.variables.getVariableByIdAsync as jest.MockedFunction<
+    typeof figma.variables.getVariableByIdAsync
   >;
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should return false when existingValue is not an alias reference', () => {
+  it('should return false when existingValue is not an alias reference', async () => {
     mockIsVariableWithAliasReference.mockReturnValue(false);
 
-    const result = checkVariableAliasEquality(
+    const result = await checkVariableAliasEquality(
       {
         r: 1,
         g: 0,
@@ -40,78 +40,76 @@ describe('checkVariableAliasEquality', () => {
     );
 
     expect(result).toBe(false);
-    expect(mockGetVariableById).not.toHaveBeenCalled();
+    expect(mockGetVariableByIdAsync).not.toHaveBeenCalled();
   });
 
-  it('should return false when rawValue is not provided', () => {
+  it('should return false when rawValue is not provided', async () => {
     mockIsVariableWithAliasReference.mockReturnValue(true);
 
     const aliasValue = { type: 'VARIABLE_ALIAS', id: 'VariableID:1:9' };
-    const result = checkVariableAliasEquality(aliasValue);
+    const result = await checkVariableAliasEquality(aliasValue);
 
     expect(result).toBe(false);
-    expect(mockGetVariableById).not.toHaveBeenCalled();
+    expect(mockGetVariableByIdAsync).not.toHaveBeenCalled();
   });
 
-  it('should return false when rawValue does not have reference syntax', () => {
+  it('should return false when rawValue does not have reference syntax', async () => {
     mockIsVariableWithAliasReference.mockReturnValue(true);
 
     const aliasValue = { type: 'VARIABLE_ALIAS', id: 'VariableID:1:9' };
-    const result = checkVariableAliasEquality(aliasValue, 'accent.default');
+    const result = await checkVariableAliasEquality(aliasValue, 'accent.default');
 
     expect(result).toBe(false);
-    expect(mockGetVariableById).not.toHaveBeenCalled();
+    expect(mockGetVariableByIdAsync).not.toHaveBeenCalled();
   });
 
-  it('should return false when referenced variable is not found', () => {
+  it('should return false when referenced variable is not found', async () => {
     mockIsVariableWithAliasReference.mockReturnValue(true);
-    mockGetVariableById.mockReturnValue(null);
+    mockGetVariableByIdAsync.mockResolvedValue(null);
 
     const aliasValue = { type: 'VARIABLE_ALIAS', id: 'VariableID:1:9' };
-    const result = checkVariableAliasEquality(aliasValue, '{accent.default}');
+    const result = await checkVariableAliasEquality(aliasValue, '{accent.default}');
 
     expect(result).toBe(false);
-    expect(mockGetVariableById).toHaveBeenCalledWith('VariableID:1:9');
+    expect(mockGetVariableByIdAsync).toHaveBeenCalledWith('VariableID:1:9');
   });
 
-  it('should return true when alias points to the correct variable', () => {
+  it('should return true when alias points to the correct variable', async () => {
     mockIsVariableWithAliasReference.mockReturnValue(true);
-    mockGetVariableById.mockReturnValue({ name: 'accent/default' } as any);
+    mockGetVariableByIdAsync.mockResolvedValue({ name: 'accent/default' } as any);
     mockNormalizeVariableName.mockImplementation((name) => name.replace('/', '.'));
 
     const aliasValue = { type: 'VARIABLE_ALIAS', id: 'VariableID:1:9' };
-    const result = checkVariableAliasEquality(aliasValue, '{accent.default}');
+    const result = await checkVariableAliasEquality(aliasValue, '{accent.default}');
 
     expect(result).toBe(true);
-    expect(mockGetVariableById).toHaveBeenCalledWith('VariableID:1:9');
+    expect(mockGetVariableByIdAsync).toHaveBeenCalledWith('VariableID:1:9');
     expect(mockNormalizeVariableName).toHaveBeenCalledWith('accent/default');
     expect(mockNormalizeVariableName).toHaveBeenCalledWith('accent.default');
   });
 
-  it('should return false when alias points to a different variable', () => {
+  it('should return false when alias points to a different variable', async () => {
     mockIsVariableWithAliasReference.mockReturnValue(true);
-    mockGetVariableById.mockReturnValue({ name: 'primary/default' } as any);
+    mockGetVariableByIdAsync.mockResolvedValue({ name: 'primary/default' } as any);
     mockNormalizeVariableName.mockImplementation((name) => name.replace('/', '.'));
 
     const aliasValue = { type: 'VARIABLE_ALIAS', id: 'VariableID:1:9' };
-    const result = checkVariableAliasEquality(aliasValue, '{accent.default}');
+    const result = await checkVariableAliasEquality(aliasValue, '{accent.default}');
 
     expect(result).toBe(false);
-    expect(mockGetVariableById).toHaveBeenCalledWith('VariableID:1:9');
+    expect(mockGetVariableByIdAsync).toHaveBeenCalledWith('VariableID:1:9');
     expect(mockNormalizeVariableName).toHaveBeenCalledWith('primary/default');
     expect(mockNormalizeVariableName).toHaveBeenCalledWith('accent.default');
   });
 
-  it('should handle errors gracefully', () => {
+  it('should handle errors gracefully', async () => {
     mockIsVariableWithAliasReference.mockReturnValue(true);
-    mockGetVariableById.mockImplementation(() => {
-      throw new Error('Test error');
-    });
+    mockGetVariableByIdAsync.mockRejectedValue(new Error('Test error'));
 
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
     const aliasValue = { type: 'VARIABLE_ALIAS', id: 'VariableID:1:9' };
-    const result = checkVariableAliasEquality(aliasValue, '{accent.default}');
+    const result = await checkVariableAliasEquality(aliasValue, '{accent.default}');
 
     expect(result).toBe(false);
     expect(consoleSpy).toHaveBeenCalledWith('Error checking variable alias equality:', expect.any(Error));
@@ -119,13 +117,13 @@ describe('checkVariableAliasEquality', () => {
     consoleSpy.mockRestore();
   });
 
-  it('should extract reference name correctly from complex paths', () => {
+  it('should extract reference name correctly from complex paths', async () => {
     mockIsVariableWithAliasReference.mockReturnValue(true);
-    mockGetVariableById.mockReturnValue({ name: 'colors/semantic/accent/default' } as any);
+    mockGetVariableByIdAsync.mockResolvedValue({ name: 'colors/semantic/accent/default' } as any);
     mockNormalizeVariableName.mockImplementation((name) => name.replace(/\//g, '.'));
 
     const aliasValue = { type: 'VARIABLE_ALIAS', id: 'VariableID:1:9' };
-    const result = checkVariableAliasEquality(aliasValue, '{colors.semantic.accent.default}');
+    const result = await checkVariableAliasEquality(aliasValue, '{colors.semantic.accent.default}');
 
     expect(result).toBe(true);
     expect(mockNormalizeVariableName).toHaveBeenCalledWith('colors/semantic/accent/default');

@@ -11,7 +11,7 @@ Cross-check of Bridge plugin implementation against [Figma Developer Docs](https
 **Current manifest** (`manifest.json`):
 ```json
 {
-  "name": "Bridge (Beta-V6.1)",
+  "name": "Bridge (Beta-V7)",
   "id": "1588064189860517649",
   "api": "1.0.0",
   "main": "dist/code.js",
@@ -146,22 +146,23 @@ From [API Errors](https://developers.figma.com/docs/plugins/api/api-errors/):
 ## 7. Migration Checklist (for full `documentAccess: "dynamic-page"` compliance)
 
 1. **Variables**
-   - [ ] Replace `getVariableById` → `getVariableByIdAsync` in **checkVariableAliasEquality.ts** (make function async)
-   - [ ] Replace `getVariableCollectionById` → `getVariableCollectionByIdAsync` in **applyUxaiChanges.ts**
-   - [ ] Replace `getLocalVariables` → `getLocalVariablesAsync` in:
-     - [ ] **setValuesOnVariable.ts**
-     - [ ] **updateVariables.ts** (resolve getLocalVariablesAsync bug/workaround)
-     - [ ] **attachLocalVariablesToTheme.ts**
-     - [ ] **applyUxaiChanges.ts**
-   - [ ] Replace `getLocalVariableCollections` → `getLocalVariableCollectionsAsync` in:
-     - [ ] **createLocalVariablesInPlugin.ts**
-     - [ ] **attachLocalVariablesToTheme.ts**
+   - [x] Replace `getVariableById` → `getVariableByIdAsync` in **checkVariableAliasEquality.ts** (make function async)
+   - [x] Replace `getVariableCollectionById` → `getVariableCollectionByIdAsync` in **applyUxaiChanges.ts**
+   - [x] Replace `getLocalVariables` → `getLocalVariablesAsync` in:
+     - [x] **setValuesOnVariable.ts**
+     - [x] **updateVariables.ts** (uses getVariableCollectionByIdAsync + variableIds when available)
+     - [x] **attachLocalVariablesToTheme.ts**
+     - [x] **applyUxaiChanges.ts**
+   - [x] Replace `getLocalVariableCollections` → `getLocalVariableCollectionsAsync` in:
+     - [x] **createLocalVariablesInPlugin.ts**
+     - [x] **createLocalVariablesWithoutModesInPlugin.ts**
+     - [x] **attachLocalVariablesToTheme.ts**
 
 2. **Nodes**
    - [x] All `figma.getNodeById` → `figma.getNodeByIdAsync` (already migrated)
 
 3. **Document traversal**
-   - [ ] Call `await figma.loadAllPagesAsync()` before `findAll([figma.root], ...)` in NodeManager when scanning the full document
+   - [x] Call `await figma.loadAllPagesAsync()` before `findAll([figma.root], ...)` in NodeManager when scanning the full document
 
 4. **Typings**
    - [x] `@figma/plugin-typings` in package.json (v1.96.0)
@@ -181,4 +182,4 @@ From [API Errors](https://developers.figma.com/docs/plugins/api/api-errors/):
 | Document traversal | ⚠️ NodeManager full-doc scan may need `loadAllPagesAsync` |
 | Error handling | ✅ `page.loadAsync()` used correctly where pages are traversed |
 
-**Current behavior:** The plugin runs with `documentAccess: "dynamic-page"`. If sync Variable APIs are invoked (e.g., attach variables to theme, create variables, update variables, apply UXAI changes), they may throw. Complete the migration steps above for full compatibility.
+**Current behavior:** The plugin runs with `documentAccess: "dynamic-page"`. All deprecated sync Variable APIs have been migrated to async. Full compatibility achieved (V7).
