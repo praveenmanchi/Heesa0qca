@@ -8,6 +8,7 @@ export const extractVariablesToCanvas: AsyncMessageChannelHandlers[AsyncMessageT
   try {
     const localVariables = await figma.variables.getLocalVariablesAsync();
     const localCollections = await figma.variables.getLocalVariableCollectionsAsync();
+    const localTextStyles = await figma.getLocalTextStylesAsync();
 
     const collectionMap = new Map(localCollections.map((c) => [c.id, c.name]));
     const collectionsInfo: CollectionInfo[] = localCollections.map((c) => ({
@@ -42,6 +43,48 @@ export const extractVariablesToCanvas: AsyncMessageChannelHandlers[AsyncMessageT
           });
           lastYieldTime = Date.now();
         }
+      }
+    }
+
+    // Append local text styles as a pseudo-collection
+    if (localTextStyles.length > 0) {
+      const TEXT_STYLE_COLLECTION_ID = 'mock-text-styles-collection';
+      const TEXT_STYLE_MODE_ID = 'default';
+
+      collectionsInfo.push({
+        id: TEXT_STYLE_COLLECTION_ID,
+        name: 'Text Styles',
+        modes: [{ modeId: TEXT_STYLE_MODE_ID, name: 'Default' }],
+      });
+
+      for (let i = 0; i < localTextStyles.length; i += 1) {
+        const style = localTextStyles[i];
+
+        let displayValue: any = 'Mixed';
+        if (typeof style.fontName !== 'symbol') {
+          displayValue = {
+            family: style.fontName.family,
+            style: style.fontName.style,
+            fontSize: style.fontSize,
+            lineHeight: style.lineHeight,
+            letterSpacing: style.letterSpacing
+          };
+        } else {
+          // Fallback if the style has mixed font properties
+          displayValue = 'Multiple fonts';
+        }
+
+        variablesJson.push({
+          id: style.id,
+          name: style.name,
+          description: style.description,
+          type: 'STRING',
+          collectionId: TEXT_STYLE_COLLECTION_ID,
+          collectionName: 'Text Styles',
+          valuesByMode: {
+            [TEXT_STYLE_MODE_ID]: displayValue,
+          },
+        });
       }
     }
 

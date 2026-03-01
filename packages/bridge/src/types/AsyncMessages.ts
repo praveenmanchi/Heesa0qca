@@ -229,6 +229,7 @@ export type UpdateStyleGuideAsyncMessageResult = AsyncMessage<AsyncMessageTypes.
 export type StyleGuideVariableData = {
   id: string;
   name: string;
+  description?: string;
   type: 'COLOR' | 'FLOAT' | 'STRING' | 'BOOLEAN';
   collectionId: string;
   collectionName: string;
@@ -252,6 +253,11 @@ export type StyleGuideGroupsConfig = {
    * style guide for this collection + mode.
    */
   hidden?: string[];
+  /**
+   * Whether to generate separate FrameNodes for each root group (artboards)
+   * instead of a single long frame.
+   */
+  splitArtboards?: boolean;
 };
 
 export type GenerateStyleGuideFromVariablesAsyncMessage = AsyncMessage<AsyncMessageTypes.GENERATE_STYLE_GUIDE_FROM_VARIABLES, {

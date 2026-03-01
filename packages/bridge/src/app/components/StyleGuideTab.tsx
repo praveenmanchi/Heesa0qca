@@ -3,13 +3,13 @@ import React, {
 } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  Button, Heading, TextInput, Label, IconButton,
+  Button, Heading, TextInput, Label, IconButton, Checkbox,
 } from '@tokens-studio/ui';
 import {
   Check, Settings, Xmark, Search, Download, RefreshDouble, NavArrowUp, NavArrowDown, EyeClosed,
 } from 'iconoir-react';
 import { ICON_SIZE, CONTROL_HEIGHT, CODE_FONT_SIZE } from '@/constants/UIConstants';
-import { AsyncMessageTypes } from '@/types/AsyncMessages';
+import { AsyncMessageTypes, StyleGuideGroupsConfig } from '@/types/AsyncMessages';
 import { AsyncMessageChannel } from '@/AsyncMessageChannel';
 import {
   themesListSelector, settingsStateSelector,
@@ -281,6 +281,7 @@ export default function StyleGuideTab() {
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [selectedModeId, setSelectedModeId] = useState<string | null>(null);
   const [groupByPath, setGroupByPath] = useState(true);
+  const [splitArtboards, setSplitArtboards] = useState(false);
   const [groupLayoutByKey, setGroupLayoutByKey] = useState<Record<string, { order: string[]; hidden: string[] }>>({});
 
   // ── Collections derived from variables ───────────────────────────────────
@@ -585,7 +586,7 @@ export default function StyleGuideTab() {
         valuesByMode: v.valuesByMode,
       }));
 
-      let groupsConfig;
+      let groupsConfig: StyleGuideGroupsConfig = { splitArtboards };
       if (groupByPath && layoutKey) {
         const layout = groupLayoutByKey[layoutKey];
         const allTypes = grouped.map((g) => g.type);
@@ -594,6 +595,7 @@ export default function StyleGuideTab() {
           .filter((t) => allTypes.includes(t) && !hidden.includes(t));
         const order = visibleOrderBase.concat(allTypes.filter((t) => !visibleOrderBase.includes(t) && !hidden.includes(t)));
         groupsConfig = {
+          ...groupsConfig,
           order,
           hidden,
         };
@@ -700,6 +702,14 @@ export default function StyleGuideTab() {
             >
               {isGeneratingFromVars ? 'Generating...' : `Generate for ${selectedCollection.modes.find((m) => m.modeId === activeModeId)?.name || 'mode'}`}
             </Button>
+            <Stack direction="row" align="center" gap={2} css={{ marginTop: '$3' }}>
+              <Checkbox
+                checked={splitArtboards}
+                onCheckedChange={(c) => setSplitArtboards(c === true)}
+                id="split-artboards"
+              />
+              <Label htmlFor="split-artboards" css={{ fontSize: '$xsmall', color: '$fgSubtle', cursor: 'pointer' }}>Split into separate artboards</Label>
+            </Stack>
           </SidebarSection>
         )}
 
