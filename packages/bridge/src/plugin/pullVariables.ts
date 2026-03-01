@@ -47,6 +47,23 @@ export default async function pullVariables(options: PullVariablesOptions, theme
     modes: { name: string, modeId: string }[]
   }>();
 
+  // Pre-resolve all alias IDs in batch to avoid duplicate getVariableByIdAsync calls
+  const aliasIds = new Set<string>();
+  for (const variable of localVariables) {
+    for (const value of Object.values(variable.valuesByMode)) {
+      if (typeof value === 'object' && value !== null && (value as any).type === 'VARIABLE_ALIAS' && (value as any).id) {
+        aliasIds.add((value as any).id);
+      }
+    }
+  }
+  const aliasCache = new Map<string, Variable | null>();
+  if (aliasIds.size > 0) {
+    const resolved = await Promise.all(
+      [...aliasIds].map((id) => figma.variables.getVariableByIdAsync(id)),
+    );
+    [...aliasIds].forEach((id, i) => aliasCache.set(id, resolved[i]));
+  }
+
   const createFigmaExtensions = (variable: Variable) => {
     const extensions: Record<string, any> = {};
 
@@ -120,7 +137,7 @@ export default async function pullVariables(options: PullVariablesOptions, theme
 
             let tokenValue: string | undefined;
             if (typeof value === 'object' && value !== null && (value as any).type === 'VARIABLE_ALIAS') {
-              const alias = await figma.variables.getVariableByIdAsync((value as any).id);
+              const alias = aliasCache.get((value as any).id) ?? null;
               tokenValue = alias ? `{${alias.name.replace(/\//g, '.')}}` : `{${(value as any).id}}`;
             } else {
               tokenValue = figmaRGBToHex(value as RGBA);
@@ -155,7 +172,7 @@ export default async function pullVariables(options: PullVariablesOptions, theme
             const modeName = collection?.modes.find((m) => m.modeId === mode)?.name;
             let tokenValue: string;
             if (typeof value === 'object' && value !== null && (value as any).type === 'VARIABLE_ALIAS') {
-              const alias = await figma.variables.getVariableByIdAsync((value as any).id);
+              const alias = aliasCache.get((value as any).id) ?? null;
               tokenValue = alias ? `{${alias.name.replace(/\//g, '.')}}` : `{${(value as any).id}}`;
             } else {
               tokenValue = JSON.stringify(value);
@@ -187,7 +204,7 @@ export default async function pullVariables(options: PullVariablesOptions, theme
             const modeName = collection?.modes.find((m) => m.modeId === mode)?.name;
             let tokenValue: string;
             if (typeof value === 'object' && value !== null && (value as any).type === 'VARIABLE_ALIAS') {
-              const alias = await figma.variables.getVariableByIdAsync((value as any).id);
+              const alias = aliasCache.get((value as any).id) ?? null;
               tokenValue = alias ? `{${alias.name.replace(/\//g, '.')}}` : `{${(value as any).id}}`;
             } else {
               tokenValue = String(value);
@@ -217,7 +234,7 @@ export default async function pullVariables(options: PullVariablesOptions, theme
 
             let tokenValue: string | number = value as number;
             if (typeof value === 'object' && value !== null && (value as any).type === 'VARIABLE_ALIAS') {
-              const alias = await figma.variables.getVariableByIdAsync((value as any).id);
+              const alias = aliasCache.get((value as any).id) ?? null;
               tokenValue = alias ? `{${alias.name.replace(/\//g, '.')}}` : `{${(value as any).id}}`;
             } else if (typeof value === 'number') {
               if (options.useRem) {

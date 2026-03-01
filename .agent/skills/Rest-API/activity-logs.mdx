@@ -1,0 +1,39 @@
+---
+title: Activity Logs | Developer Docs
+slug: /figma/rest-api/activity-logs
+---
+
+On this page
+
+Track what's happening in your organization with the Activity Logs API.
+
+## Getting started[​](#getting-started "Direct link to Getting started")
+
+**Who can use the Activity Logs API**
+
+*   The Activity Logs API is only available to organizations on the Enterprise plan.
+*   Only organization admins can access activity logs. Only share what you build with this API with organization admins.
+
+The Activity Logs API provides programmatic access to your organization's [activity logs](https://help.figma.com/hc/articles/360040449533-View-and-export-activity-logs). Activity logs allow you to see security events and activities happening in your Figma organization. You can use the Activity Logs API to integrate with your SIEM or other security software.
+
+In order to use the Activity Logs API, you’ll need to authenticate your request using an OAuth 2 token in order to act on behalf of the organization whose activity logs you want to access. Follow our [OAuth guide](/docs/rest-api/authentication/#oauth2) to register your application and token, then redirect the user to the following URL:
+
+```
+GET https://www.figma.com/oauth?        client_id=:client_id&        redirect_uri=:callback&        scope=org:activity_log_read&        state=:state&        response_type=code
+```
+
+![oauth-confirmation-screen](https://static.figma.com/uploads/40e93886d951bbb7c789439d3b7d0bb8a9bc7f67)
+
+**Note:**
+
+1.  Tokens used with the Activity Logs API must have `org:activity_log_read` as their scope. A token with a different scope will not be authorized to access this endpoint.
+2.  Make sure you only share what you build with this API with **Enterprise organization admins**. Only organization admins in Figma Enterprise organizations can authenticate OAuth 2 requests on behalf of their organizations.
+3.  Currently, this API can only be used by Figma Enterprise organizations building internal applications.
+
+Once you’ve received an OAuth 2 token, you can make requests to the Activity Logs API like so:
+
+```
+curl -sH 'Authorization: Bearer <TOKEN>'  'https://api.figma.com/v1/activity_logs?limit=1'
+```
+
+*   [Getting started](#getting-started)

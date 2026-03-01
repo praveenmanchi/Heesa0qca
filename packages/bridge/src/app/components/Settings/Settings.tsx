@@ -51,34 +51,34 @@ function Settings() {
       <TabContent>
         <Stack direction="column" gap={4} css={{ padding: '$3 0' }}>
 
-        {/* {uiState.onboardingExplainerSyncProviders && (
+          {/* {uiState.onboardingExplainerSyncProviders && (
           <Stack direction="column" gap={2} css={{ padding: '$4' }}>
             <OnboardingExplainer data={onboardingData} closeOnboarding={closeOnboarding} />
           </Stack>
         )} */}
-        <SyncSettings />
-        <Divider />
-        <Stack direction="column" align="start" gap={4} css={{ padding: '0 $4' }}>
-          <GithubExtractSettings />
-        </Stack>
-        <Divider />
-        <Stack direction="column" align="start" gap={4} css={{ padding: '0 $4' }}>
-          <Heading size="medium">AI Assistance (UXAI)</Heading>
-          <Stack
-            direction="column"
-            gap={4}
-            css={{
-              border: '1px solid $borderSubtle', borderRadius: '$medium', padding: '$4', width: '100%',
-            }}
-          >
-            <Stack direction="row" justify="between" align="center" css={{ width: '100%' }}>
-              <Label>Enable AI assistance</Label>
-              <Switch
-                checked={settings.aiAssistanceEnabled ?? false}
-                onCheckedChange={(checked) => dispatch.settings.setAiAssistanceEnabled(checked)}
-              />
-            </Stack>
-            {settings.aiAssistanceEnabled && (
+          <SyncSettings />
+          <Divider />
+          <Stack direction="column" align="start" gap={4} css={{ padding: '0 $4' }}>
+            <GithubExtractSettings />
+          </Stack>
+          <Divider />
+          <Stack direction="column" align="start" gap={4} css={{ padding: '0 $4' }}>
+            <Heading size="medium">AI Assistance (UXAI)</Heading>
+            <Stack
+              direction="column"
+              gap={4}
+              css={{
+                border: '1px solid $borderSubtle', borderRadius: '$medium', padding: '$4', width: '100%',
+              }}
+            >
+              <Stack direction="row" justify="between" align="center" css={{ width: '100%' }}>
+                <Label>Enable AI assistance</Label>
+                <Switch
+                  checked={settings.aiAssistanceEnabled ?? false}
+                  onCheckedChange={(checked) => dispatch.settings.setAiAssistanceEnabled(checked)}
+                />
+              </Stack>
+              {settings.aiAssistanceEnabled && (
               <>
                 <Stack direction="column" gap={2} css={{ width: '100%' }}>
                   <Label>AI Provider</Label>
@@ -167,44 +167,44 @@ function Settings() {
                   )}
                 </Stack>
               </>
-            )}
-          </Stack>
-        </Stack>
-        <Divider />
-        <Stack direction="column" align="start" gap={4} css={{ padding: '0 $4' }}>
-          <Heading size="medium">{t('settings')}</Heading>
-
-          <Stack
-            direction="column"
-            gap={4}
-            css={{
-              border: '1px solid $borderSubtle',
-              borderRadius: '$medium',
-              padding: '$4',
-              width: '100%',
-            }}
-          >
-            <RemConfiguration />
-          </Stack>
-          <Stack
-            direction="column"
-            gap={4}
-            css={{
-              border: '1px solid $borderSubtle',
-              borderRadius: '$medium',
-              padding: '$4',
-              width: '100%',
-            }}
-          >
-
-            <Stack direction="row" justify="between" gap={2} align="center" css={{ width: '100%' }}>
-              <Label>{t('resetOnboarding')}</Label>
-              <Button variant="secondary" data-testid="reset-onboarding" onClick={handleResetButton}>
-                {t('resetOnboarding')}
-              </Button>
+              )}
             </Stack>
           </Stack>
-        </Stack>
+          <Divider />
+          <Stack direction="column" align="start" gap={4} css={{ padding: '0 $4' }}>
+            <Heading size="medium">{t('settings')}</Heading>
+
+            <Stack
+              direction="column"
+              gap={4}
+              css={{
+                border: '1px solid $borderSubtle',
+                borderRadius: '$medium',
+                padding: '$4',
+                width: '100%',
+              }}
+            >
+              <RemConfiguration />
+            </Stack>
+            <Stack
+              direction="column"
+              gap={4}
+              css={{
+                border: '1px solid $borderSubtle',
+                borderRadius: '$medium',
+                padding: '$4',
+                width: '100%',
+              }}
+            >
+
+              <Stack direction="row" justify="between" gap={2} align="center" css={{ width: '100%' }}>
+                <Label>{t('resetOnboarding')}</Label>
+                <Button variant="secondary" data-testid="reset-onboarding" onClick={handleResetButton}>
+                  {t('resetOnboarding')}
+                </Button>
+              </Stack>
+            </Stack>
+          </Stack>
         </Stack>
       </TabContent>
     </TabRoot>

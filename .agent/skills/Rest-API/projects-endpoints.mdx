@@ -1,0 +1,93 @@
+---
+title: Endpoints | Developer Docs
+slug: /figma/rest-api/projects-endpoints
+---
+
+On this page
+
+See information about your projects and files within a project.
+
+info
+
+**Limited Access**
+
+The `projects` endpoints cannot be used with [public OAuth apps](/docs/rest-api/authentication/#create-an-oauth-app).
+
+## GET team projects[​](#get-team-projects-endpoint "Direct link to GET team projects")
+
+You can use this endpoint to get a list of all the projects within the specified team. It returns only projects visible to the authenticated user or owner of the developer token.
+
+It is not possible to programmatically obtain team IDs. To obtain a team ID, navigate to the team page in the Figma file browser. The team ID is present in the URL after the word team and before your team name.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`projects:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint "Direct link to HTTP Endpoint")
+
+`GET /v1/teams/:team_id/projects`
+
+Path parameters
+
+Description
+
+team\_id
+
+String
+
+ID of the team to list projects from
+
+Error codes
+
+Description
+
+400
+
+Error with the request. The "message" param on the response will describe the error.
+
+403
+
+The developer / OAuth token is invalid or expired
+
+## GET project files[​](#get-project-files-endpoint "Direct link to GET project files")
+
+List the files in a given project.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`projects:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-1 "Direct link to HTTP Endpoint")
+
+`GET /v1/projects/:project_id/files`
+
+Path parameters
+
+Description
+
+project\_id
+
+String
+
+ID of the project to list files from
+
+branch\_data
+
+Booleandefault: false
+
+Returns branch metadata in the response for each main file with a branch inside the project.
+
+Error codes
+
+Description
+
+400
+
+Error with the request. The `message` param on the response will describe the error.
+
+403
+
+The developer / OAuth token is invalid or expired
+
+*   [GET team projects](#get-team-projects-endpoint)
+*   [GET project files](#get-project-files-endpoint)

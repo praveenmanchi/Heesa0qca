@@ -654,7 +654,6 @@ export default function StyleGuideTab() {
                 key={col.id}
                 active={selectedCollectionId === col.id}
                 onClick={() => setSelectedCollectionId(col.id)}
-                as="button"
               >
                 <Text css={{ fontSize: '$small', color: 'inherit', fontWeight: selectedCollectionId === col.id ? '$bold' : '$regular' }}>
                   {col.name}
@@ -671,60 +670,59 @@ export default function StyleGuideTab() {
 
         {/* Mode selector */}
         {selectedCollection && selectedCollection.modes.length > 0 && (
-        <SidebarSection>
-          <Text css={{
-            color: '$fgSubtle', fontSize: '$xsmall', fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$2',
-          }}
-          >
-            MODE
-          </Text>
-          <Stack direction="column" gap={1}>
-            {selectedCollection.modes.map((mode) => (
-              <ModeBtn
-                key={mode.modeId}
-                active={activeModeId === mode.modeId}
-                onClick={() => setSelectedModeId(mode.modeId)}
-                as="button"
-                css={{ width: '100%', textAlign: 'left' }}
-              >
-                <Text css={{ fontSize: '$xsmall', color: 'inherit' }}>
-                  {mode.name || mode.modeId}
-                </Text>
-              </ModeBtn>
-            ))}
-          </Stack>
-          <Button
-            variant="primary"
-            size="small"
-            onClick={handleGenerateFromVariables}
-            disabled={isGeneratingFromVars || filteredVariables.length === 0}
-            css={{ width: '100%', marginTop: '$2', fontSize: '$xsmall' }}
-          >
-            {isGeneratingFromVars ? 'Generating...' : `Generate for ${selectedCollection.modes.find((m) => m.modeId === activeModeId)?.name || 'mode'}`}
-          </Button>
-        </SidebarSection>
+          <SidebarSection>
+            <Text css={{
+              color: '$fgSubtle', fontSize: '$xsmall', fontWeight: '$bold', letterSpacing: '0.08em', display: 'block', marginBottom: '$2',
+            }}
+            >
+              MODE
+            </Text>
+            <Stack direction="column" gap={1}>
+              {selectedCollection.modes.map((mode) => (
+                <ModeBtn
+                  key={mode.modeId}
+                  active={activeModeId === mode.modeId}
+                  onClick={() => setSelectedModeId(mode.modeId)}
+                  css={{ width: '100%', textAlign: 'left' }}
+                >
+                  <Text css={{ fontSize: '$xsmall', color: 'inherit' }}>
+                    {mode.name || mode.modeId}
+                  </Text>
+                </ModeBtn>
+              ))}
+            </Stack>
+            <Button
+              variant="primary"
+              size="small"
+              onClick={handleGenerateFromVariables}
+              disabled={isGeneratingFromVars || filteredVariables.length === 0}
+              css={{ width: '100%', marginTop: '$2', fontSize: '$xsmall' }}
+            >
+              {isGeneratingFromVars ? 'Generating...' : `Generate for ${selectedCollection.modes.find((m) => m.modeId === activeModeId)?.name || 'mode'}`}
+            </Button>
+          </SidebarSection>
         )}
 
         {/* Stats */}
         {selectedCollection && (
-        <SidebarSection>
-          <Stack direction="column" gap={1}>
-            {(['COLOR', 'FLOAT', 'STRING', 'BOOLEAN'] as const).map((type) => {
-              const count = selectedCollection.variables.filter((v) => v.type === type).length;
-              if (!count) return null;
-              return (
-                <Stack key={type} direction="row" align="center" justify="between">
-                  <Text css={{ fontSize: '$xsmall', color: '$fgMuted' }}>
-                        {typeIcon(type)}
-                        {' '}
-                        {typeLabel(type)}
-                      </Text>
-                  <Text css={{ fontSize: '$xsmall', color: '$fgSubtle' }}>{count}</Text>
-                </Stack>
-              );
-            })}
-          </Stack>
-        </SidebarSection>
+          <SidebarSection>
+            <Stack direction="column" gap={1}>
+              {(['COLOR', 'FLOAT', 'STRING', 'BOOLEAN'] as const).map((type) => {
+                const count = selectedCollection.variables.filter((v) => v.type === type).length;
+                if (!count) return null;
+                return (
+                  <Stack key={type} direction="row" align="center" justify="between">
+                    <Text css={{ fontSize: '$xsmall', color: '$fgMuted' }}>
+                      {typeIcon(type)}
+                      {' '}
+                      {typeLabel(type)}
+                    </Text>
+                    <Text css={{ fontSize: '$xsmall', color: '$fgSubtle' }}>{count}</Text>
+                  </Stack>
+                );
+              })}
+            </Stack>
+          </SidebarSection>
         )}
       </Sidebar>
 
@@ -749,31 +747,28 @@ export default function StyleGuideTab() {
               }}
             />
             {searchQuery && (
-            <IconButton
-              icon={<Xmark width={ICON_SIZE.xs} height={ICON_SIZE.xs} />}
-              variant="invisible"
-              size="small"
-              onClick={() => setSearchQuery('')}
-              css={{ color: '$fgSubtle' }}
-            />
+              <IconButton
+                icon={<Xmark width={ICON_SIZE.xs} height={ICON_SIZE.xs} />}
+                variant="invisible"
+                size="small"
+                onClick={() => setSearchQuery('')}
+                css={{ color: '$fgSubtle' }}
+              />
             )}
-            <Box
-              as="button"
+            <Button
+              variant="invisible"
               onClick={() => setGroupByPath((b) => !b)}
               css={{
                 fontSize: '$xsmall',
                 color: '$fgSubtle',
-                background: 'transparent',
                 border: '1px solid $borderMuted',
-                borderRadius: '4px',
                 padding: '2px 6px',
-                cursor: 'pointer',
                 whiteSpace: 'nowrap',
               }}
               title={groupByPath ? 'Grouped by path (e.g. Font, Color)' : 'Grouped by type (COLOR, STRING, etc.)'}
             >
               {groupByPath ? 'By path' : 'By type'}
-            </Box>
+            </Button>
             <IconButton
               icon={<Download width={ICON_SIZE.sm} height={ICON_SIZE.sm} />}
               variant="invisible"
@@ -858,29 +853,29 @@ export default function StyleGuideTab() {
                 return (
                   <VarRow key={v.id}>
                     <ColorSwatch title={label}>
-                        <Box
-                            css={{
-                                position: 'absolute', inset: 0, backgroundColor: swatchColor,
-                              }}
-                          />
-                      </ColorSwatch>
+                      <Box
+                        css={{
+                          position: 'absolute', inset: 0, backgroundColor: swatchColor,
+                        }}
+                      />
+                    </ColorSwatch>
                     <Box css={{ flex: 1, minWidth: 0 }}>
-                        <Text css={{
-                            fontSize: '$small', color: '$fgDefault', fontWeight: '$medium', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                          }}
-                          >
-                            {v.name.split('/').pop()}
-                          </Text>
-                        <Text css={{ fontSize: '$xsmall', color: '$fgSubtle', display: 'block' }}>
-                            {v.name.includes('/') ? v.name.split('/').slice(0, -1).join('/') : ''}
-                          </Text>
-                      </Box>
-                    <Text css={{
-                        fontSize: '$xsmall', color: '$fgMuted', fontFamily: '$mono', flexShrink: 0,
+                      <Text css={{
+                        fontSize: '$small', color: '$fgDefault', fontWeight: '$medium', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}
                       >
-                        {label}
+                        {v.name.split('/').pop()}
                       </Text>
+                      <Text css={{ fontSize: '$xsmall', color: '$fgSubtle', display: 'block' }}>
+                        {v.name.includes('/') ? v.name.split('/').slice(0, -1).join('/') : ''}
+                      </Text>
+                    </Box>
+                    <Text css={{
+                      fontSize: '$xsmall', color: '$fgMuted', fontFamily: '$mono', flexShrink: 0,
+                    }}
+                    >
+                      {label}
+                    </Text>
                   </VarRow>
                 );
               })}
@@ -892,20 +887,20 @@ export default function StyleGuideTab() {
                 return (
                   <VarRow key={v.id}>
                     <TypographySample style={isFont ? { fontFamily: display } : {}}>
-                        {isFont ? 'Aa — ' : ''}
-                        {display}
-                      </TypographySample>
+                      {isFont ? 'Aa — ' : ''}
+                      {display}
+                    </TypographySample>
                     <Box css={{ flex: 1, minWidth: 0, marginLeft: '$2' }}>
-                        <Text css={{
-                            fontSize: '$small', color: '$fgDefault', fontWeight: '$medium', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                          }}
-                          >
-                            {v.name.split('/').pop()}
-                          </Text>
-                        <Text css={{ fontSize: '$xsmall', color: '$fgSubtle' }}>
-                            {v.name.includes('/') ? v.name.split('/').slice(0, -1).join('/') : ''}
-                          </Text>
-                      </Box>
+                      <Text css={{
+                        fontSize: '$small', color: '$fgDefault', fontWeight: '$medium', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}
+                      >
+                        {v.name.split('/').pop()}
+                      </Text>
+                      <Text css={{ fontSize: '$xsmall', color: '$fgSubtle' }}>
+                        {v.name.includes('/') ? v.name.split('/').slice(0, -1).join('/') : ''}
+                      </Text>
+                    </Box>
                   </VarRow>
                 );
               })}
@@ -916,40 +911,40 @@ export default function StyleGuideTab() {
                 return (
                   <VarRow key={v.id}>
                     <Box
-                        css={{
-                            width: `${CONTROL_HEIGHT.md}px`,
-                            height: `${CONTROL_HEIGHT.md}px`,
-                            borderRadius: '4px',
-                            backgroundColor: '$bgSubtle',
-                            border: '1px solid $borderMuted',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                            fontSize: '$xsmall',
-                            color: '$fgMuted',
-                            fontFamily: '$mono',
-                          }}
-                      >
-                        {typeIcon(type)}
-                      </Box>
+                      css={{
+                        width: `${CONTROL_HEIGHT.md}px`,
+                        height: `${CONTROL_HEIGHT.md}px`,
+                        borderRadius: '4px',
+                        backgroundColor: '$bgSubtle',
+                        border: '1px solid $borderMuted',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        fontSize: '$xsmall',
+                        color: '$fgMuted',
+                        fontFamily: '$mono',
+                      }}
+                    >
+                      {typeIcon(type)}
+                    </Box>
                     <Box css={{ flex: 1, minWidth: 0 }}>
-                        <Text css={{
-                            fontSize: '$small', color: '$fgDefault', fontWeight: '$medium', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                          }}
-                          >
-                            {v.name.split('/').pop()}
-                          </Text>
-                        <Text css={{ fontSize: '$xsmall', color: '$fgSubtle' }}>
-                            {v.name.includes('/') ? v.name.split('/').slice(0, -1).join('/') : ''}
-                          </Text>
-                      </Box>
-                    <Text css={{
-                        fontSize: '$xsmall', color: '$fgMuted', fontFamily: '$mono', flexShrink: 0,
+                      <Text css={{
+                        fontSize: '$small', color: '$fgDefault', fontWeight: '$medium', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}
                       >
-                        {display}
+                        {v.name.split('/').pop()}
                       </Text>
+                      <Text css={{ fontSize: '$xsmall', color: '$fgSubtle' }}>
+                        {v.name.includes('/') ? v.name.split('/').slice(0, -1).join('/') : ''}
+                      </Text>
+                    </Box>
+                    <Text css={{
+                      fontSize: '$xsmall', color: '$fgMuted', fontFamily: '$mono', flexShrink: 0,
+                    }}
+                    >
+                      {display}
+                    </Text>
                   </VarRow>
                 );
               })}
@@ -980,100 +975,100 @@ export default function StyleGuideTab() {
 
         {/* Settings Panel — Zeroheight */}
         {showSettings && (
-        <Box css={{
-          margin: '$3', padding: '$3', backgroundColor: '$bgSubtle', borderRadius: '6px', border: '1px solid $borderMuted',
-        }}
-        >
-          <Stack direction="row" align="center" justify="between" css={{ marginBottom: '$2' }}>
-            <Text css={{
-              fontSize: '$xsmall', fontWeight: '$bold', color: '$fgMuted', letterSpacing: '0.06em',
-            }}
-            >
-              EXPORT / PUBLISH
-            </Text>
-            <IconButton icon={<Xmark width={ICON_SIZE.xs} height={ICON_SIZE.xs} />} variant="invisible" size="small" onClick={() => setShowSettings(false)} css={{ color: '$fgSubtle' }} />
-          </Stack>
-
-          {/* Info: correct Zeroheight sync method */}
           <Box css={{
-            padding: '$2', backgroundColor: '$bgDefault', borderRadius: '4px', border: '1px solid $borderMuted', marginBottom: '$3',
+            margin: '$3', padding: '$3', backgroundColor: '$bgSubtle', borderRadius: '6px', border: '1px solid $borderMuted',
           }}
           >
-            <Text css={{
-              fontSize: '$xsmall', color: '$fgMuted', display: 'block', marginBottom: '$1', fontWeight: '$bold',
-            }}
-            >
-              ℹ️ How to sync with Zeroheight
-            </Text>
-            <Text css={{ fontSize: '$xsmall', color: '$fgSubtle', lineHeight: 1.5 }}>
-              The Zeroheight API cannot push variables — use their official
-              {' '}
-              <Box
-                as="a"
-                href="https://help.zeroheight.com/hc/en-us/articles/35887032233371"
-                target="_blank"
-                rel="noreferrer"
-                css={{ color: '$accentDefault', textDecoration: 'none' }}
+            <Stack direction="row" align="center" justify="between" css={{ marginBottom: '$2' }}>
+              <Text css={{
+                fontSize: '$xsmall', fontWeight: '$bold', color: '$fgMuted', letterSpacing: '0.06em',
+              }}
               >
-                variables sync Figma plugin
-              </Box>
-              {' '}
-              to push variables, then use the JSON below for Style Dictionary.
-            </Text>
-          </Box>
+                EXPORT / PUBLISH
+              </Text>
+              <IconButton icon={<Xmark width={ICON_SIZE.xs} height={ICON_SIZE.xs} />} variant="invisible" size="small" onClick={() => setShowSettings(false)} css={{ color: '$fgSubtle' }} />
+            </Stack>
 
-          {/* Style Dictionary JSON download — always available */}
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={handleDownloadStyleDictionary}
-            css={{ width: '100%', fontSize: '$xsmall', marginBottom: '$2' }}
-          >
-            ↓ Download Style Dictionary JSON
-          </Button>
-
-          {/* Optional: Zeroheight API token for page status reads */}
-          <Box css={{ marginBottom: '$2' }}>
-            <Label css={{
-              fontSize: '$xsmall', color: '$fgSubtle', fontWeight: '$bold', letterSpacing: '0.06em', display: 'block', marginBottom: '$1',
+            {/* Info: correct Zeroheight sync method */}
+            <Box css={{
+              padding: '$2', backgroundColor: '$bgDefault', borderRadius: '4px', border: '1px solid $borderMuted', marginBottom: '$3',
             }}
             >
-              ZEROHEIGHT API TOKEN (OPTIONAL)
-            </Label>
-            <TextInput
-              type="password"
-              placeholder="Enterprise Bearer token..."
-              value={settings.zeroheightAPIKey || ''}
-              onChange={handleAPIKeyChange}
-              css={{ fontSize: '$xsmall', height: '28px', backgroundColor: '$bgDefault' }}
-            />
-            <Text css={{
-              fontSize: '$xsmall', color: '$fgSubtle', marginTop: '$1', display: 'block',
-            }}
+              <Text css={{
+                fontSize: '$xsmall', color: '$fgMuted', display: 'block', marginBottom: '$1', fontWeight: '$bold',
+              }}
+              >
+                ℹ️ How to sync with Zeroheight
+              </Text>
+              <Text css={{ fontSize: '$xsmall', color: '$fgSubtle', lineHeight: 1.5 }}>
+                The Zeroheight API cannot push variables — use their official
+                {' '}
+                <Box
+                  as="a"
+                  href="https://help.zeroheight.com/hc/en-us/articles/35887032233371"
+                  target="_blank"
+                  rel="noreferrer"
+                  css={{ color: '$accentDefault', textDecoration: 'none' }}
+                >
+                  variables sync Figma plugin
+                </Box>
+                {' '}
+                to push variables, then use the JSON below for Style Dictionary.
+              </Text>
+            </Box>
+
+            {/* Style Dictionary JSON download — always available */}
+            <Button
+              variant="secondary"
+              size="small"
+              onClick={handleDownloadStyleDictionary}
+              css={{ width: '100%', fontSize: '$xsmall', marginBottom: '$2' }}
             >
-              Only needed for reading styleguide page statuses (Enterprise plan).
-            </Text>
+              ↓ Download Style Dictionary JSON
+            </Button>
+
+            {/* Optional: Zeroheight API token for page status reads */}
+            <Box css={{ marginBottom: '$2' }}>
+              <Label css={{
+                fontSize: '$xsmall', color: '$fgSubtle', fontWeight: '$bold', letterSpacing: '0.06em', display: 'block', marginBottom: '$1',
+              }}
+              >
+                ZEROHEIGHT API TOKEN (OPTIONAL)
+              </Label>
+              <TextInput
+                type="password"
+                placeholder="Enterprise Bearer token..."
+                value={settings.zeroheightAPIKey || ''}
+                onChange={handleAPIKeyChange}
+                css={{ fontSize: '$xsmall', height: '28px', backgroundColor: '$bgDefault' }}
+              />
+              <Text css={{
+                fontSize: '$xsmall', color: '$fgSubtle', marginTop: '$1', display: 'block',
+              }}
+              >
+                Only needed for reading styleguide page statuses (Enterprise plan).
+              </Text>
+            </Box>
           </Box>
-        </Box>
         )}
 
         {/* Status message */}
         {statusMsg && (
-        <Box css={{ padding: '0 $3' }}>
-          <StatusBanner type={statusMsg.type}>
-            {statusMsg.type === 'error' && <Xmark width={ICON_SIZE.sm} height={ICON_SIZE.sm} />}
-            {statusMsg.type === 'success' && <Check width={ICON_SIZE.sm} height={ICON_SIZE.sm} />}
-            <Text css={{ fontSize: '$xsmall', color: 'inherit', flex: 1 }}>{statusMsg.text}</Text>
-            <IconButton icon={<Xmark width={ICON_SIZE.xs} height={ICON_SIZE.xs} />} variant="invisible" size="small" onClick={() => setStatusMsg(null)} css={{ color: 'inherit', flexShrink: 0 }} />
-          </StatusBanner>
-        </Box>
+          <Box css={{ padding: '0 $3' }}>
+            <StatusBanner type={statusMsg.type}>
+              {statusMsg.type === 'error' && <Xmark width={ICON_SIZE.sm} height={ICON_SIZE.sm} />}
+              {statusMsg.type === 'success' && <Check width={ICON_SIZE.sm} height={ICON_SIZE.sm} />}
+              <Text css={{ fontSize: '$xsmall', color: 'inherit', flex: 1 }}>{statusMsg.text}</Text>
+              <IconButton icon={<Xmark width={ICON_SIZE.xs} height={ICON_SIZE.xs} />} variant="invisible" size="small" onClick={() => setStatusMsg(null)} css={{ color: 'inherit', flexShrink: 0 }} />
+            </StatusBanner>
+          </Box>
         )}
 
         {/* Progress */}
         {(isGenerating || isUpdating) && progressMsg && (
-        <Box css={{ padding: '0 $3 $2' }}>
-          <Text css={{ color: '$fgSubtle', fontSize: '$xsmall', fontStyle: 'italic' }}>{progressMsg}</Text>
-        </Box>
+          <Box css={{ padding: '0 $3 $2' }}>
+            <Text css={{ color: '$fgSubtle', fontSize: '$xsmall', fontStyle: 'italic' }}>{progressMsg}</Text>
+          </Box>
         )}
 
         <Box css={{ padding: '$3', borderBottom: '1px solid $borderMuted', flexShrink: 0 }}>
@@ -1086,25 +1081,23 @@ export default function StyleGuideTab() {
               THEMES
             </Text>
             <Stack direction="row" gap={2}>
-              <Box
-                as="button"
-                css={{
-                  fontSize: '$xsmall', color: '$accentDefault', cursor: 'pointer', border: 'none', background: 'none', padding: 0,
-                }}
+              <Button
+                variant="invisible"
+                size="small"
+                css={{ fontSize: '$xsmall', color: '$accentDefault', padding: 0, '&:hover': { background: 'none' } }}
                 onClick={handleSelectAll}
               >
                 All
-              </Box>
+              </Button>
               <Text css={{ fontSize: '$xsmall', color: '$fgSubtle' }}>·</Text>
-              <Box
-                as="button"
-                css={{
-                  fontSize: '$xsmall', color: '$fgSubtle', cursor: 'pointer', border: 'none', background: 'none', padding: 0,
-                }}
+              <Button
+                variant="invisible"
+                size="small"
+                css={{ fontSize: '$xsmall', color: '$fgSubtle', padding: 0, '&:hover': { background: 'none' } }}
                 onClick={handleDeselectAll}
               >
                 None
-              </Box>
+              </Button>
             </Stack>
           </Stack>
 
@@ -1138,16 +1131,16 @@ export default function StyleGuideTab() {
                 >
                   <Box
                     css={{
-                        width: `${ICON_SIZE.md}px`,
-                        height: '14px',
-                        borderRadius: '3px',
-                        border: '1px solid $borderMuted',
-                        flexShrink: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: isSelected ? '$accentDefault' : 'transparent',
-                      }}
+                      width: `${ICON_SIZE.md}px`,
+                      height: '14px',
+                      borderRadius: '3px',
+                      border: '1px solid $borderMuted',
+                      flexShrink: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: isSelected ? '$accentDefault' : 'transparent',
+                    }}
                   >
                     {isSelected && <Check width={ICON_SIZE.xs} height={ICON_SIZE.xs} style={{ color: 'var(--colors-fgOnEmphasis)' }} />}
                   </Box>

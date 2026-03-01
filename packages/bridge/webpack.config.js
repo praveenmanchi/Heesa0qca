@@ -18,7 +18,7 @@ const { version } = require('./package.json');
 const wrapper = (callback) => {
   const measureSpeed = false;
   if (!measureSpeed) { // Set to true to enable SpeedMeasurePlugin (breaks Figma UI build)
-      return callback;
+    return callback;
   }
   const smp = new SpeedMeasurePlugin();
 
@@ -98,18 +98,18 @@ module.exports = wrapper((env, argv) => {
           ],
         }]),
         // Enables including CSS by doing "import './file.css'" in your TypeScript code
-        { 
-          test: /\.css$/, 
+        {
+          test: /\.css$/,
           use: [
-            { loader: 'style-loader' }, 
-            { 
+            { loader: 'style-loader' },
+            {
               loader: 'css-loader',
               options: {
                 url: true,
                 import: true,
               }
             }
-          ] 
+          ]
         },
         // Imports webfonts
         {
@@ -140,6 +140,8 @@ module.exports = wrapper((env, argv) => {
         '@types': path.resolve(__dirname, 'types'),
         '@': path.resolve(__dirname, 'src'),
         'react-redux': 'react-redux/dist/react-redux.js',
+        'react': path.resolve(__dirname, '../../node_modules/react'),
+        'react-dom': path.resolve(__dirname, '../../node_modules/react-dom'),
       },
       fallback: {
         process: false,

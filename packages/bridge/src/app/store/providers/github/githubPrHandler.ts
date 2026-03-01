@@ -90,6 +90,10 @@ export async function createGitHubPullRequest(config: PullRequestConfig): Promis
   });
 
   // 5. Create commit
+  if (newTree.sha === targetSha) {
+    throw new Error('No changes detected between the current file and the target branch. The file is already up to date.');
+  }
+
   const { data: newCommit } = await octokit.rest.git.createCommit({
     owner: config.owner,
     repo: config.repo,

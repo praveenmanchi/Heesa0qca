@@ -1,0 +1,206 @@
+---
+title: Components and styles – Endpoints
+slug: /rest-api/components/endpoints
+---
+
+# Components and styles – Endpoints
+
+These endpoints provide access to metadata about published components, component sets, and styles in team libraries.[page:5] You can query by team, file, or asset key.[page:5]
+
+All endpoints are Tier 3 and require library‑related scopes.[page:5]
+
+---
+
+## GET team components
+
+Get a paginated list of published components in a team library.[page:5]
+
+```http
+GET /v1/teams/:team_id/components
+```[page:5]
+
+Scope: `team_library_content:read`.[page:5]
+
+**Response (simplified)**
+
+```json
+{
+  "status": Number,
+  "error": Boolean,
+  "meta": {
+    "components": [
+      {
+        "key": "String",
+        "file_key": "String",
+        "node_id": "String",
+        "thumbnail_url": "String",
+        "name": "String",
+        "description": "String",
+        "updated_at": "String",
+        "created_at": "String",
+        "user": "User",
+        "containing_frame": "FrameInfo"
+      }
+    ],
+    "cursor": {
+      "before": Number,
+      "after": Number
+    }
+  }
+}
+```[page:5]
+
+### Parameters
+
+- Path: `team_id` – team whose components to list.[page:5]
+- Query (optional): `page_size` (default 30, max 1000), `after`, `before` (cursor‑based pagination, mutually exclusive).[page:5]
+
+### Errors
+
+- 400 – request error (see `message`).[page:5]
+- 403 – insufficient permission or invalid/expired token.[page:5]
+- 404 – resource not found.[page:5]
+
+---
+
+## GET file components
+
+Get published components within a specific file library.[page:5]
+
+```http
+GET /v1/files/:file_key/components
+```[page:5]
+
+Scope: `library_content:read`.[page:5]
+
+**Response** is similar to GET team components but without pagination cursors.[page:5]
+
+- Path: `file_key` – main file key; branches cannot publish.[page:5]
+
+---
+
+## GET component
+
+Get metadata for a single component by key.[page:5]
+
+```http
+GET /v1/components/:key
+```[page:5]
+
+Scope: `library_assets:read`.[page:5]
+
+Response `meta` contains a single `Component` object.[page:5]
+
+- Path: `key` – unique component identifier.[page:5]
+
+---
+
+## GET team component sets
+
+Get a paginated list of published component sets within a team.[page:5]
+
+```http
+GET /v1/teams/:team_id/component_sets
+```[page:5]
+
+Scope: `team_library_content:read`.[page:5]
+
+Response is analogous to GET team components, but under `component_sets`.[page:5]
+
+---
+
+## GET file component sets
+
+Get published component sets from a file.[page:5]
+
+```http
+GET /v1/files/:file_key/component_sets
+```[page:5]
+
+Scope: `library_content:read`.[page:5]
+
+Returns `meta.component_sets` with `ComponentSet` objects.[page:5]
+
+---
+
+## GET component set
+
+Get metadata about a single component set by key.[page:5]
+
+```http
+GET /v1/component_sets/:key
+```[page:5]
+
+Scope: `library_assets:read`.[page:5]
+
+Returns a single `ComponentSet` in `meta`.[page:5]
+
+---
+
+## GET team styles
+
+Get a paginated list of published styles in a team library.[page:5]
+
+```http
+GET /v1/teams/:team_id/styles
+```[page:5]
+
+Scope: `team_library_content:read`.[page:5]
+
+**Response (simplified)**
+
+```json
+{
+  "status": Number,
+  "error": Boolean,
+  "meta": {
+    "styles": [
+      {
+        "key": "String",
+        "file_key": "String",
+        "node_id": "String",
+        "style_type": "StyleType",
+        "thumbnail_url": "String",
+        "name": "String",
+        "description": "String",
+        "updated_at": "String",
+        "created_at": "String",
+        "sort_position": "String",
+        "user": "User"
+      }
+    ],
+    "cursor": {
+      "before": Number,
+      "after": Number
+    }
+  }
+}
+```[page:5]
+
+---
+
+## GET file styles
+
+Get published styles from a specific file library.[page:5]
+
+```http
+GET /v1/files/:file_key/styles
+```[page:5]
+
+Scope: `library_content:read`.[page:5]
+
+Response is similar to GET team styles but without cursors.[page:5]
+
+---
+
+## GET style
+
+Get metadata for a single style by key.[page:5]
+
+```http
+GET /v1/styles/:key
+```[page:5]
+
+Scope: `library_assets:read`.[page:5]
+
+Returns a single `Style` object in `meta`.[page:5]

@@ -1,0 +1,195 @@
+---
+title: Components and styles | Developer Docs
+slug: /figma/rest-api/component-types
+---
+
+On this page
+
+Figma provides a way to fetch metadata on published components and styles in a team library.
+
+These endpoints are specifically for assets published in a team library. To get metadata for local and subscribed components and styles, use [GET /v1/files/:key](/docs/rest-api/file-endpoints/#get-files-endpoint%C3%9F).
+
+## Types[​](#types "Direct link to Types")
+
+Type
+
+Properties
+
+### Component[​](#component-type "Direct link to Component")
+
+An arrangement of published UI elements that can be instantiated across figma files.
+
+`key`String
+
+The unique identifier of the component.
+
+`file_key`String
+
+The unique identifier of the figma file which contains the component.
+
+`node_id`String
+
+ID of the component node within the figma file.
+
+`thumbnail_url`String
+
+URL link to the component's thumbnail image.
+
+`name`String
+
+Name of the component.
+
+`description`String
+
+The description of the component as entered by the publisher.
+
+`created_at`String
+
+The UTC ISO 8601 time at which the component was created.
+
+`updated_at`String
+
+The UTC ISO 8601 time at which the component was updated.
+
+`user`[User](/docs/rest-api/users-types/#user-type)
+
+The user who last updated the component.
+
+`containing_frame`[FrameInfo](#frameinfo-type)default: {}
+
+Data on component's containing frame, if component resides within a frame.
+
+### ComponentSet[​](#componentset-type "Direct link to ComponentSet")
+
+A node containing a set of variants of a component.
+
+`key`String
+
+The unique identifier of the component set.
+
+`file_key`String
+
+The unique identifier of the figma file which contains the component set.
+
+`node_id`String
+
+ID of the component set node within the figma file.
+
+`thumbnail_url`String
+
+URL link to the component set's thumbnail image.
+
+`name`String
+
+Name of the component set.
+
+`description`String
+
+The description of the component set as entered by the publisher.
+
+`created_at`String
+
+The UTC ISO 8601 time at which the component set was created.
+
+`updated_at`String
+
+The UTC ISO 8601 time at which the component set was updated.
+
+`user`[User](/docs/rest-api/users-types/#user-type)
+
+The user who last updated the component set.
+
+`containing_frame`[FrameInfo](#frameinfo-type)default: {}
+
+Data on component set's containing frame, if component set resides within a frame.
+
+### Style[​](#style-type "Direct link to Style")
+
+A set of properties that can be applied to nodes.
+
+`key`String
+
+The unique identifier of the style.
+
+`file_key`String
+
+The unique identifier of the figma file which contains the style.
+
+`node_id`String
+
+ID of the style node within the figma file.
+
+`style_type`String
+
+The type of style, as a string enum.
+
+*   `FILL`
+*   `TEXT`
+*   `EFFECT`
+*   `GRID`
+
+`thumbnail_url`String
+
+URL link to the style's thumbnail image.
+
+`name`String
+
+Name of the style.
+
+`description`String
+
+The description of the style as entered by the publisher.
+
+`created_at`String
+
+The UTC ISO 8601 time at which the style was created.
+
+`updated_at`String
+
+The UTC ISO 8601 time at which the style was updated.
+
+`user`[User](/docs/rest-api/users-types/#user-type)
+
+The user who last updated the style.
+
+`containing_frame`[FrameInfo](#frameinfo-type)default: {}
+
+Data on style's containing frame, if style resides within a frame.
+
+### FrameInfo[​](#frameinfo-type "Direct link to FrameInfo")
+
+Data on the frame a component resides in.
+
+`node_id`String
+
+ID of the frame node within the file.
+
+`name`String
+
+Name of the frame.
+
+`backgroundColor`String
+
+Background color of the frame.
+
+`pageId`String
+
+ID of the frame's residing page.
+
+`pageName`String
+
+Name of the frame's residing page.
+
+`containingStateGroup`Stringdeprecated
+
+Deprecated, use containingComponentSet instead.
+
+`containingComponentSet`String
+
+The component set node that contains the frame node.
+
+*   [Types](#types)
+    *   [Component](#component-type)
+    *   [ComponentSet](#componentset-type)
+    *   [Style](#style-type)
+    *   [FrameInfo](#frameinfo-type)

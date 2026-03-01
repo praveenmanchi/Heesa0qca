@@ -1,0 +1,91 @@
+---
+title: GET local variables
+slug: /rest-api/variables/get-local
+---
+
+# GET local variables
+
+`GET /v1/files/:file_key/variables/local` enumerates local variables created in a file and remote variables used in that file.[page:2] Remote variables are referenced via their `subscribed_id`.[page:2]
+
+This endpoint is **Enterprise‑only** and requires the `file_variables:read` scope.[page:2] It is a **Tier 2** endpoint for rate limiting.[page:2]
+
+In addition, the standard `GET /v1/files/:file_key` file response now includes a `boundVariables` property whose entries reference variables by `variableId`.[page:2] Use `GET /v1/files/:file_key/variables/local` to retrieve the full variable and collection objects.[page:2]
+
+> Note: `GET /v1/files/:file_key/variables/published` does **not** return modes, so use this endpoint in the same file when you need mode values.[page:2]
+
+## HTTP endpoint
+
+```http
+GET /v1/files/:file_key/variables/local
+```[page:2]
+
+### Response shape (simplified)
+
+```json
+{
+  "status": Number,
+  "error": Boolean,
+  "meta": {
+    "variables": {
+      "[variableId: string]": {
+        "id": "String",
+        "name": "String",
+        "key": "String",
+        "variableCollectionId": "String",
+        "resolvedType": "BOOLEAN | FLOAT | STRING | COLOR",
+        "valuesByMode": {
+          "[modeId: string]": "Boolean | Number | String | Color | VariableAlias"
+        },
+        "remote": Boolean,
+        "description": "String",
+        "hiddenFromPublishing": Boolean,
+        "scopes": ["VariableScope"],
+        "codeSyntax": "VariableCodeSyntax"
+      }
+    },
+    "variableCollections": {
+      "[variableCollectionId: string]": {
+        "id": "String",
+        "name": "String",
+        "key": "String",
+        "modes": [
+          {
+            "modeId": "String",
+            "name": "String",
+            "parentModeId": "String"
+          }
+        ],
+        "defaultModeId": "String",
+        "remote": Boolean,
+        "hiddenFromPublishing": Boolean,
+        "variableIds": ["String"],
+        "isExtension": Boolean,
+        "parentVariableCollectionId": "String",
+        "rootVariableCollectionId": "String",
+        "inheritedVariableIds": ["String"],
+        "localVariableIds": ["String"],
+        "variableOverrides": {
+          "[variableId: string]": {
+            "[modeId: string]": "Boolean | Number | String | Color | VariableAlias"
+          }
+        },
+        "deletedButReferenced": Boolean
+      }
+    }
+  }
+}
+```[page:2]
+
+### Path parameters
+
+| Name      | Type   | Description                                                                                                          |
+|-----------|--------|----------------------------------------------------------------------------------------------------------------------|
+| `file_key` | string | File to get variables from (file key or branch key). Use `GET /v1/files/:key?branch_data=true` to derive branch keys. |[page:2]
+
+### Error codes
+
+| Code | Meaning                                                                                                                     |
+|------|-----------------------------------------------------------------------------------------------------------------------------|
+| 400  | Invalid parameter; see `message` field in response.                                                                         |
+| 401  | Authentication issue; token invalid, missing, or expired.                                                                   |
+| 403  | API not available (plan limits, incorrect account type, invalid scope, or invalid/expired developer or OAuth token).       |[page:2]

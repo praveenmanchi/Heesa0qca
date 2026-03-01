@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ValueNoneIcon } from '@radix-ui/react-icons';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import {
-  IconButton, Button, Checkbox, Badge,
+  IconButton, Button, Badge,
 } from '@tokens-studio/ui';
 import { Copy } from 'iconoir-react';
 import copy from 'copy-to-clipboard';
@@ -44,7 +44,6 @@ export default function InspectorTokenSingle({
   const dispatch = useDispatch<Dispatch>();
   const [newTokenName, setNewTokenName] = React.useState<string>(token.value);
   const [showDialog, setShowDialog] = React.useState<boolean>(false);
-  const [isChecked, setChecked] = React.useState<boolean>(false);
   const [isBrokenLink, setIsBrokenLink] = React.useState<boolean>(false);
   const tokensContext = React.useContext(TokensContext);
 
@@ -71,9 +70,8 @@ export default function InspectorTokenSingle({
   }, [token, property, getTokenValue, resolvedTokens, selectedMode]);
 
   React.useEffect(() => {
-    setChecked(inspectState.selectedTokens.includes(`${token.category}-${token.value}`));
     if (!resolvedTokens.find((resolvedToken) => resolvedToken.name === token.value) && !token.resolvedValue) setIsBrokenLink(true);
-  }, [inspectState.selectedTokens, token]);
+  }, [token, resolvedTokens]);
 
   React.useEffect(() => {
     tokensContext.resolvedTokens = resolvedTokens;
@@ -100,9 +98,7 @@ export default function InspectorTokenSingle({
     setShowDialog(false);
   }, []);
 
-  const onCheckedChanged = React.useCallback(() => {
-    dispatch.inspectState.toggleSelectedTokens(`${token.category}-${token.value}`);
-  }, [token, dispatch.inspectState]);
+
 
   const handleCopyName = React.useCallback(() => {
     copy(token.value);
@@ -154,18 +150,12 @@ export default function InspectorTokenSingle({
           display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '$4',
         }}
         >
-          <Checkbox
-            style={{ flexShrink: 0 }}
-            checked={isChecked}
-            id={`${token.category}-${token.value}`}
-            onCheckedChange={onCheckedChanged}
-          />
           {
-          (token.value === 'none' || tokenToDisplay?.value === 'none') && <ValueNoneIcon style={{ flexShrink: 0 }} />
-        }
+            (token.value === 'none' || tokenToDisplay?.value === 'none') && <ValueNoneIcon style={{ flexShrink: 0 }} />
+          }
           {
-          isBrokenLink && token.value !== 'none' && <IconBrokenLink style={{ flexShrink: 0 }} />
-        }
+            isBrokenLink && token.value !== 'none' && <IconBrokenLink style={{ flexShrink: 0 }} />
+          }
           {(tokenToDisplay && tokenToDisplay.value !== 'none' && tokenToDisplay.name !== 'none') && (
             <InspectorResolvedToken token={tokenToDisplay} />
           )}
@@ -202,17 +192,17 @@ export default function InspectorTokenSingle({
               variant="invisible"
             />
             {
-            !token.resolvedValue && (
-              <IconButton
-                tooltip={t('changeToAnotherToken')}
-                data-testid="button-token-remap"
-                onClick={handleClick}
-                icon={<IconToggleableDisclosure />}
-                size="small"
-                variant="invisible"
-              />
-            )
-          }
+              !token.resolvedValue && (
+                <IconButton
+                  tooltip={t('changeToAnotherToken')}
+                  data-testid="button-token-remap"
+                  onClick={handleClick}
+                  icon={<IconToggleableDisclosure />}
+                  size="small"
+                  variant="invisible"
+                />
+              )
+            }
           </Box>
           {/* Inline impact preview */}
           {(componentCount > 0 || modeCount > 1) && (
@@ -223,19 +213,19 @@ export default function InspectorTokenSingle({
               Affects
               {' '}
               {componentCount > 0 && (
-              <>
-                {componentCount}
-                {' '}
-                {componentCount === 1 ? 'component' : 'components'}
-                {modeCount > 1 ? ' in ' : ''}
-              </>
+                <>
+                  {componentCount}
+                  {' '}
+                  {componentCount === 1 ? 'component' : 'components'}
+                  {modeCount > 1 ? ' in ' : ''}
+                </>
               )}
               {modeCount > 1 && (
-              <>
-                {modeCount}
-                {' '}
-                modes
-              </>
+                <>
+                  {modeCount}
+                  {' '}
+                  modes
+                </>
               )}
             </Box>
           )}

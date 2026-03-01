@@ -1,0 +1,333 @@
+---
+title: Endpoints | Developer Docs
+slug: /figma/rest-api/comments-endpoints
+---
+
+On this page
+
+Unlike the other endpoints associated with the Figma API, you are able to post comments and reactions to a Figma file - in addition to being able to view existing comments and reactions on a file. This means that there are GET, POST, and DELETE endpoints available for comments and reactions.
+
+## Get comments[​](#get-comments-endpoint "Direct link to Get comments")
+
+Gets a list of comments left on the file.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`file_comments:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint "Direct link to HTTP Endpoint")
+
+`GET /v1/files/:key/comments`
+
+**Return value**
+
+```
+{  "comments": Comment[],}
+```
+
+Path parameters
+
+Description
+
+key
+
+String
+
+File to get comments from. This can be a file key or branch key. Use `GET /v1/files/:key` with the `branch_data` query param to get the branch key.
+
+as\_md
+
+Booleanoptional
+
+If enabled, will return comments as their markdown equivalents when applicable.
+
+Error codes
+
+Description
+
+403
+
+The developer / OAuth token is invalid or expired
+
+404
+
+The specified file was not found
+
+## Post comments[​](#post-comments-endpoint "Direct link to Post comments")
+
+Posts a new comment on the file.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`file_comments:write` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-1 "Direct link to HTTP Endpoint")
+
+`POST /v1/files/:file_key/comments`
+
+**Return value**
+
+The [Comment](/docs/rest-api/comments-types/#comment-type) that was successfully posted
+
+Path parameters
+
+Description
+
+file\_key
+
+String
+
+File to add comments in. This can be a file key or branch key. Use `GET /v1/files/:key` with the `branch_data` query param to get the branch key.
+
+Body parameters
+
+Description
+
+message
+
+String
+
+The text contents of the comment to post.
+
+comment\_id
+
+Stringoptional
+
+The comment to reply to, if any. This must be a root comment, that is, you cannot reply to a comment that is a reply itself (a reply has a parent\_id).
+
+client\_meta
+
+[Vector](/docs/rest-api/file-property-types/#vector-type) | [FrameOffset](/docs/rest-api/comments-property-types/#frameoffset-type) | [Region](/docs/rest-api/comments-property-types/#region-type) | [FrameOffsetRegion](/docs/rest-api/comments-property-types/#frameoffsetregion-type)
+
+The position of where to place the comment.
+
+Error codes
+
+Description
+
+403
+
+The developer / OAuth token is invalid or expired
+
+404
+
+The specified file was not found
+
+## Delete comments[​](#delete-comments-endpoint "Direct link to Delete comments")
+
+Deletes a specific comment. Only the person who made the comment is allowed to delete it.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`file_comments:write` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-2 "Direct link to HTTP Endpoint")
+
+`DELETE /v1/files/:file_key/comments/:comment_id`
+
+**Return value**
+
+Nothing is returned from this endpoint
+
+Path parameters
+
+Description
+
+file\_key
+
+String
+
+File to delete comments from. This can be a file key or branch key. Use `GET /v1/files/:key` with the `branch_data` query param to get the branch key.
+
+comment\_id
+
+String
+
+Comment id of comment to delete.
+
+Error codes
+
+Description
+
+403
+
+The developer / OAuth token is invalid or expired
+
+404
+
+The specified file was not found
+
+## Get comment reactions[​](#get-comment-reactions-endpoint "Direct link to Get comment reactions")
+
+Gets a paginated list of reactions left on the comment.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`file_comments:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-3 "Direct link to HTTP Endpoint")
+
+`GET /v1/files/:file_key/comments/:comment_id/reactions`
+
+**Return value**
+
+```
+{  "reactions": Reaction[],  "pagination": {     "prev_page": String,     "next_page": String   }}
+```
+
+Path parameters
+
+Description
+
+file\_key
+
+String
+
+File to get comment containing reactions from. This can be a file key or branch key. Use `GET /v1/files/:key` with the `branch_data` query param to get the branch key.
+
+comment\_id
+
+String
+
+Comment to get reactions from.
+
+Query parameters
+
+Description
+
+cursor
+
+Stringoptional
+
+Cursor for pagination, retrieved from the response of the previous call.
+
+Error codes
+
+Description
+
+403
+
+The developer / OAuth token is invalid or expired
+
+404
+
+The specified file was not found
+
+## Post comment reactions[​](#post-comment-reactions-endpoint "Direct link to Post comment reactions")
+
+Posts a new comment reaction on a file comment.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`file_comments:write` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-4 "Direct link to HTTP Endpoint")
+
+`POST /v1/files/:file_key/comments/:comment_id/reactions`
+
+**Return value**
+
+Nothing is returned from this endpoint
+
+Path parameters
+
+Description
+
+file\_key
+
+String
+
+File to post comment reactions to. This can be a file key or branch key. Use `GET /v1/files/:key` with the `branch_data` query param to get the branch key.
+
+comment\_id
+
+String
+
+ID of comment to react to.
+
+Body parameters
+
+Description
+
+emoji
+
+String
+
+The emoji to react with. This must be a valid emoji shortcode (e.g. `:heart:`, `:+1::skin-tone-2:`). The list of accepted emoji shortcodes can be found in [this file](https://raw.githubusercontent.com/missive/emoji-mart/main/packages/emoji-mart-data/sets/14/native.json) under the top-level `emojis` and `aliases` fields, with optional skin tone modifiers when applicable.
+
+Error codes
+
+Description
+
+400
+
+The specified emoji is not valid
+
+403
+
+The developer / OAuth token is invalid or expired
+
+404
+
+The specified file was not found
+
+## Delete comment reactions[​](#delete-comment-reactions-endpoint "Direct link to Delete comment reactions")
+
+Deletes a specific comment reaction. Only the person who made the reaction is allowed to delete it.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`file_comments:write` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-5 "Direct link to HTTP Endpoint")
+
+`DELETE /v1/files/:file_key/comments/:comment_id/reactions`
+
+**Return value**
+
+Nothing is returned from this endpoint
+
+Path parameters
+
+Description
+
+file\_key
+
+String
+
+File to delete comment reaction from. This can be a file key or branch key. Use `GET /v1/files/:key` with the `branch_data` query param to get the branch key.
+
+comment\_id
+
+String
+
+Comment id of comment to delete reaction from.
+
+Query parameters
+
+Description
+
+emoji
+
+String
+
+The emoji type of reaction as shortcode (e.g. `:heart:`, `:+1::skin-tone-2:`). The list of accepted emoji shortcodes can be found in [this file](https://raw.githubusercontent.com/missive/emoji-mart/main/packages/emoji-mart-data/sets/14/native.json) under the top-level `emojis` and `aliases` fields, with optional skin tone modifiers when applicable.
+
+Error codes
+
+Description
+
+403
+
+The developer / OAuth token is invalid or expired
+
+404
+
+The specified file or comment was not found
+
+*   [Get comments](#get-comments-endpoint)
+*   [Post comments](#post-comments-endpoint)
+*   [Delete comments](#delete-comments-endpoint)
+*   [Get comment reactions](#get-comment-reactions-endpoint)
+*   [Post comment reactions](#post-comment-reactions-endpoint)
+*   [Delete comment reactions](#delete-comment-reactions-endpoint)

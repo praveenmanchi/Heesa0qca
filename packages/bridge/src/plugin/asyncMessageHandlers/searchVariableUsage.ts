@@ -2,36 +2,43 @@ import { VariableUsageResult, VariableComponentUsage, TextStyleUsageResult } fro
 
 /** Recursively extract all variable alias IDs from any boundVariables structure (handles nested effects, layoutGrids, etc.) */
 function extractVariableIdsRecursive(value: unknown): string[] {
-  const ids: string[] = [];
-  if (!value) return ids;
+  if (!value) return [];
+
+  // Duck-type specifically for Figma's variable object id format
   if (typeof value === 'object' && value !== null && 'id' in value && typeof (value as { id?: unknown }).id === 'string') {
-    ids.push((value as { id: string }).id);
-    return ids;
+    return [(value as { id: string }).id];
   }
+
+  const ids: string[] = [];
   if (Array.isArray(value)) {
-    value.forEach((item) => ids.push(...extractVariableIdsRecursive(item)));
-    return ids;
-  }
-  if (typeof value === 'object' && value !== null) {
+    value.forEach((v) => ids.push(...extractVariableIdsRecursive(v)));
+  } else if (typeof value === 'object' && value !== null) {
     Object.values(value).forEach((v) => ids.push(...extractVariableIdsRecursive(v)));
   }
   return ids;
 }
 
 /** Extract variable IDs from styles applied to a node */
-async function getVariableIdsFromStyles(node: SceneNode): Promise<string[]> {
+async function getVariableIdsFromStyles(node: SceneNode, styleVarCache: Map<string, string[]>): Promise<string[]> {
   const ids: string[] = [];
   const props = ['fillStyleId', 'strokeStyleId', 'textStyleId', 'effectStyleId', 'gridStyleId'];
   for (const prop of props) {
     if (prop in node && typeof (node as any)[prop] === 'string' && (node as any)[prop] !== '') {
       const styleId = (node as any)[prop] as string;
-      try {
-        const style = await figma.getStyleByIdAsync(styleId);
-        if (style && (style as any).boundVariables) {
-          ids.push(...extractVariableIdsRecursive((style as any).boundVariables));
+      if (styleVarCache.has(styleId)) {
+        ids.push(...styleVarCache.get(styleId)!);
+      } else {
+        const newIds: string[] = [];
+        try {
+          const style = await figma.getStyleByIdAsync(styleId);
+          if (style && (style as any).boundVariables) {
+            newIds.push(...extractVariableIdsRecursive((style as any).boundVariables));
+          }
+        } catch {
+          // Ignore styles that cannot be resolved (e.g. missing or inaccessible)
         }
-      } catch {
-        // Ignore styles that cannot be resolved (e.g. missing or inaccessible)
+        styleVarCache.set(styleId, newIds);
+        ids.push(...newIds);
       }
     }
   }
@@ -39,13 +46,23 @@ async function getVariableIdsFromStyles(node: SceneNode): Promise<string[]> {
 }
 
 export async function searchVariableUsage(
-  msg: { query: string; allPages?: boolean },
+  msg: {
+    query: string;
+    allPages?: boolean;
+    pageIds?: string[];
+    onlyComponents?: boolean;
+    suggestionsOnly?: boolean;
+  },
 ): Promise<{ variables: VariableUsageResult[]; textStyles?: TextStyleUsageResult[] }> {
-  const { query, allPages = false } = msg;
+  const {
+    query, allPages = true, pageIds = [], onlyComponents = false, suggestionsOnly = false,
+  } = msg;
+  console.log(`[Backend] searchVariableUsage received. query: "${query}", onlyComponents: ${onlyComponents}, allPages: ${allPages}, suggestionsOnly: ${suggestionsOnly}`);
   const lowerQuery = query.toLowerCase().trim();
 
   // 1. Get all local variables + collections
   const localVariables = await figma.variables.getLocalVariablesAsync();
+  console.log(`[Backend] Loaded ${localVariables.length} local variables.`);
   const collections = await figma.variables.getLocalVariableCollectionsAsync();
   const collectionMap = new Map(collections.map((c) => [c.id, c.name]));
   const collectionModesMap = new Map(collections.map((c) => [c.id, c.modes]));
@@ -68,36 +85,17 @@ export async function searchVariableUsage(
   const matchingVars = [...matchingVarsFromLocal];
   const matchingVarIds = new Set(matchingVars.map((v) => v.id));
 
-  // 3b. Search Team Libraries for published variables that match the query
-  if (lowerQuery) {
-    try {
-      figma.ui.postMessage({
-        type: 'scan-progress',
-        text: 'Checking Team Libraries...',
-      });
-      const libraries = await figma.teamLibrary.getAvailableLibraryVariableCollectionsAsync();
-      for (const lib of libraries) {
-        const libVars = await figma.teamLibrary.getVariablesInLibraryCollectionAsync(lib.key);
-        for (const vInfo of libVars) {
-          if (vInfo.name.toLowerCase().includes(lowerQuery)) {
-            try {
-              const variable = await figma.variables.importVariableByKeyAsync(vInfo.key);
-              if (variable && !matchingVarIds.has(variable.id)) {
-                matchingVars.push(variable);
-                matchingVarIds.add(variable.id);
-              }
-            } catch (e) {
-              console.warn(`Failed to import variable ${vInfo.name}:`, e);
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('Failed to search team libraries:', e);
-    }
-  }
+  // (Team library search has been explicitly removed by user request)
 
   const resolvedVariableCache = new Map<string, Variable | null>();
+  // Pre-fill cache with matching variables
+  matchingVars.forEach(v => resolvedVariableCache.set(v.id, v));
+
+  const resolvedStyleVarCache = new Map<string, string[]>();
+  const nonMatchingTextStyleCache = new Set<string>();
+
+  // Track all discovered variable IDs that we need to resolve later if they aren't in matchingVarIds yet
+  const pendingVariableIdsToResolve = new Set<string>();
 
   // Don't return early when no local vars match - we may find library variables during traversal
 
@@ -105,22 +103,6 @@ export async function searchVariableUsage(
   type UsageEntry = { pageName: string; totalCount: number; components: Map<string, string[]> };
   const usageMap = new Map<string, UsageEntry>();
   const textStyleUsageMap = new Map<string, UsageEntry>();
-
-  // Helper: find closest named component
-  function findClosestComponent(node: SceneNode): string | null {
-    let current: BaseNode | null = node;
-    while (current) {
-      if (
-        current.type === 'COMPONENT'
-        || current.type === 'COMPONENT_SET'
-        || current.type === 'INSTANCE'
-      ) {
-        return current.name;
-      }
-      current = current.parent;
-    }
-    return null;
-  }
 
   function variableMatchesQuery(v: Variable): boolean {
     if (!lowerQuery) return true;
@@ -158,150 +140,223 @@ export async function searchVariableUsage(
   }
 
   // Walk a page, accumulate usage into usageMap
-  async function traversePage(pageChildren: readonly SceneNode[], pageName: string) {
-    // Notify UI of page start
-    figma.ui.postMessage({
-      type: 'scan-progress',
-      text: `Scanning page: ${pageName}...`,
-    });
+  async function traversePage(page: PageNode) {
+    const pageName = page.name;
+    figma.ui.postMessage({ type: 'scan-progress', text: `Scanning page: ${pageName}...` });
 
-    const queue: SceneNode[] = [];
-    for (const child of pageChildren) {
-      queue.push(child);
-    }
-
-    let processedCount = 0;
-    const CHECK_INTERVAL = 5;
-    const YIELD_MS = 8;
+    // Use a manual async stack traversal instead of a synchronous `page.findAll`
+    // to prevent the plugin from freezing Figma's main thread on large files.
+    const YIELD_MS = 15; // Target 60fps window
     let lastYieldTime = Date.now();
 
-    while (queue.length > 0) {
-      const node = queue.pop();
-      if (node) {
-        processedCount += 1;
+    const stack: SceneNode[] = Array.from(page.children);
 
-        if (processedCount % CHECK_INTERVAL === 0) {
-          const now = Date.now();
-          if (now - lastYieldTime > YIELD_MS) {
-            await new Promise<void>((resolve) => {
-              setTimeout(resolve, 0);
-            });
-            lastYieldTime = Date.now();
-          }
-        }
+    while (stack.length > 0) {
+      if (Date.now() - lastYieldTime > YIELD_MS) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        lastYieldTime = Date.now();
+      }
 
-        try {
-          const varIds = new Set<string>();
-          // 1. Direct variable bindings
-          if ('boundVariables' in node && node.boundVariables) {
-            extractVariableIdsFromNode(node).forEach((id) => varIds.add(id));
-          }
-          // 2. Indirect variable bindings via styles
-          (await getVariableIdsFromStyles(node)).forEach((id) => varIds.add(id));
-
-          if (varIds.size > 0) {
-            for (const varId of varIds) {
-              let variable: Variable | null = null;
-              if (matchingVarIds.has(varId)) {
-                variable = matchingVars.find((v) => v.id === varId) ?? null;
-              } else {
-                // Resolve library/imported variables
-                if (!resolvedVariableCache.has(varId)) {
-                  try {
-                    resolvedVariableCache.set(varId, await figma.variables.getVariableByIdAsync(varId));
-                  } catch {
-                    resolvedVariableCache.set(varId, null);
-                  }
-                }
-                variable = resolvedVariableCache.get(varId) ?? null;
-                if (variable && variableMatchesQuery(variable)) {
-                  matchingVarIds.add(varId);
-                  if (!matchingVars.some((v) => v.id === varId)) matchingVars.push(variable);
-                }
-              }
-
-              if (variable && matchingVarIds.has(varId)) {
-                if (!usageMap.has(varId)) {
-                  usageMap.set(varId, { pageName, totalCount: 0, components: new Map() });
-                }
-                const entry = usageMap.get(varId)!;
-                entry.totalCount += 1;
-
-                const componentName = findClosestComponent(node) || '(Unstyled / Frame)';
-                if (!entry.components.has(componentName)) {
-                  entry.components.set(componentName, []);
-                }
-                entry.components.get(componentName)!.push(node.id);
-              }
-            }
-          }
-          // Track text style usage (local + library styles)
-          if (node.type === 'TEXT' && 'textStyleId' in node && node.textStyleId && node.textStyleId !== figma.mixed) {
-            const styleId = node.textStyleId as string;
-            let style: TextStyle | null = null;
-            if (matchingTextStyleIds.has(styleId)) {
-              style = matchingTextStyles.find((s) => s.id === styleId) ?? null;
-            } else {
-              // Resolve library text styles via async API (required in dynamic-page mode)
-              try {
-                const resolved = await figma.getStyleByIdAsync(styleId);
-                if (resolved && resolved.type === 'TEXT') {
-                  const textStyle = resolved as TextStyle;
-                  const matchesQuery = !lowerQuery || textStyle.name.toLowerCase().includes(lowerQuery);
-                  if (matchesQuery) {
-                    matchingTextStyleIds.add(styleId);
-                    if (!matchingTextStyles.some((s) => s.id === styleId)) matchingTextStyles.push(textStyle);
-                    style = textStyle;
-                  }
-                }
-              } catch {
-                // Ignore styles that cannot be resolved
-              }
-            }
-            if (style && matchingTextStyleIds.has(styleId)) {
-              if (!textStyleUsageMap.has(styleId)) {
-                textStyleUsageMap.set(styleId, { pageName, totalCount: 0, components: new Map() });
-              }
-              const entry = textStyleUsageMap.get(styleId)!;
-              entry.totalCount += 1;
-              const componentName = findClosestComponent(node) || '(Unstyled / Frame)';
-              if (!entry.components.has(componentName)) {
-                entry.components.set(componentName, []);
-              }
-              entry.components.get(componentName)!.push(node.id);
-            }
-          }
-        } catch (e) {
-          // skip problem nodes silently
-        }
-
-        if ('children' in node) {
-          const { children } = (node as ChildrenMixin);
-          for (const child of children) {
-            queue.push(child);
-          }
+      const node = stack.pop()!;
+      if ('children' in node) {
+        for (const child of node.children) {
+          stack.push(child);
         }
       }
-    }
-  }
-  // 4. Determine which pages to scan
-  if (allPages) {
-    // Walk every page in the document
-    for (const page of figma.root.children) {
-      // Load the page if needed (avoids "Page not loaded" error on remote pages)
+
+      const hasBindings = ('boundVariables' in node && !!node.boundVariables)
+        || node.type === 'TEXT'
+        || ('effects' in node && Array.isArray(node.effects) && node.effects.some((e) => !!e.boundVariables))
+        || ('componentPropertyBindings' in node && !!(node as any).componentPropertyBindings)
+        // Ensure we check style properties so indirect variable usages are caught
+        || ('fillStyleId' in node && typeof node.fillStyleId === 'string' && node.fillStyleId !== '')
+        || ('strokeStyleId' in node && typeof node.strokeStyleId === 'string' && node.strokeStyleId !== '')
+        || ('effectStyleId' in node && typeof node.effectStyleId === 'string' && node.effectStyleId !== '')
+        || ('gridStyleId' in node && typeof node.gridStyleId === 'string' && node.gridStyleId !== '');
+
+      if (!hasBindings) continue;
+
+      // Trace upwards to find the topmost Component, ComponentSet, or Instance
+      let current: BaseNode | null = node;
+      let topContainer: ComponentNode | ComponentSetNode | InstanceNode | null = null;
+      while (current && current.type !== 'PAGE' && current.type !== 'DOCUMENT') {
+        if (current.type === 'COMPONENT' || current.type === 'COMPONENT_SET' || current.type === 'INSTANCE') {
+          // If we hit a component set, prefer it. If we hit a component inside a component set, we'll hit the set next.
+          topContainer = current as any;
+        }
+        current = current.parent;
+      }
+
+      // If user requested onlyComponents, skip raw canvas nodes
+      if (onlyComponents && !topContainer) continue;
+
       try {
-        await page.loadAsync();
-      } catch (_) {
-        // page may already be loaded or not support loadAsync
+        const varIds = new Set<string>();
+        // 1. Direct, effect, and component property bindings
+        extractVariableIdsFromNode(node).forEach((id) => varIds.add(id));
+        // 2. Style-based bindings
+        (await getVariableIdsFromStyles(node, resolvedStyleVarCache)).forEach((id) => varIds.add(id));
+
+        if (varIds.size > 0) {
+          for (const varId of varIds) {
+            if (resolvedVariableCache.has(varId)) {
+              const variable = resolvedVariableCache.get(varId);
+              if (!variable || !variableMatchesQuery(variable)) continue;
+            } else {
+              pendingVariableIdsToResolve.add(varId);
+            }
+
+            if (!usageMap.has(varId)) {
+              usageMap.set(varId, { pageName, totalCount: 0, components: new Map() });
+            }
+            const entry = usageMap.get(varId)!;
+
+            let componentName = topContainer ? topContainer.name : '(Unstyled / Frame)';
+            if (topContainer && topContainer.type === 'INSTANCE' && topContainer.mainComponent) {
+              componentName = topContainer.mainComponent.name;
+            }
+            const targetId = topContainer ? topContainer.id : node.id;
+
+            if (!entry.components.has(componentName)) {
+              entry.components.set(componentName, []);
+            }
+            const targetArr = entry.components.get(componentName)!;
+            // Deduplicate the target IDs per component row so we don't spam the UI
+            if (!targetArr.includes(targetId)) {
+              targetArr.push(targetId);
+              // Only increment usage count relative to distinct objects bounding it
+              entry.totalCount += 1;
+            }
+          }
+        }
+
+        // Track text style usage
+        if (node.type === 'TEXT' && 'textStyleId' in node && node.textStyleId && node.textStyleId !== figma.mixed) {
+          const styleId = node.textStyleId as string;
+          let style: TextStyle | null = null;
+          if (matchingTextStyleIds.has(styleId)) {
+            style = matchingTextStyles.find((s) => s.id === styleId) ?? null;
+          } else if (nonMatchingTextStyleCache.has(styleId)) {
+            style = null;
+          } else {
+            try {
+              const resolved = await figma.getStyleByIdAsync(styleId);
+              if (resolved && resolved.type === 'TEXT') {
+                const textStyle = resolved as TextStyle;
+                const matchesQuery = !lowerQuery || textStyle.name.toLowerCase().includes(lowerQuery);
+                if (matchesQuery) {
+                  matchingTextStyleIds.add(styleId);
+                  if (!matchingTextStyles.some((s) => s.id === styleId)) matchingTextStyles.push(textStyle);
+                  style = textStyle;
+                } else {
+                  nonMatchingTextStyleCache.add(styleId);
+                }
+              } else {
+                nonMatchingTextStyleCache.add(styleId);
+              }
+            } catch {
+              nonMatchingTextStyleCache.add(styleId);
+            }
+          }
+
+          if (style && matchingTextStyleIds.has(styleId)) {
+            if (!textStyleUsageMap.has(styleId)) {
+              textStyleUsageMap.set(styleId, { pageName, totalCount: 0, components: new Map() });
+            }
+            const entry = textStyleUsageMap.get(styleId)!;
+            let componentName = topContainer ? topContainer.name : '(Unstyled / Frame)';
+            if (topContainer && topContainer.type === 'INSTANCE' && topContainer.mainComponent) {
+              componentName = topContainer.mainComponent.name;
+            }
+            const targetId = topContainer ? topContainer.id : node.id;
+
+            if (!entry.components.has(componentName)) {
+              entry.components.set(componentName, []);
+            }
+            const targetArr = entry.components.get(componentName)!;
+            if (!targetArr.includes(targetId)) {
+              targetArr.push(targetId);
+              entry.totalCount += 1;
+            }
+          }
+        }
+      } catch (e) {
+        // Skip problematic nodes
       }
-      await traversePage(page.children, page.name);
     }
-  } else {
-    await traversePage(figma.currentPage.children, figma.currentPage.name);
+  }
+  // 4. Determine which pages to scan (Skip if just fetching suggestions)
+  if (!suggestionsOnly) {
+    if (allPages) {
+      // Walk every page in the document
+      for (const page of figma.root.children) {
+        await traversePage(page);
+      }
+    } else if (pageIds.length > 0) {
+      const pages = figma.root.children.filter((p: any) => pageIds.includes(p.id));
+      for (const page of pages) {
+        await traversePage(page as PageNode);
+      }
+    } else {
+      await traversePage(figma.currentPage);
+    }
+
+    // POST-TRAVERSAL: Resolve all unknown variable IDs exactly ONCE.
+    if (pendingVariableIdsToResolve.size > 0) {
+      figma.ui.postMessage({ type: 'scan-progress', text: `Resolving ${pendingVariableIdsToResolve.size} unknown variables...` });
+
+      // Batch resolve
+      const resolvePromises = Array.from(pendingVariableIdsToResolve).map(async (id) => {
+        try {
+          const v = await figma.variables.getVariableByIdAsync(id);
+          resolvedVariableCache.set(id, v);
+          if (v && variableMatchesQuery(v)) {
+            matchingVarIds.add(id);
+            if (!matchingVars.some((existing) => existing.id === id)) {
+              matchingVars.push(v);
+            }
+          } else {
+            // It resolved, but didn't match the query. Strip it from usageMap.
+            usageMap.delete(id);
+          }
+        } catch {
+          resolvedVariableCache.set(id, null);
+          usageMap.delete(id);
+        }
+      });
+
+      // We await all missing variables simultaneously rather than blocking the traverse loop
+      await Promise.all(resolvePromises);
+    }
   }
 
-  // 6. Format variable results (use async API for library variable collections)
-  const variables: VariableUsageResult[] = await Promise.all(matchingVars.map(async (v) => {
+  // Clean up usageMap to ONLY include matchingVarIds
+  for (const key of usageMap.keys()) {
+    if (!matchingVarIds.has(key)) {
+      usageMap.delete(key);
+    }
+  }
+
+  // 6. Pre-resolve collection metadata for library variables (dedupe to avoid N async calls)
+  const collectionIdsToResolve = [...new Set(
+    matchingVars
+      .filter((v) => v.variableCollectionId && !collectionMap.has(v.variableCollectionId))
+      .map((v) => v.variableCollectionId),
+  )];
+  if (collectionIdsToResolve.length > 0) {
+    const resolvedCollections = await Promise.all(
+      collectionIdsToResolve.map((id) => figma.variables.getVariableCollectionByIdAsync(id).catch(() => null)),
+    );
+    resolvedCollections.forEach((coll) => {
+      if (coll) {
+        collectionMap.set(coll.id, coll.name);
+        collectionModesMap.set(coll.id, coll.modes);
+      }
+    });
+  }
+
+  // 7. Format variable results (collection metadata now cached)
+  const variables: VariableUsageResult[] = matchingVars.map((v) => {
     const usage = usageMap.get(v.id);
     const components: VariableComponentUsage[] = [];
     if (usage) {
@@ -309,21 +364,8 @@ export async function searchVariableUsage(
         components.push({ componentName, nodeIds });
       });
     }
-
-    let collectionName = collectionMap.get(v.variableCollectionId);
-    let modes = collectionModesMap.get(v.variableCollectionId);
-    if ((!collectionName || !modes) && v.variableCollectionId) {
-      try {
-        const coll = await figma.variables.getVariableCollectionByIdAsync(v.variableCollectionId);
-        if (coll) {
-          collectionName = collectionName || coll.name;
-          modes = modes ?? coll.modes;
-        }
-      } catch (_) {
-        /* keep Unknown Collection for library/unresolved collections */
-      }
-    }
-    collectionName = collectionName || 'Unknown Collection';
+    const collectionName = collectionMap.get(v.variableCollectionId) || 'Unknown Collection';
+    const modes = collectionModesMap.get(v.variableCollectionId);
     const modeNames = (modes || []).map((m) => m.name);
 
     return {
@@ -337,9 +379,9 @@ export async function searchVariableUsage(
       modeCount: modeNames.length,
       modeNames,
     };
-  }));
+  });
 
-  // 7. Format text style results
+  // 8. Format text style results
   const textStyles: TextStyleUsageResult[] = matchingTextStyles.map((s) => {
     const usage = textStyleUsageMap.get(s.id);
     const components: VariableComponentUsage[] = [];

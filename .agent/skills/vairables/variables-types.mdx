@@ -1,0 +1,90 @@
+---
+title: Variables REST API – Types
+slug: /rest-api/variables/types
+---
+
+# Variables – Types
+
+Variables in Figma have preset types (string, boolean, float, color), belong to a variable collection, and hold different values for each mode in that collection.[page:3] Design node properties can bind to variables so that values respond to variable changes or mode switches.[page:3]
+
+Extended collections let you create variants of existing collections with custom override values while still inheriting all variables and modes from a parent collection.[page:3] This is particularly useful for themes, regional variants, or brand variations.[page:3]
+
+Key properties of extended collections include:[page:3]
+
+- Inheritance of all variables from the parent collection.[page:3]
+- Ability to override any inherited variable value per mode.[page:3]
+- Encoded extended mode IDs that carry both collection ID and mode ID, e.g. `VariableCollectionId:1:2/3:4`.[page:3]
+- Only **local** collections can be extended through the REST API, though local extensions of subscribed collections are supported.[page:3]
+
+The types below are returned by `GET /v1/files/:file_key/variables/local` and `GET /v1/files/:file_key/variables/published`, with the published endpoint returning a subset.[page:3]
+
+## `VariableCollection`
+
+Represents a grouping of related variables sharing the same modes.[page:3]
+
+Key properties:
+
+- `id`, `name`, `key` – identifiers for the collection.[page:3]
+- `modes` – map of `modeId` to mode metadata, including optional `parentModeId` for extended collections.[page:3]
+- `defaultModeId` – ID of the default mode.[page:3]
+- `remote` – whether the collection is remote.[page:3]
+- `hiddenFromPublishing` – whether the collection is hidden when publishing the file as a library.[page:3]
+- `variableIds` – IDs of variables within the collection (includes inherited and local for extended collections).[page:3]
+- `isExtension` – whether this is an extended collection.[page:3]
+- `parentVariableCollectionId` – ID of the collection being directly extended.[page:3]
+- `rootVariableCollectionId` – ID of the original non‑extended collection in the extension chain.[page:3]
+- `inheritedVariableIds` – IDs of the variables inherited from the parent.[page:3]
+- `localVariableIds` – IDs of variables created directly in this extended collection.[page:3]
+- `variableOverrides` – nested map of variable overrides by `variableId` and `modeId`.[page:3]
+
+## `Variable`
+
+A single design token with values for each mode.[page:3]
+
+Key properties:
+
+- `id`, `name`, `key` – identifiers for the variable.[page:3]
+- `variableCollectionId` – collection that contains this variable.[page:3]
+- `resolvedType` – `BOOLEAN`, `FLOAT`, `STRING`, or `COLOR`.[page:3]
+- `valuesByMode` – map of `modeId` to primitive value, color, or `VariableAlias`.[page:3]
+- `remote` – whether the variable is remote.[page:3]
+- `description` – human‑readable description.[page:3]
+- `hiddenFromPublishing` – whether the variable is hidden when publishing the file as a library.[page:3]
+- `scopes` – array of `VariableScope` values controlling visibility in variable pickers in the UI.[page:3]
+- `codeSyntax` – `VariableCodeSyntax` specifying platform‑specific names as surfaced in Dev Mode snippets.[page:3]
+- `deletedButReferenced` – indicates the variable was deleted in the editor but still referenced in documents or aliases.[page:3]
+
+## `VariableAlias`
+
+Represents an alias to another variable.[page:3]
+
+Properties:
+
+- `type` – always `VARIABLE_ALIAS`.[page:3]
+- `id` – ID of the target variable (may be a temporary ID when used in `POST variables`).[page:3]
+
+## `VariableScope`
+
+Controls where variables appear in the UI pickers.[page:3]
+
+- Supported for `FLOAT` and `COLOR`, with different enums for each type.[page:3]
+- `ALL_SCOPES` indicates that the variable is visible in all supported fields.[page:3]
+- `ALL_FILLS` indicates visibility in all current and future fill fields for color variables.[page:3]
+
+Example scopes:[page:3]
+
+- FLOAT: `ALL_SCOPES`, `CORNER_RADIUS`, `WIDTH_HEIGHT`, `GAP`, `FONT_SIZE`, etc.[page:3]
+- STRING: `ALL_SCOPES`, `TEXT_CONTENT`, `FONT_FAMILY`, etc.[page:3]
+- COLOR: `ALL_SCOPES`, `ALL_FILLS`, `FRAME_FILL`, `TEXT_FILL`, `STROKE_COLOR`, etc.[page:3]
+
+## `VariableCodeSyntax`
+
+Platform‑specific code syntax definitions for a variable.[page:3]
+
+This is a map keyed by platform:[page:3]
+
+- `WEB`
+- `ANDROID`
+- `iOS`
+
+Each entry defines how the variable should appear in code snippets for that platform.[page:3]

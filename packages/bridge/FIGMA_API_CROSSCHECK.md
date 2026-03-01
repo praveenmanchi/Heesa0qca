@@ -4,6 +4,8 @@ Cross-check of Bridge plugin implementation against [Figma Developer Docs](https
 
 **Last updated:** Feb 2025 (post deep inspection)
 
+> **Maintenance:** Update this document when Figma APIs change, new APIs are adopted, or deprecated APIs are migrated. See [Figma Plugin API Changelog](https://www.figma.com/plugin-docs/api/changelog/) for updates.
+
 ---
 
 ## 1. Manifest Compliance

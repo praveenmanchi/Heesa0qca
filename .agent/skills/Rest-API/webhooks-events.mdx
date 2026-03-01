@@ -1,0 +1,400 @@
+---
+title: Events | Developer Docs
+slug: /figma/rest-api/webhooks-events
+---
+
+On this page
+
+The following table lists all the events that can be sent via a webhook.
+
+Event name
+
+Trigger condition
+
+### PING[​](#ping-event "Direct link to PING")
+
+Debug event triggered whenever a webhook is created. Use this to verify that your endpoint was setup correctly.
+
+`event_type`String
+
+The type of the event, as a string enum.
+
+*   `PING`
+
+`passcode`String
+
+The passcode specified when the webhook was created, should match what was initially provided.
+
+`timestamp`String
+
+UTC ISO 8601 timestamp of when the event was triggered.
+
+`webhook_id`Number
+
+The id of the webhook that caused the callback.
+
+**Example:**
+
+```
+{    "event_type": "PING",    "passcode": "secretpasscode",    "timestamp": "2020-02-23T20:27:16Z",    "webhook_id": "22"  }
+```
+
+### FILE\_UPDATE[​](#file-update-event "Direct link to FILE_UPDATE")
+
+Triggers within 30 minutes of editing inactivity in a file.
+
+`event_type`String
+
+The type of the event, as a string enum.
+
+*   `FILE_UPDATE`
+
+`file_key`String
+
+The key of the file that was updated.
+
+`file_name`String
+
+The name of the file that was updated.
+
+`passcode`String
+
+The passcode specified when the webhook was created, should match what was initially provided.
+
+`timestamp`String
+
+UTC ISO 8601 timestamp of when the event was triggered.
+
+`webhook_id`Number
+
+The id of the webhook that caused the callback.
+
+**Example:**
+
+```
+{    "event_type": "FILE_UPDATE",    "file_key": "CL06nJNn5eZLQKDoARMND5",    "file_name": "Developer page mockup demo",    "passcode": "secretpasscode",    "timestamp": "2020-02-23T20:27:16Z",    "webhook_id": "22"  }
+```
+
+### FILE\_DELETE[​](#file-delete-event "Direct link to FILE_DELETE")
+
+Triggers whenever a file has been deleted. If you subscribe to `FILE_UPDATE`, you automatically get these notifications. Note that this does not trigger on all files within a folder, if the folder is deleted.
+
+`event_type`String
+
+The type of the event, as a string enum.
+
+*   `FILE_DELETE`
+
+`file_key`String
+
+The key of the file that was deleted.
+
+`file_name`String
+
+The name of the file that was deleted.
+
+`passcode`String
+
+The passcode specified when the webhook was created, should match what was initially provided.
+
+`timestamp`String
+
+UTC ISO 8601 timestamp of when the event was triggered.
+
+`triggered_by`[User](/docs/rest-api/users-types/#user-type)
+
+The user that deleted the file and triggered this event.
+
+`webhook_id`Number
+
+The id of the webhook that caused the callback.
+
+**Example:**
+
+```
+{    "event_type": "FILE_DELETE",    "file_key": "CL06nJNn5eZLQKDoARMND5",    "file_name": "Developer page mockup demo",    "passcode": "secretpasscode",    "timestamp": "2020-02-23T20:27:16Z",    "webhook_id": "22"  }
+```
+
+### FILE\_VERSION\_UPDATE[​](#file-version-update-event "Direct link to FILE_VERSION_UPDATE")
+
+Triggers whenever a user creates a named version in the version history of a file.
+
+This is useful for workflow integrations. For example, suppose you have a Figma document with icon assets. When the design for an asset is updated and ready to publish, you can have a member of the team tag that version in the version history and then use this webhook event to generate and deploy your new asset version.
+
+`event_type`String
+
+The type of the event, as a string enum.
+
+*   `FILE_VERSION_UPDATE`
+
+`file_key`String
+
+The key of the file that was updated.
+
+`file_name`String
+
+The name of the file that was updated.
+
+`created_at`String
+
+UTC ISO 8601 timestamp of when the version was created.
+
+`version_id`String
+
+ID of the published version.
+
+`label`String
+
+Label of the version in the version history.
+
+`description`String
+
+Description of the version in the version history.
+
+`passcode`String
+
+The passcode specified when the webhook was created, should match what was initially provided.
+
+`timestamp`String
+
+UTC ISO 8601 timestamp of when the event was triggered.
+
+`triggered_by`[User](/docs/rest-api/users-types/#user-type)
+
+The user that deleted the file and triggered this event.
+
+`webhook_id`Number
+
+The id of the webhook that caused the callback.
+
+**Example:**
+
+```
+{    "created_at": "2020-02-23T20:27:16Z",    "event_type": "FILE_VERSION_UPDATE",    "file_key": "CL06nJNn5eZLQKDoARMND5",    "file_name": "Developer page mockup demo",    "version_id": "443",    "label": "Added new documentation!",    "description": "Wrote new docs for webhooks v2",    "passcode": "secretpasscode",    "timestamp": "2020-02-23T20:27:16Z",    "triggered_by": {      "id": "813845097374535682",      "handle": "Dylan Field"    },    "webhook_id": "22"  }
+```
+
+### LIBRARY\_PUBLISH[​](#library-publish-event "Direct link to LIBRARY_PUBLISH")
+
+Triggers whenever a library file is published.
+
+This is useful for workflow integrations. This webhook could integrate with Slack, Asana or Jira, notifying designers to modify their assets when new components are published.
+
+Note: depending on the type and number of assets that were published, a single publication may be delivered via multiple, separate `LIBRARY_PUBLISH` webhook events. There will be a separate `LIBRARY_PUBLISH` event for each type of published library asset (components, styles, and/or variables). Additionally, publications with a large number of assets (typically hundreds) will also be split into multiple separate events.
+
+`event_type`String
+
+The type of the event, as a string enum.
+
+*   `LIBRARY_PUBLISH`
+
+`file_key`String
+
+The key of the file that was published.
+
+`file_name`String
+
+The name of the file that was published.
+
+`description`String
+
+Description of the library publish.
+
+`created_components`[LibraryItemData](/docs/rest-api/webhooks-types/#libraryitemdata-type)\[\]
+
+Components that were created by the library publish.
+
+`created_styles`[LibraryItemData](/docs/rest-api/webhooks-types/#libraryitemdata-type)\[\]
+
+Styles that were created by the library publish.
+
+`created_variables`[LibraryItemData](/docs/rest-api/webhooks-types/#libraryitemdata-type)\[\]
+
+Variables that were created by the library publish.
+
+`modified_components`[LibraryItemData](/docs/rest-api/webhooks-types/#libraryitemdata-type)\[\]
+
+Components that were modified by the library publish.
+
+`modified_styles`[LibraryItemData](/docs/rest-api/webhooks-types/#libraryitemdata-type)\[\]
+
+Styles that were modified by the library publish.
+
+`modified_variables`[LibraryItemData](/docs/rest-api/webhooks-types/#libraryitemdata-type)\[\]
+
+Variables that were modified by the library publish.
+
+`deleted_components`[LibraryItemData](/docs/rest-api/webhooks-types/#libraryitemdata-type)\[\]
+
+Components that were deleted by the library publish.
+
+`deleted_styles`[LibraryItemData](/docs/rest-api/webhooks-types/#libraryitemdata-type)\[\]
+
+Styles that were deleted by the library publish.
+
+`deleted_variables`[LibraryItemData](/docs/rest-api/webhooks-types/#libraryitemdata-type)\[\]
+
+Variables that were deleted by the library publish.
+
+`passcode`String
+
+The passcode specified when the webhook was created, should match what was initially provided.
+
+`timestamp`String
+
+UTC ISO 8601 timestamp of when the event was triggered.
+
+`triggered_by`[User](/docs/rest-api/users-types/#user-type)
+
+The user that published the file and triggered this event.
+
+`webhook_id`Number
+
+The id of the webhook that caused the callback.
+
+**Example:**
+
+```
+{    "event_type": "LIBRARY_PUBLISH",    "file_key": "zH44k2FUM629Fa4EMShiHL",    "file_name": "Mockup library",    "description": "Matched colors to guidelines",    "created_components": [      {        "key": "ed26a50a541c7e6828420a68707eb49812b",        "name": "Simple button"      }    ],    "created_styles": [      {        "key": "a68707eb49ed26828420812bda2d36a50a5",        "name": "Coral green"      }    ],    "modified_components": [      {        "key": "eacab7bc887f50d99d73ef0eaf6716d5dae",        "name": "Date picker"      }    ],    "modified_styles": [      {        "key": "50d99d73ef0ab7bc887f716d5dae0855fea",        "name": "Background fill"      }    ],    "deleted_components": [      {        "key": "0a575f0b60f7238d9f7da3e8d57b99ab445",        "name": "Slider"      }    ],    "deleted_styles": [      {        "key": "0b60f0a577b99ab4451f25f7238d9f7da3e",        "name": "Header text"      }    ],    "passcode": "secretpassword",    "timestamp": "2020-02-23T20:27:16Z",    "triggered_by": {      "id": "813845097374535682",      "handle": "Dylan Field"    },    "webhook_id": "22"  }
+```
+
+### FILE\_COMMENT[​](#file-comment-event "Direct link to FILE_COMMENT")
+
+Triggers whenever a user comments on a file.
+
+This webhook could integrate with Asana or Jira and automatically create tasks whenever a user comments. It could also integrate with Slack and notify mentioned users.
+
+The contents of a comment is returned in an array of [CommentFragment](/docs/rest-api/webhooks-types/#commentfragment-type). A `CommentFragment` either contains a text or mention field. A text field contains raw comment text with formatting derivatives, newlines will be encoded as `\n`, etc.
+
+Text fields can also contain emojis, which are always encoded as a separate fragment and are surrounded by two `:` characters. Mention fields occur if a user types `@OtherUser` in their comment. A mention contains the user id of the mentioned user. All mentioned users are added to the mentioned array field, where additional user information is included.
+
+`event_type`String
+
+The type of the event, as a string enum.
+
+*   `FILE_COMMENT`
+
+`file_key`String
+
+The key of the file that was updated.
+
+`file_name`String
+
+The name of the file that was updated.
+
+`comment`[CommentFragment](/docs/rest-api/webhooks-types/#commentfragment-type)\[\]
+
+Contents of the comment itself.
+
+`comment_id`Number
+
+Unique identifier for comment.
+
+`mentions`[User](/docs/rest-api/users-types/#user-type)\[\]
+
+Users that were mentioned in the comment.
+
+`order_id`Number
+
+Only set for top level comments. The number displayed with the comment in the UI.
+
+`parent_id`Number
+
+If present, the id of the comment to which this is the reply.
+
+`created_at`String
+
+The UTC ISO 8601 time at which the comment was left.
+
+`resolved_at`String
+
+If set, the UTC ISO 8601 time the comment was resolved.
+
+`passcode`String
+
+The passcode specified when the webhook was created, should match what was initially provided.
+
+`timestamp`String
+
+UTC ISO 8601 timestamp of when the event was triggered.
+
+`triggered_by`[User](/docs/rest-api/users-types/#user-type)
+
+The user that made the comment and triggered this event.
+
+`webhook_id`Number
+
+The id of the webhook that caused the callback.
+
+**Example:**
+
+```
+{    "event_type": "FILE_COMMENT",    "file_key": "zH44k2FUM629Fa4EMShiHL",    "file_name": "Mockup library",    "comment": [      {        "text": "TODO: \n"      },      {        "mention": "811724164054158337"      },      {        "text": "Change selection colors"      },    ],    "comment_id": "32",    "mentions": [      {        "id": "811724164054158337",        "handle": "Evan Wallace"      }    ],    "order_id": "23 ",    "parent_id": "",    "created_at": "2020-02-23T20:27:16Z",    "resolved_at": "",    "passcode": "secretpasscode",    "timestamp": "2020-02-23T20:27:16Z",    "triggered_by": {      "id": "813845097374535682",      "handle": "Dylan Field"    },    "webhook_id": "22"  }
+```
+
+### DEV\_MODE\_STATUS\_UPDATE[​](#dev-mode-status-update-event "Direct link to DEV_MODE_STATUS_UPDATE")
+
+Triggers whenever the Dev Mode status changes for a layer in a file.
+
+This can be useful if, for example, you want to create an integration that tracks the status of designs that are being worked on in your organization.
+
+The event includes the Dev Mode `status`, the `file_key` and `node_id` of the layer where the status changed, and the user that made the change. It also includes any related links (Dev resources) that are applied to the layer in the file.
+
+`event_type`String
+
+The type of the event, as a string enum.
+
+*   `DEV_MODE_STATUS_UPDATE`
+
+`file_key`String
+
+The key of the file where the change occurred.
+
+`node_id`String
+
+The id of the node where the Dev Mode status changed. For example, `43:2`.
+
+`status`String
+
+The new Dev Mode status, as a string enum.
+
+*   `NONE`
+*   `READY_FOR_DEV`
+*   `COMPLETED`
+
+`change_message`String
+
+If one was provided when the status was updated, a message describing the change.
+
+`related_links`[DevResource](/docs/rest-api/webhooks-types/#devresource-type)\[\]
+
+An array of related links that have been applied to the layer in the file.
+
+`passcode`String
+
+The passcode specified when the webhook was created, should match what was initially provided.
+
+`timestamp`String
+
+UTC ISO 8601 timestamp of when the event was triggered.
+
+`triggered_by`[User](/docs/rest-api/users-types/#user-type)
+
+The user that made the change and triggered this event.
+
+`webhook_id`Number
+
+The id of the webhook that caused the callback.
+
+**Example:**
+
+```
+{    "event_type": "DEV_MODE_STATUS_UPDATE",    "file_key": "ABzTs1A2aFSy960zBI3nMM",    "node_id": "43:2",    "status": "READY_FOR_DEV",    "change_message": "New rectangle",    "related_links": [      {        "id": 1118075899259441212,        "name": "Issue BB-8",        "url": "https://test.atlassian.net/BB-8",        "node_id": "43:2",        "file_key": "ABzTs1A2aFSy960zBI3nMM"      }    ],    "passcode": "secretpasscode",    "timestamp": "2025-05-14T23:28:40Z",    "triggered_by": {      "id": "813845097374535682",      "handle": "Dylan Field"    },    "webhook_id": "434"  }
+```
+
+*   [PING](#ping-event)
+*   [FILE\_UPDATE](#file-update-event)
+*   [FILE\_DELETE](#file-delete-event)
+*   [FILE\_VERSION\_UPDATE](#file-version-update-event)
+*   [LIBRARY\_PUBLISH](#library-publish-event)
+*   [FILE\_COMMENT](#file-comment-event)
+*   [DEV\_MODE\_STATUS\_UPDATE](#dev-mode-status-update-event)

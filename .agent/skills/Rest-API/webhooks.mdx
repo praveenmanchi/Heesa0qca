@@ -1,0 +1,79 @@
+---
+title: Webhooks V2 | Developer Docs
+slug: /figma/rest-api/webhooks
+---
+
+On this page
+
+## Getting started[​](#getting-started "Direct link to Getting started")
+
+Webhooks allow you to observe when specific events happen in files. For example: a collaborator comments on a file, or you add a new version to a file's history.
+
+Using these events as triggers, you can build integrations with other applications. This can help to improve workflows, or extend the functionality of your design system.
+
+Webhooks are attached to a given context. Webhook contexts include teams, projects, and files. Admins on a team can create and manage webhooks for a given context, such as the team itself, or files and projects within the team. The individual who can create a webhook depends on the context:
+
+*   **Team context**: Team admins can create webhooks for a team
+*   **Project context**: Any user with `Can edit` permission on a project can create webhooks for that project
+*   **File context**: Any user with `Can edit` permission on a file can create webhooks for that file
+
+The limits for how many webhooks you can attach depend on the type of context:
+
+*   **Team**: 20 webhooks per team
+*   **Project**: 5 webhooks per project
+*   **File**: 3 webhooks per file
+
+For the file context specifically, the total number of file webhooks you can create depends on your plan:
+
+*   **Professional**: 150 webhooks
+*   **Organization**: 300 webhooks
+*   **Enterprise**: 600 webhooks
+
+For the team context, webhooks will notify based on the availability of the team:
+
+*   Webhooks **will notify** for files that are available to everyone on the team, or are in [view-only projects](https://help.figma.com/hc/articles/360038512473).
+*   Webhooks **will not notify** for files in invite-only projects.
+
+Every payload (except for `PING`) will contain the file name, file key and information related to the event triggered. This allows you to see which file triggered the event. Figma does not currently have an interface for webhooks. At the moment, you must create, modify, and delete webhooks through the Webhooks API.
+
+When you want to review what webhooks exist for a given context, or for all contexts that you have access to on your plan, you can use [GET /v2/webhooks](/docs/rest-api/webhooks-endpoints/#webhooks-v2-get-endpoint).
+
+*   For specific contexts, you'll specify the `context` and `context_id` to get all of the webhooks attached to that context.
+    
+*   For all contexts in your plan, you'll specify `plan_api_id`. The response will include a list of the contexts with webhooks, and the webhooks attached to those contexts.
+    
+    Your `plan_api_id` is constructed by combining the type of plan you have with the id of your team or organization. You can get your organization or team id from a Figma URL. For example:
+    
+    On the **Professional** plan, the team id follows the `/team/` part of the URL. For example, in `https://www.figma.com/files/team/1170245155647481265/`, the team id is `1170245155647481265`.
+    
+    On the **Organization**, **Enterprise**, and **Government** plans, the organization id follows the `/files/` part of the URL. For example, in `https://www.figma.com/files/1055436674972719015`, the organization id is `1055436674972719015`.
+    
+    To construct your `plan_api_id`, append your team or organization id to `team-` or `organization-` (the type of plan you have). For example: `team-1170245155647481265` for the Professional plan, or `organization-1055436674972719015` for the Organization, Enterprise and Government plans.
+    
+
+To get started with webhooks:
+
+### Setup your local webserver and expose the endpoint[​](#setup-your-local-webserver-and-expose-the-endpoint "Direct link to Setup your local webserver and expose the endpoint")
+
+Figma recommends using a tool similar to [ngrok](https://ngrok.com/) to expose a public URL for your local webserver.
+
+### Configure your server to handle POST requests with a JSON payload[​](#configure-your-server-to-handle-post-requests-with-a-json-payload "Direct link to Configure your server to handle POST requests with a JSON payload")
+
+Your server should return the status code `200 OK` when it receives a webhook request. If it returns another status code, or takes too long, the Figma API will treat this as an error. Figma retries failed requests 3 times with an exponential backoff strategy.
+
+*   The first retry occurs **5 minutes** after the first failure.
+*   The second retry occurs **30 minutes** after the second failure.
+*   The final retry occurs **3 hours** after the third failure.
+
+Figma does not currently deactivate endpoints with frequent errors.
+
+### Create your webhook[​](#create-your-webhook "Direct link to Create your webhook")
+
+Use the [POST Webhook endpoint](/docs/rest-api/webhooks-endpoints/#webhooks-v2-post-endpoint) to attach a webhook to a context. If you are successful, you will receive a `PING` event. This means your webhook is working and will receive any updates.
+
+If you are having problems with your webhook, you can query the [webhook requests endpoint](/docs/rest-api/webhooks-endpoints/#webhooks-v2-requests-endpoint). This will list all requests and responses within the past seven days.
+
+*   [Getting started](#getting-started)
+    *   [Setup your local webserver and expose the endpoint](#setup-your-local-webserver-and-expose-the-endpoint)
+    *   [Configure your server to handle POST requests with a JSON payload](#configure-your-server-to-handle-post-requests-with-a-json-payload)
+    *   [Create your webhook](#create-your-webhook)

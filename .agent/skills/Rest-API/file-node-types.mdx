@@ -1,0 +1,1291 @@
+---
+title: Node types | Developer Docs
+slug: /figma/rest-api/file-node-types
+---
+
+On this page
+
+**Node type** indicates what kind of node you are working with: for example, a `FRAME` node versus a `RECTANGLE` node. A node can have additional properties associated with it depending on its node type. The following is a catalog of properties that can be applied to a node, grouped by node type.
+
+Node type
+
+Properties
+
+### DOCUMENT[​](#document-props "Direct link to DOCUMENT")
+
+`children`[Node](/docs/rest-api/files/#node-type)\[\]
+
+An array of canvases attached to the document.
+
+### CANVAS[​](#canvas-props "Direct link to CANVAS")
+
+`children`[Node](/docs/rest-api/files/#node-type)\[\]
+
+An array of top level layers on the canvas.
+
+`backgroundColor`[Color](/docs/rest-api/file-property-types/#color-type)
+
+Background color of the canvas.
+
+`prototypeStartNodeID`Stringdeprecated
+
+Node ID that corresponds to the start frame for prototypes. This is deprecated with the introduction of multiple flows. Please use the `flowStartingPoints` field.
+
+`flowStartingPoints`[FlowStartingPoint](/docs/rest-api/file-property-types/#flowstartingpoint-type)\[\]default: \[\]
+
+A array of flow starting points sorted by its position in the prototype settings panel.
+
+`prototypeDevice`[PrototypeDevice](/docs/rest-api/file-property-types/#prototypedevice-type)
+
+The device used to view a prototype.
+
+`exportSettings`[ExportSettings](/docs/rest-api/file-property-types/#exportsettings-type)default: \[\]
+
+Export settings for the canvas.
+
+`measurements`[Measurement](/docs/rest-api/file-property-types/#measurement-type)\[\]default: \[\]
+
+An array of measurements displaying pinned distances between nodes on the canvas in Dev Mode.
+
+### FRAME[​](#frame-props "Direct link to FRAME")
+
+`children`[Node](/docs/rest-api/files/#node-type)\[\]
+
+An array of nodes that are direct children of this node.
+
+`locked`Booleandefault: false
+
+If true, layer is locked and cannot be edited.
+
+`background`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]deprecated
+
+Background of the node. This is deprecated, as backgrounds for frames are now in the `fills` field.
+
+`backgroundColor`[Color](/docs/rest-api/file-property-types/#color-type)deprecated
+
+Background color of the node. This is deprecated, as frames now support more than a solid color as a background. Please use the `fills` field instead.
+
+`fills`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]default: \[\]
+
+An array of fill paints applied to the node.
+
+`strokes`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]default: \[\]
+
+An array of stroke paints applied to the node.
+
+`complexStrokeProperties`[ComplexStrokeProperties](/docs/rest-api/file-property-types/#complexstrokeproperties-type)default: {}
+
+cspdesc
+
+`variableWidthPoints`[VariableWidthPoint](/docs/rest-api/file-property-types/#variablewidthpoint-type)\[\]default: \[\]
+
+A list of points describing the width profile of variable width strokes.
+
+`strokeWeight`Number
+
+The weight of strokes on the node.
+
+`strokeAlign`String
+
+Position of stroke relative to vector outline, as a string enum.
+
+*   `INSIDE`: stroke drawn inside the shape boundary
+*   `OUTSIDE`: stroke drawn outside the shape boundary
+*   `CENTER`: stroke drawn centered along the shape boundary
+
+`strokeDashes`Number\[\]default: \[\]
+
+An array of floating point numbers describing the pattern of dash length and gap lengths that the vector path follows. For example a value of `[1, 2]` indicates that the path has a dash of length 1 followed by a gap of length 2, repeated.
+
+`cornerRadius`Number
+
+Radius of each corner of the frame if a single radius is set for all corners.
+
+`rectangleCornerRadii`Number\[\]default: same as cornerRadius
+
+Array of length 4 of the radius of each corner of the rectangle, starting in the top left and proceeding clockwise.
+
+`cornerSmoothing`Numberdefault: 0
+
+A value that lets you control how "smooth" the corners are. Ranges from 0 to 1. 0 means that the corner is perfectly circular. A value of 0.6 means the corner matches the iOS 7 "squircle" icon shape. Other values produce various other curves. See [this post](https://www.figma.com/blog/desperately-seeking-squircles/) for the gory details!
+
+`exportSettings`[ExportSettings](/docs/rest-api/file-property-types/#exportsettings-type)\[\]default: \[\]
+
+An array of export settings representing images to export from the node.
+
+`blendMode`[BlendMode](/docs/rest-api/file-property-types/#blendmode-type)
+
+How this node blends with nodes behind it in the scene (see blend mode section for more details).
+
+`preserveRatio`Booleandeprecateddefault: false
+
+Keep height and width constrained to same ratio. Deprecated in favor of `targetAspectRatio`.
+
+`targetAspectRatio`0
+
+If set, keeps height and width constrained to the target aspect ratio. Unlike `preserveRatio`, also works outside of properties panel resizing actions.
+
+`constraints`[LayoutConstraint](/docs/rest-api/file-property-types/#layoutconstraint-type)
+
+Horizontal and vertical layout constraints for the node.
+
+`layoutAlign`String
+
+Determines if the layer should stretch along the parent's counter axis. This property is only provided for direct children of auto-layout frames.
+
+*   `INHERIT`
+*   `STRETCH`
+
+In previous versions of auto layout, determined how the layer is aligned inside an auto-layout frame. This property is only provided for direct children of auto-layout frames.
+
+*   `MIN`
+*   `CENTER`
+*   `MAX`
+*   `STRETCH`
+
+In horizontal auto-layout frames, `MIN` and `MAX` correspond to `TOP` and `BOTTOM`. In vertical auto-layout frames, `MIN` and `MAX` correspond to `LEFT` and `RIGHT`.
+
+`interactions`[Interaction](/docs/rest-api/file-property-types/#interaction-type)\[\]
+
+List of prototype interactions on this node, which includes both the method of interaction with this node in a prototype, and the behavior of that interaction.
+
+`transitionNodeID`Stringdefault: null
+
+Node ID of node to transition to in prototyping.
+
+`transitionDuration`Numberdefault: null
+
+The duration of the prototyping transition on this node (in milliseconds).
+
+`transitionEasing`[EasingType](/docs/rest-api/file-property-types/#easingtype-type)default: null
+
+The easing curve used in the prototyping transition on this node.
+
+`opacity`Numberdefault: 1
+
+Overall opacity of paint (colors within the paint can also have opacity values which would blend with this).
+
+`absoluteBoundingBox`[Rectangle](/docs/rest-api/file-property-types/#rectangle-type)
+
+Bounding box of the node in absolute space coordinates.
+
+`absoluteRenderBounds`0
+
+The actual bounds of a node accounting for drop shadows, thick strokes, and anything else that may fall outside the node's regular bounding box defined in `x`, `y`, `width`, and `height`. The `x` and `y` inside this property represent the absolute position of the node on the page. This value will be `null` if the node is invisible.
+
+`size`[Vector](/docs/rest-api/file-property-types/#vector-type)
+
+Width and height of element. This is different from the width and height of the bounding box in that the absolute bounding box represents the element after scaling and rotation. Only present if `geometry=paths` is passed.
+
+`minWidth`Number | nulldefault: null
+
+The minWidth of the frame, or null if not set.
+
+`maxWidth`Number | nulldefault: null
+
+The maxWidth of the frame, or null if not set.
+
+`minHeight`Number | nulldefault: null
+
+The minHeight of the frame, or null if not set.
+
+`maxHeight`Number | nulldefault: null
+
+The maxHeight of the frame, or null if not set.
+
+`relativeTransform`[Transform](/docs/rest-api/file-property-types/#transform-type)
+
+The top two rows of a matrix that represents the 2D transform of this node relative to its parent. The bottom row of the matrix is implicitly always `(0, 0, 1)`. Use to transform coordinates in geometry. Only present if `geometry=paths` is passed.
+
+`clipsContent`Boolean
+
+Whether or not this node clips content outside of its bounds.
+
+`layoutMode`Stringdefault: NONE
+
+Whether this layer uses auto-layout to position its children.
+
+*   `NONE`
+*   `HORIZONTAL`
+*   `VERTICAL`
+*   `GRID`
+
+`layoutSizingHorizontal`String
+
+The horizontal sizing setting on this auto-layout frame or frame child.
+
+*   `FIXED`
+*   `HUG`
+*   `FILL`
+
+HUG is only valid on auto-layout frames and text nodes. FILL is only valid on auto-layout frame children.
+
+`layoutSizingVertical`String
+
+The vertical sizing setting on this auto-layout frame or frame child.
+
+*   `FIXED`
+*   `HUG`
+*   `FILL`
+
+HUG is only valid on auto-layout frames and text nodes. FILL is only valid on auto-layout frame children.
+
+`layoutWrap`String
+
+Whether this auto-layout frame has wrapping enabled.
+
+*   `NO_WRAP`
+*   `WRAP`
+
+`primaryAxisSizingMode`Stringdefault: AUTO
+
+Whether the primary axis has a fixed length (determined by the user) or an automatic length (determined by the layout engine). This property is only applicable for auto-layout frames.
+
+*   `FIXED`
+*   `AUTO`
+
+`counterAxisSizingMode`Stringdefault: AUTO
+
+Whether the counter axis has a fixed length (determined by the user) or an automatic length (determined by the layout engine). This property is only applicable for auto-layout frames.
+
+*   `FIXED`
+*   `AUTO`
+
+`primaryAxisAlignItems`Stringdefault: MIN
+
+Determines how the auto-layout frame’s children should be aligned in the primary axis direction. This property is only applicable for auto-layout frames.
+
+*   `MIN`
+*   `CENTER`
+*   `MAX`
+*   `SPACE_BETWEEN`
+
+`counterAxisAlignItems`Stringdefault: MIN
+
+Determines how the auto-layout frame’s children should be aligned in the counter axis direction. This property is only applicable for auto-layout frames.
+
+*   `MIN`
+*   `CENTER`
+*   `MAX`
+*   `BASELINE`
+
+`counterAxisAlignContent`Stringdefault: AUTO
+
+Determines how the auto-layout frame’s wrapped tracks should be aligned in the counter axis direction. This property is only applicable for auto-layout frames with `layoutWrap: "WRAP"`.
+
+*   `AUTO`
+*   `SPACE_BETWEEN`
+
+`gridRowCount`Number
+
+The number of rows in the grid layout. This property is only applicable for auto-layout frames with `layoutMode: "GRID"`.
+
+`gridColumnCount`Number
+
+The number of columns in the grid layout. This property is only applicable for auto-layout frames with `layoutMode: "GRID"`.
+
+`gridRowGap`Numberdefault: 0
+
+The distance between rows in the grid layout. This property is only applicable for auto-layout frames with `layoutMode: "GRID"`.
+
+`gridColumnGap`Numberdefault: 0
+
+The distance between columns in the grid layout. This property is only applicable for auto-layout frames with `layoutMode: "GRID"`.
+
+`gridColumnsSizing`String
+
+The string for the CSS grid-template-columns property. This property is only applicable for auto-layout frames with `layoutMode: "GRID"`.
+
+`gridRowsSizing`String
+
+The string for the CSS grid-template-rows property. This property is only applicable for auto-layout frames with `layoutMode: "GRID"`.
+
+`gridChildHorizontalAlign`Stringdefault: AUTO
+
+Determines how a GRID frame's child should be aligned in the horizontal direction within its grid area. This property is only applicable for direct children of frames with `layoutMode: "GRID"`.
+
+*   `AUTO`
+*   `MIN`
+*   `CENTER`
+*   `MAX`
+
+`gridChildVerticalAlign`Stringdefault: AUTO
+
+Determines how a GRID frame's child should be aligned in the vertical direction within its grid area. This property is only applicable for direct children of frames with `layoutMode: "GRID"`.
+
+*   `AUTO`
+*   `MIN`
+*   `CENTER`
+*   `MAX`
+
+`gridRowSpan`Numberdefault: 1
+
+The number of rows that a GRID frame's child should span. This property is only applicable for direct children of frames with `layoutMode: "GRID"`.
+
+`gridColumnSpan`Numberdefault: 1
+
+The number of columns that a GRID frame's child should span. This property is only applicable for direct children of frames with `layoutMode: "GRID"`.
+
+`gridColumnAnchorIndex`Numberdefault: 0
+
+The index of the column that a GRID frame's child should be anchored to. This property is only applicable for direct children of frames with `layoutMode: "GRID"`.
+
+`gridRowAnchorIndex`Numberdefault: 0
+
+The index of the row that a GRID frame's child should be anchored to. This property is only applicable for direct children of frames with `layoutMode: "GRID"`.
+
+`paddingLeft`Numberdefault: 0
+
+The padding between the left border of the frame and its children. This property is only applicable for auto-layout frames.
+
+`paddingRight`Numberdefault: 0
+
+The padding between the right border of the frame and its children. This property is only applicable for auto-layout frames.
+
+`paddingTop`Numberdefault: 0
+
+The padding between the top border of the frame and its children. This property is only applicable for auto-layout frames.
+
+`paddingBottom`Numberdefault: 0
+
+The padding between the bottom border of the frame and its children. This property is only applicable for auto-layout frames.
+
+`horizontalPadding`Numberdeprecateddefault: 0
+
+The horizontal padding between the borders of the frame and its children. This property is only applicable for auto-layout frames. Deprecated in favor of setting individual paddings.
+
+`verticalPadding`Numberdeprecateddefault: 0
+
+The vertical padding between the borders of the frame and its children. This property is only applicable for auto-layout frames. Deprecated in favor of setting individual paddings.
+
+`itemSpacing`Numberdefault: 0
+
+The distance between children of the frame. Can be negative. This property is only applicable for auto-layout frames.
+
+`counterAxisSpacing`Numberdefault: 0
+
+The distance between wrapped tracks of an auto-layout frame. This property is only applicable for auto-layout frames with `layoutWrap: "WRAP"`.
+
+`layoutPositioning`Stringdefault: AUTO
+
+Determines whether a layer's size and position should be determined by auto-layout settings or manually adjustable.
+
+*   `ABSOLUTE`
+*   `AUTO`
+
+`itemReverseZIndex`Booleandefault: false
+
+Determines the canvas stacking order of layers in this frame. When true, the first layer will be draw on top. This property is only applicable for auto-layout frames.
+
+`strokesIncludedInLayout`Booleandefault: false
+
+Determines whether strokes are included in layout calculations. When true, auto-layout frames behave like css `box-sizing: border-box`. This property is only applicable for auto-layout frames.
+
+`layoutGrids`[LayoutGrid](/docs/rest-api/file-property-types/#layoutgrid-type)\[\]default: \[\]
+
+An array of layout grids attached to this node (see layout grids section for more details). `GROUP` nodes do not have this attribute.
+
+`overflowDirection`Stringdefault: NONE
+
+Defines the scrolling behavior of the frame, if there exist contents outside of the frame boundaries. The frame can either scroll vertically, horizontally, or in both directions to the extents of the content contained within it. This behavior can be observed in a prototype.
+
+*   `HORIZONTAL_SCROLLING`
+*   `VERTICAL_SCROLLING`
+*   `HORIZONTAL_AND_VERTICAL_SCROLLING`
+*   `NONE`
+
+`effects`[Effect](/docs/rest-api/file-property-types/#effect-type)\[\]default: \[\]
+
+An array of effects attached to this node (see effects section for more details).
+
+`isMask`Booleandefault: false
+
+Does this node mask sibling nodes in front of it?
+
+`isMaskOutline`Booleandeprecateddefault: false
+
+Whether the mask ignores fill style (e.g. gradients) and effects. This property is deprecated; please use the `maskType` field instead (`isMaskOutline=true` corresponds to `maskType="VECTOR"`).
+
+`maskType`String
+
+If this layer is a mask, this property describes the operation used to mask the layer's siblings. The value may be one of the following:
+
+*   `ALPHA`: the mask node's alpha channel will be used to determine the opacity of each pixel in the masked result.
+*   `VECTOR`: if the mask node has visible fill paints, every pixel inside the node's fill regions will be fully visible in the masked result. If the mask has visible stroke paints, every pixel inside the node's stroke regions will be fully visible in the masked result.
+*   `LUMINANCE`: the luminance value of each pixel of the mask node will be used to determine the opacity of that pixel in the masked result.
+
+`styles`Map<String, String>
+
+A mapping of a style\_type to style ID (see [Style](/docs/rest-api/file-property-types/#style-type) for more details) of styles present on this node. The style ID can be used to look up more information about the style in the top-level styles field.
+
+`devStatus`0default: null
+
+Whether the node is marked `Ready for dev` or `Completed`. If the node does not have a status, the property is `null`.
+
+`annotations`[Annotation](/docs/rest-api/file-property-types/#annotation-type)\[\]private betadefault: \[\]
+
+An array of annotations displaying notes and pinned properties of nodes in Dev Mode. Currently a maximum of 1 annotation is supported.
+
+### GROUP[​](#group-props "Direct link to GROUP")
+
+See properties for [FRAME](#frame-props).
+
+### TRANSFORM\_GROUP[​](#transform-group-props "Direct link to TRANSFORM_GROUP")
+
+\[Available in beta, API is subject to change\] A group that represents a node transform.
+
+Transform groups have all of the properties of a [FRAME](#frame-props), plus:
+
+`transformModifiers`[TransformModifier](/docs/rest-api/file-property-types/#transformmodifier-type)\[\]default: \[\]
+
+### SECTION[​](#section-props "Direct link to SECTION")
+
+`sectionContentsHidden`Booleandefault: false
+
+Whether the contents of the section are visible.
+
+`devStatus`0default: null
+
+Whether the section is marked `Ready for dev` or `Completed`. If the section does not have a status, the property is `null`.
+
+`fills`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]default: \[\]
+
+An array of fill paints applied to the node.
+
+`strokes`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]default: \[\]
+
+An array of stroke paints applied to the node.
+
+`complexStrokeProperties`[ComplexStrokeProperties](/docs/rest-api/file-property-types/#complexstrokeproperties-type)default: {"type": "BASIC"}
+
+cspdesc
+
+`variableWidthPoints`[VariableWidthPoint](/docs/rest-api/file-property-types/#variablewidthpoint-type)\[\]default: \[\]
+
+A list of points describing the width profile of variable width strokes.
+
+`strokeWeight`Number
+
+The weight of strokes on the node.
+
+`strokeAlign`String
+
+Position of stroke relative to vector outline, as a string enum.
+
+*   `INSIDE`: stroke drawn inside the shape boundary
+*   `OUTSIDE`: stroke drawn outside the shape boundary
+*   `CENTER`: stroke drawn centered along the shape boundary
+
+`children`[Node](/docs/rest-api/files/#node-type)\[\]
+
+An array of nodes that are contained in the section.
+
+`absoluteBoundingBox`[Rectangle](/docs/rest-api/file-property-types/#rectangle-type)
+
+Bounding box of the node in absolute space coordinates.
+
+`absoluteRenderBounds`0
+
+The actual bounds of a node accounting for drop shadows, thick strokes, and anything else that may fall outside the node's regular bounding box defined in `x`, `y`, `width`, and `height`. The `x` and `y` inside this property represent the absolute position of the node on the page. This value will be `null` if the node is invisible.
+
+### VECTOR[​](#vector-props "Direct link to VECTOR")
+
+`locked`Booleandefault: false
+
+If true, layer is locked and cannot be edited.
+
+`exportSettings`[ExportSetting](/docs/rest-api/file-property-types/#exportsetting-type)\[\]default: \[\]
+
+An array of export settings representing images to export from the node.
+
+`blendMode`[BlendMode](/docs/rest-api/file-property-types/#blendmode-type)
+
+How this node blends with nodes behind it in the scene (see blend mode section for more details).
+
+`preserveRatio`Booleandefault: false
+
+Keep height and width constrained to same ratio.
+
+`layoutAlign`String
+
+Determines if the layer should stretch along the parent’s counter axis. This property is only provided for direct children of auto-layout frames.
+
+*   `INHERIT`
+*   `STRETCH`
+
+In previous versions of auto layout, determined how the layer is aligned inside an auto-layout frame.
+
+*   `MIN`
+*   `CENTER`
+*   `MAX`
+*   `STRETCH`
+
+In horizontal auto-layout frames, `MIN` and `MAX` correspond to `TOP` and `BOTTOM`. In vertical auto-layout frames, `MIN` and `MAX` correspond to `LEFT` and `RIGHT`.
+
+`layoutGrow`Numberdefault: 0
+
+This property is applicable only for direct children of auto-layout frames, ignored otherwise. Determines whether a layer should stretch along the parent's primary axis. A 0 corresponds to a fixed size and 1 corresponds to stretch.
+
+`constraints`[LayoutConstraint](/docs/rest-api/file-property-types/#layoutconstraint-type)
+
+Horizontal and vertical layout constraints for node.
+
+`transitionNodeID`String | nulldefault: null
+
+Node ID of node to transition to in prototyping.
+
+`transitionDuration`Number | nulldefault: null
+
+The duration of the prototyping transition on this node (in milliseconds).
+
+`transitionEasing`[EasingType](/docs/rest-api/file-property-types/#easingtype-type)default: null
+
+The easing curve used in the prototyping transition on this node.
+
+`opacity`Numberdefault: 1
+
+Opacity of the node.
+
+`absoluteBoundingBox`[Rectangle](/docs/rest-api/file-property-types/#rectangle-type)
+
+Bounding box of the node in absolute space coordinates.
+
+`absoluteRenderBounds`0
+
+The actual bounds of a node accounting for drop shadows, thick strokes, and anything else that may fall outside the node's regular bounding box defined in `x`, `y`, `width`, and `height`. The `x` and `y` inside this property represent the absolute position of the node on the page. This value will be `null` if the node is invisible.
+
+`effects`[Effect](/docs/rest-api/file-property-types/#effect-type)\[\]default: \[\]
+
+An array of effects attached to this node (see effects section for more details).
+
+`size`[Vector](/docs/rest-api/file-property-types/#vector-type)
+
+Width and height of element. This is different from the width and height of the bounding box in that the absolute bounding box represents the element after scaling and rotation. Only present if `geometry=paths` is passed.
+
+`relativeTransform`[Transform](/docs/rest-api/file-property-types/#transform-type)
+
+The top two rows of a matrix that represents the 2D transform of this node relative to its parent. The bottom row of the matrix is implicitly always `(0, 0, 1)`. Use to transform coordinates in geometry. Only present if `geometry=paths` is passed.
+
+`isMask`Booleandefault: false
+
+Does this node mask sibling nodes in front of it?
+
+`fills`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]default: \[\]
+
+An array of fill paints applied to the node.
+
+`fillGeometry`[Path](/docs/rest-api/file-property-types/#path-type)\[\]default: \[\]
+
+An array of paths representing the object fill. Only present if parameter `geometry=paths` is used.
+
+`fillOverrideTable`Map<Number, [PaintOverride](/docs/rest-api/file-property-types/#paintoverride-type)\>
+
+Map from ID to [PaintOverride](/docs/rest-api/file-property-types/#paintoverride-type) for looking up fill overrides. To see which regions are overriden, you must use the `geometry=paths` option. Each path returned may have an `overrideId` which maps to this table.
+
+`strokes`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]default: \[\]
+
+An array of stroke paints applied to the node.
+
+`complexStrokeProperties`[ComplexStrokeProperties](/docs/rest-api/file-property-types/#complexstrokeproperties-type)default: {}
+
+cspdesc
+
+`variableWidthPoints`[VariableWidthPoint](/docs/rest-api/file-property-types/#variablewidthpoint-type)\[\]default: \[\]
+
+A list of points describing the width profile of variable width strokes.
+
+`strokeWeight`Number
+
+The weight of strokes on the node.
+
+`individualStrokeWeights`[StrokeWeights](/docs/rest-api/file-property-types/#strokeweights-type)
+
+An object including the top, bottom, left, and right stroke weights. Only returned if individual stroke weights are used.
+
+`strokeCap`String
+
+A string enum with values describing the end caps of vector paths.
+
+*   `NONE`
+*   `ROUND`
+*   `SQUARE`
+*   `LINE_ARROW`
+*   `TRIANGLE_ARROW`
+*   `DIAMOND_FILLED`
+*   `CIRCLE_FILLED`
+*   `TRIANGLE_FILLED`
+*   `WASHI_TAPE_1`
+*   `WASHI_TAPE_2`
+*   `WASHI_TAPE_3`
+*   `WASHI_TAPE_4`
+*   `WASHI_TAPE_5`
+*   `WASHI_TAPE_6`
+
+`strokeJoin`String
+
+How corners in vector paths are rendered, as a string enum.
+
+*   `MITER`
+*   `BEVEL`
+*   `ROUND`
+
+`strokeDashes`Number\[\]default: \[\]
+
+An array of floating point numbers describing the pattern of dash length and gap lengths that the vector stroke will use when drawn. For example a value of \[1, 2\] indicates that the stroke will be drawn with a dash of length 1 followed by a gap of length 2, repeated.
+
+`strokeMiterAngle`Numberdefault: 28.96
+
+Only valid if strokeJoin is `MITER`. The corner angle, in degrees, below which strokeJoin will be set to `BEVEL` to avoid super sharp corners. By default this is 28.96 degrees.
+
+`strokeGeometry`[Path](/docs/rest-api/file-property-types/#path-type)\[\]
+
+Only specified if parameter `geometry=paths` is used. An array of paths representing the object stroke.
+
+`strokeAlign`String
+
+Position of stroke relative to vector outline, as a string enum.
+
+*   `INSIDE`: stroke drawn inside the shape boundary
+*   `OUTSIDE`: stroke drawn outside the shape boundary
+*   `CENTER`: stroke drawn centered along the shape boundary
+
+`styles`Map<String, String>
+
+A mapping of a style\_type to style ID (see [Style](/docs/rest-api/file-property-types/#style-type) for more details) of styles present on this node. The style ID can be used to look up more information about the style in the top-level styles field.
+
+`annotations`[Annotation](/docs/rest-api/file-property-types/#annotation-type)\[\]private betadefault: \[\]
+
+An array of annotations displaying notes and pinned properties of nodes in Dev Mode. Currently a maximum of 1 annotation is supported.
+
+### BOOLEAN\_OPERATION[​](#boolean-operation-props "Direct link to BOOLEAN_OPERATION")
+
+Has all the properties of [VECTOR](#vector-props) except `annotations`, plus:
+
+`children`[Node](/docs/rest-api/files/#node-type)\[\]
+
+An array of nodes that are being boolean operated on.
+
+`booleanOperation`String
+
+The type of boolean operation applied, as a string enum.
+
+*   `UNION`
+*   `INTERSECT`
+*   `SUBTRACT`
+*   `EXCLUDE`
+
+### STAR[​](#star-props "Direct link to STAR")
+
+See properties for [VECTOR](#vector-props).
+
+### LINE[​](#line-props "Direct link to LINE")
+
+See properties for [VECTOR](#vector-props).
+
+### ELLIPSE[​](#ellipse-props "Direct link to ELLIPSE")
+
+Has all the properties of [VECTOR](#vector-props), plus:
+
+`arcData`[ArcData](/docs/rest-api/file-property-types/#arcdata-type)
+
+Start and end angles of the ellipse measured clockwise from the x axis, plus the inner radius for donuts.
+
+### REGULAR\_POLYGON[​](#regular-polygon-props "Direct link to REGULAR_POLYGON")
+
+See properties for [VECTOR](#vector-props).
+
+### RECTANGLE[​](#rectangle-props "Direct link to RECTANGLE")
+
+Has all the properties of [VECTOR](#vector-props), plus:
+
+`cornerRadius`Number
+
+Radius of each corner of the rectangle if a single radius is set for all corners.
+
+`rectangleCornerRadii`Number\[\]
+
+Array of length 4 of the radius of each corner of the rectangle, starting in the top left and proceeding clockwise.
+
+`cornerSmoothing`Number
+
+A value that lets you control how "smooth" the corners are. Ranges from 0 to 1. 0 is the default and means that the corner is perfectly circular. A value of 0.6 means the corner matches the iOS 7 "squircle" icon shape. Other values produce various other curves. See [this post](https://www.figma.com/blog/desperately-seeking-squircles/) for the gory details!
+
+### TABLE[​](#table-props "Direct link to TABLE")
+
+FigJam table node.
+
+`absoluteBoundingBox`[Rectangle](/docs/rest-api/file-property-types/#rectangle-type)
+
+Bounding box of the node in absolute space coordinates.
+
+`absoluteRenderBounds`0
+
+The actual bounds of a node accounting for drop shadows, thick strokes, and anything else that may fall outside the node's regular bounding box defined in `x`, `y`, `width`, and `height`. The `x` and `y` inside this property represent the absolute position of the node on the page. This value will be `null` if the node is invisible.
+
+`blendMode`[BlendMode](/docs/rest-api/file-property-types/#blendmode-type)
+
+How this node blends with nodes behind it in the scene (see blend mode section for more details).
+
+`children`[Node](/docs/rest-api/files/#node-type)\[\]
+
+An array of table cell nodes within the table. The table cells are sorted by row, then column.
+
+`constraints`[LayoutConstraint](/docs/rest-api/file-property-types/#layoutconstraint-type)
+
+Horizontal and vertical layout constraints for node.
+
+`effects`[Effect](/docs/rest-api/file-property-types/#effect-type)\[\]default: \[\]
+
+An array of effects attached to this node (see effects section for more details).
+
+`exportSettings`[ExportSetting](/docs/rest-api/file-property-types/#exportsetting-type)\[\]default: \[\]
+
+An array of export settings representing images to export from the node.
+
+`relativeTransform`[Transform](/docs/rest-api/file-property-types/#transform-type)
+
+The top two rows of a matrix that represents the 2D transform of this node relative to its parent. The bottom row of the matrix is implicitly always `(0, 0, 1)`. Use to transform coordinates in geometry. Only present if `geometry=paths` is passed.
+
+`size`[Vector](/docs/rest-api/file-property-types/#vector-type)
+
+Width and height of element. This is different from the width and height of the bounding box in that the absolute bounding box represents the element after scaling and rotation. Only present if `geometry=paths` is passed.
+
+`strokes`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]default: \[\]
+
+An array of stroke paints applied to the node.
+
+`complexStrokeProperties`[ComplexStrokeProperties](/docs/rest-api/file-property-types/#complexstrokeproperties-type)default: {}
+
+cspdesc
+
+`variableWidthPoints`[VariableWidthPoint](/docs/rest-api/file-property-types/#variablewidthpoint-type)\[\]default: \[\]
+
+A list of points describing the width profile of variable width strokes.
+
+`strokeAlign`String
+
+Position of stroke relative to vector outline, as a string enum.
+
+*   `INSIDE`: stroke drawn inside the shape boundary
+*   `OUTSIDE`: stroke drawn outside the shape boundary
+*   `CENTER`: stroke drawn centered along the shape boundary
+
+`strokeWeight`Number
+
+The weight of strokes on the node.
+
+### TABLE\_CELL[​](#table-cell-props "Direct link to TABLE_CELL")
+
+FigJam table cell node.
+
+`absoluteBoundingBox`[Rectangle](/docs/rest-api/file-property-types/#rectangle-type)
+
+Bounding box of the node in absolute space coordinates.
+
+`absoluteRenderBounds`0
+
+The actual bounds of a node accounting for drop shadows, thick strokes, and anything else that may fall outside the node's regular bounding box defined in `x`, `y`, `width`, and `height`. The `x` and `y` inside this property represent the absolute position of the node on the page. This value will be `null` if the node is invisible.
+
+`characters`String
+
+Text contained within a text box.
+
+`fills`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]default: \[\]
+
+An array of fill paints applied to the node.
+
+`relativeTransform`[Transform](/docs/rest-api/file-property-types/#transform-type)
+
+The top two rows of a matrix that represents the 2D transform of this node relative to its parent. The bottom row of the matrix is implicitly always `(0, 0, 1)`. Use to transform coordinates in geometry. Only present if `geometry=paths` is passed.
+
+`size`[Vector](/docs/rest-api/file-property-types/#vector-type)
+
+Width and height of element. This is different from the width and height of the bounding box in that the absolute bounding box represents the element after scaling and rotation. Only present if `geometry=paths` is passed.
+
+### TEXT[​](#text-props "Direct link to TEXT")
+
+Has all the properties of [VECTOR](#vector-props) except `fillOverrideTable`, plus:
+
+`characters`String
+
+Text contained within a text box.
+
+`style`[TypeStyle](/docs/rest-api/file-property-types/#typestyle-type)
+
+Style of text including font family and weight (see type style section for more information).
+
+`characterStyleOverrides`Number\[\]
+
+The array corresponds to characters in the text box, where each element references the `styleOverrideTable` to apply specific styles to each character. The array's length can be less than or equal to the number of characters due to the removal of trailing zeros. Elements with a value of 0 indicate characters that use the default type style. If the array is shorter than the total number of characters, the characters beyond the array's length also use the default style.
+
+`styleOverrideTable`Map<Number, [TypeStyle](/docs/rest-api/file-property-types/#typestyle-type)\>
+
+Map from ID to [TypeStyle](/docs/rest-api/file-property-types/#typestyle-type) for looking up style overrides.
+
+`lineTypes`[LineType](/docs/rest-api/file-property-types/#linetype-type)\[\]
+
+An array with the same number of elements as lines in the text node, where lines are delimited by newline or paragraph separator characters. Each element in the array corresponds to the list type of a specific line. List types are represented as string enums with one of these possible values:
+
+*   `ORDERED`: Text is an ordered list (numbered).
+*   `UNORDERED`: Text is an unordered list (bulleted).
+*   `NONE`: Text is plain text and not part of any list.
+
+`lineIndentations`Number\[\]
+
+An array with the same number of elements as lines in the text node, where lines are delimited by newline or paragraph separator characters. Each element in the array corresponds to the indentation level of a specific line.
+
+### TEXT\_PATH[​](#text-path-props "Direct link to TEXT_PATH")
+
+\[Available in beta, API is subject to change\] Has all the properties of [VECTOR](#vector-props) except `fillOverrideTable`, plus:
+
+`characters`String
+
+Text contained within the text path.
+
+`style`[TextPathTypeStyle](/docs/rest-api/file-property-types/#textpathtypestyle-type)
+
+Style of text including font family and weight (see [TextPathTypeStyle](/docs/rest-api/file-property-types/#textpathtypestyle-type) section for more information).
+
+`characterStyleOverrides`Number\[\]
+
+The array corresponds to characters in the text path, where each element references the `styleOverrideTable` to apply specific styles to each character. The array's length can be less than or equal to the number of characters due to the removal of trailing zeros. Elements with a value of 0 indicate characters that use the default type style. If the array is shorter than the total number of characters, the characters beyond the array's length also use the default style.
+
+`styleOverrideTable`Map<Number, [TextPathTypeStyle](/docs/rest-api/file-property-types/#textpathtypestyle-type)\>
+
+Map from ID to [TextPathTypeStyle](/docs/rest-api/file-property-types/#textpathtypestyle-type) for looking up style overrides.
+
+`textPathStartData`[TextPathStartData](/docs/rest-api/file-property-types/#textpathstartdata-type)
+
+Data describing the starting position of the text on the path.
+
+### SLICE[​](#slice-props "Direct link to SLICE")
+
+`exportSettings`[ExportSetting](/docs/rest-api/file-property-types/#exportsetting-type)\[\]default: \[\]
+
+An array of export settings representing images to export from the node.
+
+`absoluteBoundingBox`[Rectangle](/docs/rest-api/file-property-types/#rectangle-type)
+
+Bounding box of the node in absolute space coordinates.
+
+`absoluteRenderBounds`0
+
+The actual bounds of a node accounting for drop shadows, thick strokes, and anything else that may fall outside the node's regular bounding box defined in `x`, `y`, `width`, and `height`. The `x` and `y` inside this property represent the absolute position of the node on the page. This value will be `null` if the node is invisible.
+
+`size`[Vector](/docs/rest-api/file-property-types/#vector-type)
+
+Width and height of element. This is different from the width and height of the bounding box in that the absolute bounding box represents the element after scaling and rotation. Only present if `geometry=paths` is passed.
+
+`relativeTransform`[Transform](/docs/rest-api/file-property-types/#transform-type)
+
+The top two rows of a matrix that represents the 2D transform of this node relative to its parent. The bottom row of the matrix is implicitly always `(0, 0, 1)`. Use to transform coordinates in geometry. Only present if `geometry=paths` is passed.
+
+### COMPONENT[​](#component-props "Direct link to COMPONENT")
+
+Has all the properties of [FRAME](#frame-props), plus:
+
+`componentPropertyDefinitions`Map<String, [ComponentPropertyDefinition](/docs/rest-api/file-property-types/#componentpropertydefinition-type)\>default: {}
+
+A mapping of name to [ComponentPropertyDefinition](/docs/rest-api/file-property-types/#componentpropertydefinition-type) for every component property on this component. Each property has a `type`, `defaultValue`, and other optional values (see property types section below)
+
+### COMPONENT\_SET[​](#component-set-props "Direct link to COMPONENT_SET")
+
+Has all the properties of [FRAME](#frame-props), plus:
+
+`componentPropertyDefinitions`Map<String, [ComponentPropertyDefinition](/docs/rest-api/file-property-types/#componentpropertydefinition-type)\>default: {}
+
+A mapping of name to [ComponentPropertyDefinition](/docs/rest-api/file-property-types/#componentpropertydefinition-type) for every component property on this component set. Each property has a `type`, `defaultValue`, and other optional values (see property types section below)
+
+### INSTANCE[​](#instance-props "Direct link to INSTANCE")
+
+Has all the properties of [FRAME](#frame-props), plus:
+
+`componentId`String
+
+ID of component that this instance came from, refers to components table (see endpoints section below).
+
+`isExposedInstance`Booleandefault: false
+
+If true, this node has been marked as exposed to its containing component or component set.
+
+`exposedInstances`String\[\]default: \[\]
+
+IDs of instances that have been exposed to this node's level.
+
+`componentProperties`Map<String, [ComponentProperty](/docs/rest-api/file-property-types/#componentproperty-type)\>default: {}
+
+A mapping of name to [ComponentProperty](/docs/rest-api/file-property-types/#componentproperty-type) for all component properties on this instance. Each property has a `type`, `value`, and other optional values (see property types section below)
+
+`overrides`[Overrides](/docs/rest-api/file-property-types/#overrides-type)\[\]default: \[\]
+
+An array of all of the fields directly overridden on this instance. Inherited overrides are not included.
+
+### STICKY[​](#sticky-props "Direct link to STICKY")
+
+FigJam sticky node.
+
+`absoluteBoundingBox`[Rectangle](/docs/rest-api/file-property-types/#rectangle-type)
+
+Bounding box of the node in absolute space coordinates.
+
+`absoluteRenderBounds`0
+
+The actual bounds of a node accounting for drop shadows, thick strokes, and anything else that may fall outside the node's regular bounding box defined in `x`, `y`, `width`, and `height`. The `x` and `y` inside this property represent the absolute position of the node on the page. This value will be `null` if the node is invisible.
+
+`authorVisible`Booleandefault: false
+
+If true, author name is visible.
+
+`backgroundColor`[Color](/docs/rest-api/file-property-types/#color-type)deprecated
+
+Background color of the node. This is deprecated, please use the fills field instead.
+
+`blendMode`[BlendMode](/docs/rest-api/file-property-types/#blendmode-type)
+
+How this node blends with nodes behind it in the scene (see blend mode section for more details).
+
+`characters`String
+
+Text contained within a text box.
+
+`effects`[Effect](/docs/rest-api/file-property-types/#effect-type)\[\]default: \[\]
+
+An array of effects attached to this node (see effects section for more details).
+
+`exportSettings`[ExportSetting](/docs/rest-api/file-property-types/#exportsetting-type)\[\]default: \[\]
+
+An array of export settings representing images to export from the node.
+
+`fills`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]default: \[\]
+
+An array of fill paints applied to the node.
+
+`locked`Booleandefault: false
+
+If true, sticky is locked and cannot be edited.
+
+`opacity`Number
+
+Overall opacity of paint (colors within the paint can also have opacity values which would blend with this)
+
+`relativeTransform`[Transform](/docs/rest-api/file-property-types/#transform-type)
+
+The top two rows of a matrix that represents the 2D transform of this node relative to its parent. The bottom row of the matrix is implicitly always `(0, 0, 1)`. Use to transform coordinates in geometry. Only present if `geometry=paths` is passed.
+
+### SHAPE\_WITH\_TEXT[​](#shape-with-text-props "Direct link to SHAPE_WITH_TEXT")
+
+FigJam Shape-with-text node.
+
+`absoluteBoundingBox`[Rectangle](/docs/rest-api/file-property-types/#rectangle-type)
+
+Bounding box of the node in absolute space coordinates.
+
+`absoluteRenderBounds`0
+
+The actual bounds of a node accounting for drop shadows, thick strokes, and anything else that may fall outside the node's regular bounding box defined in `x`, `y`, `width`, and `height`. The `x` and `y` inside this property represent the absolute position of the node on the page. This value will be `null` if the node is invisible.
+
+`backgroundColor`[Color](/docs/rest-api/file-property-types/#color-type)deprecated
+
+Background color of the canvas.
+
+`blendMode`[BlendMode](/docs/rest-api/file-property-types/#blendmode-type)
+
+How this node blends with nodes behind it in the scene (see blend mode section for more details).
+
+`characters`String
+
+Text contained within a text box.
+
+`cornerRadius`Number
+
+Radius of each corner of the rectangle if a single radius is set for all corners.
+
+`rectangleCornerRadii`Number\[\]
+
+Array of length 4 of the radius of each corner of the rectangle, starting in the top left and proceeding clockwise.
+
+`cornerSmoothing`Number
+
+A value that lets you control how "smooth" the corners are. Ranges from 0 to 1. 0 is the default and means that the corner is perfectly circular. A value of 0.6 means the corner matches the iOS 7 "squircle" icon shape. Other values produce various other curves. See [this post](https://www.figma.com/blog/desperately-seeking-squircles/) for the gory details!
+
+`effects`[Effect](/docs/rest-api/file-property-types/#effect-type)\[\]default: \[\]
+
+An array of effects attached to this node (see effects section for more details).
+
+`exportSettings`[ExportSetting](/docs/rest-api/file-property-types/#exportsetting-type)\[\]default: \[\]
+
+An array of export settings representing images to export from the node.
+
+`fills`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]default: \[\]
+
+An array of fill paints applied to the node.
+
+`isMask`Booleandefault: false
+
+Does this node mask sibling nodes in front of it?
+
+`locked`Booleandefault: false
+
+If true, shape-with-text is locked and cannot be edited.
+
+`opacity`Number
+
+Overall opacity of paint (colors within the paint can also have opacity values which would blend with this)
+
+`shapeType`[ShapeType](/docs/rest-api/file-property-types/#shapetype-type)
+
+Shape-with-text geometric shape type.
+
+`strokes`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]default: \[\]
+
+An array of stroke paints applied to the node.
+
+`complexStrokeProperties`[ComplexStrokeProperties](/docs/rest-api/file-property-types/#complexstrokeproperties-type)default: {}
+
+cspdesc
+
+`variableWidthPoints`[VariableWidthPoint](/docs/rest-api/file-property-types/#variablewidthpoint-type)\[\]default: \[\]
+
+A list of points describing the width profile of variable width strokes.
+
+`strokeWeight`Number
+
+The weight of strokes on the node.
+
+`strokeCap`String
+
+The end cap of vector paths, as a string enum.
+
+*   `NONE`
+*   `ROUND`
+*   `SQUARE`
+*   `LINE_ARROW`
+*   `TRIANGLE_ARROW`
+*   `DIAMOND_FILLED`
+*   `CIRCLE_FILLED`
+*   `TRIANGLE_FILLED`
+*   `WASHI_TAPE_1`
+*   `WASHI_TAPE_2`
+*   `WASHI_TAPE_3`
+*   `WASHI_TAPE_4`
+*   `WASHI_TAPE_5`
+*   `WASHI_TAPE_6`
+
+`strokeJoin`Stringdefault: MITER
+
+How corners in vector paths are rendered, as a string enum.
+
+*   `MITER`
+*   `BEVEL`
+*   `ROUND`
+
+`strokeDashes`Number\[\]default: \[\]
+
+An array of floating point numbers describing the pattern of dash length and gap lengths that the vector path follows. For example a value of \[1, 2\] indicates that the path has a dash of length 1 followed by a gap of length 2, repeated.
+
+`strokeAlign`String
+
+Position of stroke relative to vector outline, as a string enum.
+
+*   `INSIDE`: stroke drawn inside the shape boundary
+*   `OUTSIDE`: stroke drawn outside the shape boundary
+*   `CENTER`: stroke drawn centered along the shape boundary
+
+`relativeTransform`[Transform](/docs/rest-api/file-property-types/#transform-type)
+
+The top two rows of a matrix that represents the 2D transform of this node relative to its parent. The bottom row of the matrix is implicitly always `(0, 0, 1)`. Use to transform coordinates in geometry. Only present if `geometry=paths` is passed.
+
+`styles`Map<[StyleType](/docs/rest-api/file-property-types/#style-type), String>
+
+A mapping of a [StyleType](/docs/rest-api/file-property-types/#style-type) to style ID (see [Style](/docs/rest-api/file-property-types/#style-type) of styles present on this node. The style ID can be used to look up more information about the style in the top-level styles field.
+
+### CONNECTOR[​](#connector-props "Direct link to CONNECTOR")
+
+FigJam connector node.
+
+`absoluteBoundingBox`[Rectangle](/docs/rest-api/file-property-types/#rectangle-type)
+
+Bounding box of the node in absolute space coordinates.
+
+`absoluteRenderBounds`0
+
+The actual bounds of a node accounting for drop shadows, thick strokes, and anything else that may fall outside the node's regular bounding box defined in `x`, `y`, `width`, and `height`. The `x` and `y` inside this property represent the absolute position of the node on the page. This value will be `null` if the node is invisible.
+
+`backgroundColor`[Color](/docs/rest-api/file-property-types/#color-type)
+
+Background color of the canvas.
+
+`blendMode`[BlendMode](/docs/rest-api/file-property-types/#blendmode-type)
+
+How this node blends with nodes behind it in the scene (see blend mode section for more details).
+
+`characters`String
+
+Text contained within a text box.
+
+`connectorStart`[ConnectorEndpoint](/docs/rest-api/file-property-types/#connectorendpoint-type)
+
+Connector starting endpoint.
+
+`connectorEnd`[ConnectorEndpoint](/docs/rest-api/file-property-types/#connectorendpoint-type)
+
+Connector ending endpoint.
+
+`connectorStartStrokeCap`Stringdefault: NONE
+
+The end cap of the start of the connector, as a string enum.
+
+*   `NONE`
+*   `LINE_ARROW`
+*   `TRIANGLE_ARROW`
+*   `DIAMOND_FILLED`
+*   `CIRCLE_FILLED`
+*   `TRIANGLE_FILLED`
+
+`connectorEndStrokeCap`Stringdefault: NONE
+
+The end cap of the end of the connector, as a string enum.
+
+*   `NONE`
+*   `LINE_ARROW`
+*   `TRIANGLE_ARROW`
+*   `DIAMOND_FILLED`
+*   `CIRCLE_FILLED`
+*   `TRIANGLE_FILLED`
+
+`connectorLineType`[ConnectorLineType](/docs/rest-api/file-property-types/#connectorlinetype-type)
+
+Connector line type.
+
+`cornerRadius`Number
+
+Radius of each corner of the rectangle if a single radius is set for all corners.
+
+`rectangleCornerRadii`Number\[\]
+
+Array of length 4 of the radius of each corner of the rectangle, starting in the top left and proceeding clockwise.
+
+`cornerSmoothing`Number
+
+A value that lets you control how "smooth" the corners are. Ranges from 0 to 1. 0 is the default and means that the corner is perfectly circular. A value of 0.6 means the corner matches the iOS 7 "squircle" icon shape. Other values produce various other curves. See [this post](https://www.figma.com/blog/desperately-seeking-squircles/) for the gory details!
+
+`effects`[Effect](/docs/rest-api/file-property-types/#effect-type)\[\]default: \[\]
+
+An array of effects attached to this node (see effects section for more details).
+
+`exportSettings`[ExportSetting](/docs/rest-api/file-property-types/#exportsetting-type)\[\]default: \[\]
+
+An array of export settings representing images to export from the node.
+
+`fills`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]default: \[\]
+
+An array of fill paints applied to the node.
+
+`isMask`Booleandefault: false
+
+Does this node mask sibling nodes in front of it?
+
+`locked`Booleandefault: false
+
+If true, connector is locked and cannot be edited.
+
+`opacity`Number
+
+Overall opacity of paint (colors within the paint can also have opacity values which would blend with this)
+
+`strokes`[Paint](/docs/rest-api/file-property-types/#paint-type)\[\]default: \[\]
+
+An array of stroke paints applied to the node.
+
+`complexStrokeProperties`[ComplexStrokeProperties](/docs/rest-api/file-property-types/#complexstrokeproperties-type)default: {}
+
+cspdesc
+
+`variableWidthPoints`[VariableWidthPoint](/docs/rest-api/file-property-types/#variablewidthpoint-type)\[\]default: \[\]
+
+A list of points describing the width profile of variable width strokes.
+
+`strokeWeight`Number
+
+The weight of strokes on the node.
+
+`strokeCap`Stringdefault: NONE
+
+The end cap of vector paths, as a string enum.
+
+*   `NONE`
+*   `ROUND`
+*   `SQUARE`
+*   `LINE_ARROW`
+*   `TRIANGLE_ARROW`
+*   `DIAMOND_FILLED`
+*   `CIRCLE_FILLED`
+*   `TRIANGLE_FILLED`
+*   `WASHI_TAPE_1`
+*   `WASHI_TAPE_2`
+*   `WASHI_TAPE_3`
+*   `WASHI_TAPE_4`
+*   `WASHI_TAPE_5`
+*   `WASHI_TAPE_6`
+
+`strokeJoin`Stringdefault: MITER
+
+How corners in vector paths are rendered, as a string enum.
+
+*   `MITER`
+*   `BEVEL`
+*   `ROUND`
+
+`strokeDashes`Number\[\]default: \[\]
+
+An array of floating point numbers describing the pattern of dash length and gap lengths that the vector path follows. For example a value of \[1, 2\] indicates that the path has a dash of length 1 followed by a gap of length 2, repeated.
+
+`strokeAlign`String
+
+Position of stroke relative to vector outline, as a string enum.
+
+*   `INSIDE`: stroke drawn inside the shape boundary
+*   `OUTSIDE`: stroke drawn outside the shape boundary
+*   `CENTER`: stroke drawn centered along the shape boundary
+
+`textBackground`[ConnectorTextBackground](/docs/rest-api/file-property-types/#connectortextbackground-type)
+
+Connector text background.
+
+`relativeTransform`[Transform](/docs/rest-api/file-property-types/#transform-type)
+
+The top two rows of a matrix that represents the 2D transform of this node relative to its parent. The bottom row of the matrix is implicitly always `(0, 0, 1)`. Use to transform coordinates in geometry. Only present if `geometry=paths` is passed.
+
+`styles`Map<[StyleType](/docs/rest-api/file-property-types/#style-type), String>
+
+A mapping of a [StyleType](/docs/rest-api/file-property-types/#style-type) to style ID (see [Style](/docs/rest-api/file-property-types/#style-type) of styles present on this node. The style ID can be used to look up more information about the style in the top-level styles field.
+
+### WASHI\_TAPE[​](#washi-tape-props "Direct link to WASHI_TAPE")
+
+See properties for [VECTOR](#vector-props).
+
+*   [DOCUMENT](#document-props)
+*   [CANVAS](#canvas-props)
+*   [FRAME](#frame-props)
+*   [GROUP](#group-props)
+*   [TRANSFORM\_GROUP](#transform-group-props)
+*   [SECTION](#section-props)
+*   [VECTOR](#vector-props)
+*   [BOOLEAN\_OPERATION](#boolean-operation-props)
+*   [STAR](#star-props)
+*   [LINE](#line-props)
+*   [ELLIPSE](#ellipse-props)
+*   [REGULAR\_POLYGON](#regular-polygon-props)
+*   [RECTANGLE](#rectangle-props)
+*   [TABLE](#table-props)
+*   [TABLE\_CELL](#table-cell-props)
+*   [TEXT](#text-props)
+*   [TEXT\_PATH](#text-path-props)
+*   [SLICE](#slice-props)
+*   [COMPONENT](#component-props)
+*   [COMPONENT\_SET](#component-set-props)
+*   [INSTANCE](#instance-props)
+*   [STICKY](#sticky-props)
+*   [SHAPE\_WITH\_TEXT](#shape-with-text-props)
+*   [CONNECTOR](#connector-props)
+*   [WASHI\_TAPE](#washi-tape-props)

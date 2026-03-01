@@ -1,0 +1,22 @@
+---
+title: Events | Developer Docs
+slug: /figma/rest-api/activity-logs-events
+---
+
+Every event returned by the Activity Logs API contains an `actor`, an `action`, an `entity`, and a `context`.
+
+*   **Actor** is the user who performed the action. There are three attributes to identify the user: `email`, `id` and `name`. The actor field can be empty if an anonymous request triggers the event. For example: the Figma server performs a daily background job. Or, an anonymous user views a public file link. In the case of SCIM events, the `name` value is `SCIM Provider`. In the case of official support actions, the `name` value is `Figma Support`.
+*   **Action** is the task or activity the actor performed. The `type` tells us the kind of action, and the `details` represent the associated metadata. Each action type supports its own metadata attributes. [View supported action types and their attributes ↓](/docs/rest-api/activity-logs-action-types/)
+*   **Entity** is the resource the actor took the action on. It can be a user, file, project or other resource types. [View supported entity types and attributes ↓](/docs/rest-api/activity-logs-entity-types/)
+*   **Context** is where you can find other contextual information about the event:
+    *   `client_name`: The third-party application that triggered the event, if applicable.
+    *   `ip_address`: The IP address from of the client that sent the event request.
+    *   `is_figma_support_team_action`: If Figma's Support team triggered the event. This is either true or false.
+    *   `org_id`: The id of the organization where the event took place.
+    *   `team_id`: The id of the team where the event took place—if this took place in a specific team.
+
+This example shows the event logged when an admin removes a member from the organization.
+
+```
+{  "action": {    "details": {        "permission": "member",        "figma_paid_status": "viewer",        "figjam_paid_status": "viewer"    },    "type": "org_user_delete"  },  "actor": {    "email": "admin@figma.com",    "id": "1099091282752443416",    "name": "Admin",    "type": "user"  },  "context": {    "client_name": null,    "ip_address": "172.19.0.1",    "is_figma_support_team_action": false,    "org_id": "1047918802483077121",    "team_id": null  },  "entity": {    "email": "member@figma.com",    "id": "1099091282712783786",    "name": "Member",    "type": "user"  },  "id": "1243",  "timestamp": 1650578182}
+```

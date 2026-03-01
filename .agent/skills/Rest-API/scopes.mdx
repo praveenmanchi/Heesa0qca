@@ -1,0 +1,102 @@
+---
+title: Scopes | Developer Docs
+slug: /figma/rest-api/scopes
+---
+
+Scopes for [personal access tokens](/docs/rest-api/authentication/#access-tokens) and [OAuth 2 tokens](/docs/rest-api/authentication/#oauth-apps) determine which endpoints can be accessed.
+
+The following table lists the scopes that are available.
+
+**Important**: Scopes do not supersede the permissions granted to you by an organization or the owner of a project, team, or file. You can only access files that you've created or that have been shared with you (whether shared directly, or because you belong to a corresponding project or team). Similarly, if you listed projects and teams, you'd only see the projects and teams that you can access in Figma's file browser.
+
+Scope
+
+Description
+
+`current_user:read`
+
+Read your name, email, and profile image.
+
+`file_comments:read`
+
+Read the comments for files.
+
+`file_comments:write`
+
+Post and delete comments and comment reactions in files.
+
+`file_content:read`
+
+Read the contents of files, such as nodes and the editor type.
+
+`file_dev_resources:read`
+
+Read dev resources in files.
+
+`file_dev_resources:write`
+
+Write dev resources to files.
+
+`file_metadata:read`
+
+Read metadata of files.
+
+`file_variables:read`
+
+Read variables in files. Note: Enterprise plan only.
+
+`file_variables:write`
+
+Write variables and collections in files. Note: Enterprise plan only.
+
+`file_versions:read`
+
+Read the version history for files you can access.
+
+`files:read`
+
+**Deprecated**. Read files, projects, users, versions, comments, components, styles, and webhooks. While this scope will continue to work, it's highly recommended you use the granular scopes Figma provides. Because `files:read` is extremely permissive, more limited scopes such as `file_content:read` and `file_comments:read` provide enhanced security and stability by reducing the surface of access to your files.
+
+`library_analytics:read`
+
+Read your design system analytics. Note: Enterprise plan only.
+
+`library_assets:read`
+
+Read data of individual published components and styles.
+
+`library_content:read`
+
+Read published components and styles of files.
+
+`org:activity_log_read`
+
+Read organization [activity logs](/docs/rest-api/activity-logs/). Note: Enterprise plan only. Must be an organization admin.
+
+`org:discovery_read`
+
+Read [text event data](/docs/rest-api/discovery/) in the organization. Note: Enterprise plans with Governance+ only. Must be an organization admin.
+
+`projects:read`
+
+List projects and files in projects.
+
+`selections:read`
+
+Read most recent selection in files you can access.
+
+`team_library_content:read`
+
+Read published components and styles of teams.
+
+`webhooks:read`
+
+Read metadata of webhooks.
+
+`webhooks:write`
+
+Create and manage webhooks.
+
+note
+
+**Note**: the `file_read` scope is deprecated for OAuth 2 tokens. Please migrate your application to use the scopes above.

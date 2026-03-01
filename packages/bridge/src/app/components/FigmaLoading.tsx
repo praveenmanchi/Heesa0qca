@@ -1,5 +1,5 @@
 import React, { PropsWithChildren } from 'react';
-import { Box, Spinner, Stack } from '@tokens-studio/ui';
+import { Box, Spinner, Stack, Button } from '@tokens-studio/ui';
 import { IconLogo } from '@/icons';
 import { styled } from '@/stitches.config';
 
@@ -52,21 +52,18 @@ export default function FigmaLoading({
 
         {/* Cancel — only shown if onCancel provided */}
         {onCancel && (
-          <Box
-            as="button"
+          <Button
+            variant="invisible"
             type="button"
             onClick={onCancel}
             css={{
-              background: 'none',
-              border: 'none',
               color: '$loadingScreenFgMuted',
               fontSize: '$xsmall',
-              cursor: 'pointer',
               '&:hover': { color: '$loadingScreenFg' },
             }}
           >
             Cancel
-          </Box>
+          </Button>
         )}
       </Stack>
     </StyledLoadingScreen>

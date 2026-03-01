@@ -1,0 +1,27 @@
+---
+title: Figma files – Global properties
+slug: /figma/rest-api/files
+---
+
+# Figma files and global node properties
+
+Figma files are represented as a tree of nodes, starting with a root `DOCUMENT` node containing one or more `CANVAS` nodes (pages).[page:5] Each canvas node can contain any number of child nodes representing layers and objects.[page:5]
+
+Nodes have a mix of **global properties** (shared across all node types) and **node‑type‑specific properties** documented in the node‑types section.[page:5]
+
+## Global properties (Node)
+
+Every node includes a minimal set of shared fields:[page:5]
+
+- `id`: unique per node within the document.  
+- `name`: user‑defined node name.  
+- `visible`: whether the node is visible on the canvas.  
+- `type`: node type string such as `FRAME`, `RECTANGLE`, `TEXT`, etc.  
+- `rotation`: rotation value if non‑zero.[page:5]
+
+Additional shared properties include:[page:5]
+
+- `pluginData` / `sharedPluginData`: plugin‑specific and shared plugin data, keyed by plugin identifiers.  
+- `componentPropertyReferences`: mapping from layer properties to component property names.  
+- `boundVariables`: mapping from node fields (e.g. fills) to one or more variable aliases applied.[page:5]
+- `explicitVariableModes`: mapping from variable collection IDs to specific mode IDs set on this node.[page:5]

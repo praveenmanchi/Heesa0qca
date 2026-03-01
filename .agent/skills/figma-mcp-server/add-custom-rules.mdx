@@ -1,0 +1,57 @@
+---
+title: Add custom rules and instructions | Developer Docs
+slug: /figma/figma-mcp-server/add-custom-rules
+---
+
+On this page
+
+Define project-level instructions to help guide the AI toward consistent, high-quality output. Think of it as a place to store the kind of knowledge around the "unwritten rules" of a codebase that experienced devs know, and would want to pass on to a new junior hire. Things like:
+
+• Which layout primitives to use • Where component files belong • How components should be named • What should never be hardcoded
+
+Adding these once can dramatically reduce the need for repetitive prompting and ensures that teammates or agents consistently follow the same expectations.
+
+Be sure to check your IDE or MCP client's documentation for how to structure rules, and experiment to find what works best for your team. Clear, consistent guidance often leads to better, more reusable code with less back-and-forth.
+
+Below we have some guidance to get you started.
+
+## General-purpose rules[​](#general-purpose-rules "Direct link to General-purpose rules")
+
+Here are some suggestions for general-purpose rules.
+
+```
+- IMPORTANT: Always use components from `/path_to_your_design_system` when possible- Prioritize Figma fidelity to match designs exactly- Avoid hardcoded values, use design tokens from Figma where available- Follow WCAG requirements for accessibility- Add component documentation- Place UI components in `/path_to_your_design_system`; avoid inline styles unless truly necessary
+```
+
+## Rules to ensure consistently good output[​](#rules-to-ensure-consistently-good-output "Direct link to Rules to ensure consistently good output")
+
+Here are some example rules that ensure you get the best output from the MCP server.
+
+```
+## Figma MCP Integration RulesThese rules define how to translate Figma inputs into code for this project and must be followed for every Figma-driven change.### Required flow (do not skip)1. Run get_design_context first to fetch the structured representation for the exact node(s).2. If the response is too large or truncated, run get_metadata to get the high‑level node map and then re‑fetch only the required node(s) with get_design_context.3. Run get_screenshot for a visual reference of the node variant being implemented.4. Only after you have both get_design_context and get_screenshot, download any assets needed and start implementation.5. Translate the output (usually React + Tailwind) into this project's conventions, styles and framework.  Reuse the project's color tokens, components, and typography wherever possible.6. Validate against Figma for 1:1 look and behavior before marking complete.### Implementation rules- Treat the Figma MCP output (React + Tailwind) as a representation of design and behavior, not as final code style.- Replace Tailwind utility classes with the project's preferred utilities/design‑system tokens when applicable.- Reuse existing components (e.g., buttons, inputs, typography, icon wrappers) instead of duplicating functionality.- Use the project's color system, typography scale, and spacing tokens consistently.- Respect existing routing, state management, and data‑fetch patterns already adopted in the repo.- Strive for 1:1 visual parity with the Figma design. When conflicts arise, prefer design‑system tokens and adjust spacing or sizes minimally to match visuals.- Validate the final UI against the Figma screenshot for both look and behavior.
+```
+
+## Assets related guidance[​](#assets-related-guidance "Direct link to Assets related guidance")
+
+Provide guidance around how to use assets from our MCP server in whatever format your IDE/MCP Client accepts rules. For example in Cursor, you could put the following in a `CLAUDE.md` file:
+
+```
+---description: Figma MCP server rulesglobs:alwaysApply: true---  - The Figma MCP Server provides an assets endpoint which can serve image and SVG assets  - IMPORTANT: If the Figma MCP Server returns a localhost source for an image or an SVG, use that image or SVG source directly  - IMPORTANT: DO NOT import/add new icon packages, all the assets should be in the Figma payload  - IMPORTANT: do NOT use or create placeholders if a localhost source is provided
+```
+
+For Claude Code, you can do something similar in your **CLAUDE.md file:**
+
+```
+# MCP Servers## Figma MCP server rules  - The Figma MCP server provides an assets endpoint which can serve image and SVG assets  - IMPORTANT: If the Figma MCP server returns a localhost source for an image or an SVG, use that image or SVG source directly  - IMPORTANT: DO NOT import/add new icon packages, all the assets should be in the Figma payload  - IMPORTANT: do NOT use or create placeholders if a localhost source is provided
+```
+
+## Example prompt to generate your own custom rules[​](#example-prompt-to-generate-your-own-custom-rules "Direct link to Example prompt to generate your own custom rules")
+
+```
+Please analyze this codebase thoroughly and provide a comprehensive rules doc for your use (e.g. CLAUDE.md) on the following aspects to help integrate Figma designs using the Model Context Protocol:## Design System Structure1. **Token Definitions**   - Where are design tokens (colors, typography, spacing, etc.) defined?   - What format/structure is used for tokens?   - Are there any token transformation systems in place?2. **Component Library**   - Where are UI components defined?   - What component architecture is used?   - Are there any component documentation or storybooks?3. **Frameworks & Libraries**   - What UI frameworks are used (React, Vue, etc.)?   - What styling libraries/frameworks are used?   - What build system and bundler are used?4. **Asset Management**   - How are assets (images, videos, etc.) stored and referenced?   - What asset optimization techniques are used?   - Are there any CDN configurations?5. **Icon System**   - Where are icons stored?   - How are icons imported and used in components?   - Is there an icon naming convention?6. **Styling Approach**   - What CSS methodology is used (CSS Modules, Styled Components, etc.)?   - Are there global styles?   - How are responsive designs implemented?7. **Project Structure**   - What is the overall organization of the codebase?   - Are there any specific patterns for feature organization?Provide your analysis as structured markdown with code snippets demonstrating key patterns. Include file paths where relevant.
+```
+
+*   [General-purpose rules](#general-purpose-rules)
+*   [Rules to ensure consistently good output](#rules-to-ensure-consistently-good-output)
+*   [Assets related guidance](#assets-related-guidance)
+*   [Example prompt to generate your own custom rules](#example-prompt-to-generate-your-own-custom-rules)

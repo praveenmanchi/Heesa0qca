@@ -63,8 +63,15 @@ export default async function updateVariables({
   let variablesInCollection: Variable[];
   const coll = await figma.variables.getVariableCollectionByIdAsync(collection.id);
   if (coll && coll.variableIds?.length > 0) {
-    const vars = await Promise.all(coll.variableIds.map((id) => figma.variables.getVariableByIdAsync(id)));
-    variablesInCollection = vars.filter((v): v is Variable => v !== null);
+    const BATCH_SIZE = 50;
+    const ids = coll.variableIds;
+    const allVars: (Variable | null)[] = [];
+    for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+      const batch = ids.slice(i, i + BATCH_SIZE);
+      const batchVars = await Promise.all(batch.map((id) => figma.variables.getVariableByIdAsync(id)));
+      allVars.push(...batchVars);
+    }
+    variablesInCollection = allVars.filter((v): v is Variable => v !== null);
   } else {
     const localVars = await figma.variables.getLocalVariablesAsync();
     variablesInCollection = localVars.filter((v) => v.variableCollectionId === collection.id);

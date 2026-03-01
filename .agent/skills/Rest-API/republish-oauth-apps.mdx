@@ -1,0 +1,126 @@
+---
+title: Re-publish OAuth Apps | Developer Docs
+slug: /figma/rest-api/republish-oauth-apps
+---
+
+On this page
+
+We recently made some changes to Figma's developer platform to provide a more reliable and consistent experience for builders and users of our APIs. This includes new requirements for publishing OAuth apps, and updated rate limits for the REST API. The changes went into effect on November 17, 2025. If you haven't re-published your app yet, you'll need to do so to meet these requirements.
+
+important
+
+For more information about the changes, see [Updates to Figma's developer platform](/docs/updates-to-figmas-developer-platform/).
+
+For existing Figma OAuth apps, you'll need to re-publish the app via the [My Apps page](https://www.figma.com/developers/apps).
+
+*   **Decide whether you want your app to be private or public.** Private apps are limited to your organization and don't require Figma approval. Public apps can be used by anyone with a Figma account and must be reviewed and approved by Figma.
+*   **Identify the specific set of scopes you need for your OAuth app.** Figma has moved to using granular scopes to provide users clarity on what permissions they're granting your app. You need to ensure the scopes you're selecting for your OAuth app match the functionality. When you select a scope, you'll also need to provide reasoning why your app must use the scope.
+*   **For transitioning away from the `files:read` or `file_read` scopes, your users _don't_ need to reauthenticate.** We're removing the deprecated `files:read` and `file_read` scopes. If you replace an old scope with granular scopes that are considered part of a subset of the old scope, no user reauthentication is required. For a complete list, see [Migrating off `files:read`, `file_read`](#migrating-off-filesread-file_read).
+*   **Re-publish your OAuth app.** With the changes we're making, we're adding an **Update required** label to existing OAuth apps. The label appears on the [My apps page](https://www.figma.com/developers/apps). If your OAuth app supports an integration or application for Figma users in general, you'll need to publish your OAuth app as public and get Figma approval.
+
+## Configure and publish your OAuth app[​](#configure-and-publish-your-oauth-app "Direct link to Configure and publish your OAuth app")
+
+To configure and publish your OAuth app, you go to [figma.com/developers/apps](https://www.figma.com/developers/apps) and click an OAuth app to go through the configuration flow. During the flow, you choose whether your OAuth app is private or public and select the scopes your OAuth app needs. You re-publish your app at the end of the configuration flow.
+
+The following section describes the steps in detail.
+
+**To configure a OAuth app:**
+
+1.  In the list of your OAuth apps at [figma.com/developers/apps](https://www.figma.com/developers/apps), click the OAuth app that you want to re-publish. If you've just created your OAuth app, the configuration modal will already be open.
+    
+    The configuration modal has several pages:
+    
+    *   General
+        
+    *   OAuth credentials
+        
+    *   OAuth scopes
+        
+    *   Embed API
+        
+        note
+        
+        **Note:** These steps cover working with the REST API. For an explanation of the Embed API page, see the [Embed API documentation](/docs/embeds/embed-api/).
+        
+    *   Publish
+        
+        *   Describe your app (for public and private apps)
+        *   Review scopes (for public and private apps)
+        *   Testing instructions (for public apps)
+        *   Review and submit (for public apps)
+2.  On the **General** page:
+    
+    1.  Optionally, change the name you entered when you created the app.
+    2.  Upload a logo.
+    3.  Select whether you want your app to be private or public.
+3.  On the **OAuth credentials** page, click **Add a redirect URL** and add one or more redirect URLs for your OAuth app.
+    
+    Redirect URLs correspond to the callback URLs you use for exchanging and refreshing tokens. The Figma REST API will only allow token exchange with the redirect URLs you specify.
+    
+4.  On the **OAuth scopes** page, select one or more scopes that you want to use for your OAuth app. For example, if your application needs to read the layers and content of a Figma file, select the `file_content:read` scope under **Files**.
+    
+    important
+    
+    **Important:** This step is critical for ensuring your OAuth app correctly serves your users. You need to make sure the scopes you select for your app match the endpoints you're making requests to. Your users will only be required to reauthenticate if you add new scopes to your app, such as adding `library_content:read` if it wasn't previously included.
+    
+    You can safely replace the old `files:read` and `file_read` scopes with a subset of granular scopes. Your users won't be required to reauthenticate when migrating off the old scope. For a complete list, see [Migrating off `files:read`, `file_read`](#migrating-off-filesread-file_read).
+    
+5.  If you're creating a private OAuth app for your team or organization, on the **Publish** page, select whether you want your app to be **Public** or **Private**.
+    
+6.  On the **Describe your app** page, add the required logo and description for your OAuth app.
+    
+    note
+    
+    **Note:** Name, logo, and description are all required. These values are visible on your app's Community page.
+    
+7.  On the **Review scopes** page, review the scopes that you selected for your OAuth app on the **OAuth scopes** page.
+    
+8.  For private OAuth apps, click the **Publish** button in the lower-right corner of the configuration modal. You're finished! Your private OAuth app is published and available use in your team or organization.
+    
+    For public OAuth apps, continue to the next step.
+    
+9.  On the **Testing instructions** page (public OAuth apps only):
+    
+    1.  Enter all the steps that are required for in order for the OAuth app reviewer to successfully test your application and understand its features.
+    2.  Optionally, add a link to a testing video.
+    3.  If necessary for working with your application, provide a free trial URL or login credentials that the OAuth app reviewer can use to access your application.
+10.  On the **Review and submit** page (public OAuth apps only), read the summary of what to expect during the review process. You should also read Figma's [App review guidelines](https://help.figma.com/hc/en-us/articles/34963247780247) to ensure your application meets the requirements.
+     
+     When you're ready, click the **By submitting my app for review…** checkbox, and then **Submit for review**.
+     
+     You're done! When your OAuth app has been reviewed and approved, you're ready to use your OAuth app to authenticate users and make REST API requests on their behalf.
+     
+
+## Migrating off `files:read`, `file_read`[​](#migrating-off-filesread-file_read "Direct link to migrating-off-filesread-file_read")
+
+Two scopes that were previously deprecated are being removed as a part of the changes to the developer platform. If you used the `files:read` or `file_read` scopes, you'll need to update your OAuth app to use one or more of the granular scopes. Using the granular scopes in place of `files:read` or `file_read` doesn't require your users to reauthenticate with your app.
+
+You can safely transition from the old scopes to one or more of the following granular scopes:
+
+*   `files:read`:
+    
+    *   `file_comments:read`
+    *   `file_content:read`
+    *   `file_metadata:read`
+    *   `file_versions:read`
+    *   `library_assets:read`
+    *   `library_content:read`
+    *   `current_user:read`
+    *   `projects:read`
+    *   `selections:read`
+    *   `team_library_content:read`
+    *   `webhooks:read`
+*   `file_read`
+    
+    *   All scopes covered by `files:read`
+    *   `file_comments:write`
+    *   `file_dev_resources:read`
+    *   `file_dev_resources:write`
+    *   `file_variables:read`
+    *   `file_variables:write`
+    *   `webhooks:write`
+
+You don't need to include all of the granular scopes, only the ones that your app requires. For example, if your app reads nothing other than file content and metadata, you only need to add the `file_content:read` and `file_metadata:read` scopes. Your users won't need to reauthenticate, even though you're including more granular scopes.
+
+*   [Configure and publish your OAuth app](#configure-and-publish-your-oauth-app)
+*   [Migrating off `files:read`, `file_read`](#migrating-off-filesread-file_read)

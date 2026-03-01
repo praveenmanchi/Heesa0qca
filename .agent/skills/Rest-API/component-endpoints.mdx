@@ -1,0 +1,480 @@
+---
+title: Endpoints | Developer Docs
+slug: /figma/rest-api/component-endpoints
+---
+
+On this page
+
+Components and styles endpoints allow several ways to get information about published components and styles in a team library. You can get a list of components or styles using a team\_id, or a specific component or style using a key.
+
+## GET team components[​](#get-team-components-endpoint "Direct link to GET team components")
+
+Get a paginated list of published components within a team library.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`team_library_content:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint "Direct link to HTTP Endpoint")
+
+`GET /v1/teams/:team_id/components`
+
+**Return value**
+
+```
+{  "status": Number,  "error": Boolean,  "meta": {    "components": [      {       "key": String,       "file_key": String,       "node_id": String,       "thumbnail_url": String,       "name": String,       "description": String,       "updated_at": String,       "created_at": String,       "user": User,       "containing_frame": FrameInfo,      },      ...    ],    "cursor": {      "before": Number,      "after": Number,    },   },}
+```
+
+Path parameters
+
+Description
+
+team\_id
+
+String
+
+ID of the team to list components from.
+
+Query parameters
+
+Description
+
+page\_size
+
+Numberdefault: 30
+
+Number of items in a paged list of results. Maximum of 1000.
+
+after
+
+Number
+
+Cursor indicating which id after which to start retrieving components for. Exclusive with before. The cursor value is an internally tracked integer that doesn't correspond to any Ids.
+
+before
+
+Number
+
+Cursor indicating which id before which to start retrieving components for. Exclusive with after. The cursor value is an internally tracked integer that doesn't correspond to any Ids.
+
+Error codes
+
+Description
+
+400
+
+Error with the request. The `message` param on the response will describe the error.
+
+403
+
+Insufficient permission on the team. This could also indicate the developer / OAuth token is invalid or expired.
+
+404
+
+Requested resource was not found.
+
+## GET file components[​](#get-file-components-endpoint "Direct link to GET file components")
+
+Get a list of published components within a file library.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`library_content:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-1 "Direct link to HTTP Endpoint")
+
+`GET /v1/files/:file_key/components`
+
+**Return value**
+
+```
+{  "status": Number,  "error": Boolean,  "meta": {    "components": [      {       "key": String,       "file_key": String,       "node_id": String,       "thumbnail_url": String,       "name": String,       "description": String,       "updated_at": String,       "created_at": String,       "user": User,       "containing_frame": FrameInfo,      },      ...    ],   },}
+```
+
+Path parameters
+
+Description
+
+file\_key
+
+String
+
+File to list components from. This must be a main file key, not a branch key, as it is not possible to publish from branches.
+
+Error codes
+
+Description
+
+400
+
+Error with the request. The `message` param on the response will describe the error.
+
+403
+
+Insufficient permission on the team. This could also indicate the developer / OAuth token is invalid or expired.
+
+404
+
+Requested resource was not found.
+
+## GET component[​](#get-component-endpoint "Direct link to GET component")
+
+Get metadata on a component by key.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`library_assets:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-2 "Direct link to HTTP Endpoint")
+
+`GET /v1/components/:key`
+
+**Return value**
+
+```
+{  "status": Number,  "error": Boolean,  "meta": {     "key": String,     "file_key": String,     "node_id": String,     "thumbnail_url": String,     "name": String,     "description": String,     "updated_at": String,     "created_at": String,     "user": User,     "containing_frame": FrameInfo,   },}
+```
+
+Path parameters
+
+Description
+
+key
+
+String
+
+The unique identifier of the component.
+
+Error codes
+
+Description
+
+400
+
+Error with the request. The `message` param on the response will describe the error.
+
+403
+
+Insufficient permission on the team. This could also indicate the developer / OAuth token is invalid or expired.
+
+404
+
+Requested resource was not found.
+
+## GET team component sets[​](#get-team-component-sets-endpoint "Direct link to GET team component sets")
+
+Get a paginated list of published component sets within a team library.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`team_library_content:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-3 "Direct link to HTTP Endpoint")
+
+`GET /v1/teams/:team_id/component_sets`
+
+**Return value**
+
+```
+{  "status": Number,  "error": Boolean,  "meta": {    "component_sets": [      {       "key": String,       "file_key": String,       "node_id": String,       "thumbnail_url": String,       "name": String,       "description": String,       "updated_at": String,       "created_at": String,       "user": User,       "containing_frame": FrameInfo,      },      ...    ],    "cursor": {      "before": Number,      "after": Number,    },   },}
+```
+
+Path parameters
+
+Description
+
+team\_id
+
+String
+
+ID of the team to list component sets from.
+
+Query parameters
+
+Description
+
+page\_size
+
+Numberdefault: 30
+
+Number of items in a paged list of results.
+
+after
+
+Number
+
+Cursor indicating which id after which to start retrieving components for. Exclusive with before. The cursor value is an internally tracked integer that doesn't correspond to any Ids.
+
+before
+
+Number
+
+Cursor indicating which id before which to start retrieving components for. Exclusive with after. The cursor value is an internally tracked integer that doesn't correspond to any Ids.
+
+Error codes
+
+Description
+
+400
+
+Error with the request. The `message` param on the response will describe the error.
+
+403
+
+Insufficient permission on the team. This could also indicate the developer / OAuth token is invalid or expired.
+
+404
+
+Requested resource was not found.
+
+## GET file component sets[​](#get-file-component-sets-endpoint "Direct link to GET file component sets")
+
+Get a list of published component sets within a file library.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`library_content:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-4 "Direct link to HTTP Endpoint")
+
+`GET /v1/files/:file_key/component_sets`
+
+**Return value**
+
+```
+{  "status": Number,  "error": Boolean,  "meta": {    "component_sets": [      {       "key": String,       "file_key": String,       "node_id": String,       "thumbnail_url": String,       "name": String,       "description": String,       "updated_at": String,       "created_at": String,       "user": User,       "containing_frame": FrameInfo,      },      ...    ],   },}
+```
+
+Path parameters
+
+Description
+
+file\_key
+
+String
+
+File to list component sets from. This must be a main file key, not a branch key, as it is not possible to publish from branches.
+
+Error codes
+
+Description
+
+400
+
+Error with the request. The `message` param on the response will describe the error.
+
+403
+
+Insufficient permission on the team. This could also indicate the developer / OAuth token is invalid or expired.
+
+404
+
+Requested resource was not found.
+
+## GET component set[​](#get-component-set-endpoint "Direct link to GET component set")
+
+Get metadata on a component set by key.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`library_assets:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-5 "Direct link to HTTP Endpoint")
+
+`GET /v1/component_sets/:key`
+
+**Return value**
+
+```
+{  "status": Number,  "error": Boolean,  "meta": {     "key": String,     "file_key": String,     "node_id": String,     "thumbnail_url": String,     "name": String,     "description": String,     "updated_at": String,     "created_at": String,     "user": User,     "containing_frame": FrameInfo,   },}
+```
+
+Path parameters
+
+Description
+
+key
+
+String
+
+The unique identifier of the component set.
+
+Error codes
+
+Description
+
+400
+
+Error with the request. The `message` param on the response will describe the error.
+
+403
+
+Insufficient permission on the team. This could also indicate the developer / OAuth token is invalid or expired.
+
+404
+
+Requested resource was not found.
+
+## GET team styles[​](#get-team-styles-endpoint "Direct link to GET team styles")
+
+Get a paginated list of published styles within a team library.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`team_library_content:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-6 "Direct link to HTTP Endpoint")
+
+`GET /v1/teams/:team_id/styles`
+
+**Return value**
+
+```
+{  "status": Number,  "error": Boolean,  "meta": {    "styles": [      {       "key": String,       "file_key": String,       "node_id": String,       "style_type": StyleType,       "thumbnail_url": String,       "name": String,       "description": String,       "updated_at": String,       "created_at": String,       "sort_position": String,       "user": User,       },      ...    ],    "cursor": {      "before": Number,      "after": Number,    },   },}
+```
+
+Path parameters
+
+Description
+
+team\_id
+
+String
+
+ID of the team to list styles from.
+
+Query parameters
+
+Description
+
+page\_size
+
+Numberdefault: 30
+
+Number of items in a paged list of results.
+
+after
+
+Number
+
+Cursor indicating which id after which to start retrieving styles for. Exclusive with before. The cursor value is an internally tracked integer that doesn't correspond to any Ids.
+
+before
+
+Number
+
+Cursor indicating which id before which to start retrieving styles for. Exclusive with after. The cursor value is an internally tracked integer that doesn't correspond to any Ids.
+
+Error codes
+
+Description
+
+400
+
+Error with the request. The `message` param on the response will describe the error.
+
+403
+
+Insufficient permission on the team. This could also indicate the developer / OAuth token is invalid or expired.
+
+404
+
+Requested resource was not found.
+
+## GET file styles[​](#get-file-styles-endpoint "Direct link to GET file styles")
+
+Get a list of published styles within a file library.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`library_content:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-7 "Direct link to HTTP Endpoint")
+
+`GET /v1/files/:file_key/styles`
+
+**Return value**
+
+```
+{  "status": Number,  "error": Boolean,  "meta": {    "styles": [      {       "key": String,       "file_key": String,       "node_id": String,       "style_type": StyleType,       "thumbnail_url": String,       "name": String,       "description": String,       "updated_at": String,       "created_at": String,       "sort_position": String,       "user": User,       },      ...    ],   },}
+```
+
+Path parameters
+
+Description
+
+file\_key
+
+String
+
+File to list styles from. This must be a main file key, not a branch key, as it is not possible to publish from branches.
+
+Error codes
+
+Description
+
+400
+
+Error with the request. The `message` param on the response will describe the error.
+
+403
+
+Insufficient permission on the team. This could also indicate the developer / OAuth token is invalid or expired.
+
+404
+
+Requested resource was not found.
+
+## GET style[​](#get-style-endpoint "Direct link to GET style")
+
+Get metadata on a style by key.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`library_assets:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-8 "Direct link to HTTP Endpoint")
+
+`GET /v1/styles/:key`
+
+**Return value**
+
+```
+{  "status": Number,  "error": Boolean,  "meta": {     "key": String,     "file_key": String,     "node_id": String,     "style_type": StyleType,     "thumbnail_url": String,     "name": String,     "description": String,     "updated_at": String,     "created_at": String,     "sort_position": String,     "user": User,   },}
+```
+
+Path parameters
+
+Description
+
+key
+
+String
+
+The unique identifier of the style.
+
+Error codes
+
+Description
+
+400
+
+Error with the request. The `message` param on the response will describe the error.
+
+403
+
+Insufficient permission on the team. This could also indicate the developer / OAuth token is invalid or expired.
+
+404
+
+Requested resource was not found.
+
+*   [GET team components](#get-team-components-endpoint)
+*   [GET file components](#get-file-components-endpoint)
+*   [GET component](#get-component-endpoint)
+*   [GET team component sets](#get-team-component-sets-endpoint)
+*   [GET file component sets](#get-file-component-sets-endpoint)
+*   [GET component set](#get-component-set-endpoint)
+*   [GET team styles](#get-team-styles-endpoint)
+*   [GET file styles](#get-file-styles-endpoint)
+*   [GET style](#get-style-endpoint)

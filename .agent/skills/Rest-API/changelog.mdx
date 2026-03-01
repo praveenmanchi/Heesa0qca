@@ -1,0 +1,486 @@
+---
+title: Changelog | Developer Docs
+slug: /figma/rest-api/changelog
+---
+
+On this page
+
+## January 26, 2026[​](#2026-01-26 "Direct link to January 26, 2026")
+
+**New**
+
+*   Added `complexStrokeProperties` to all supported node types. This property contains a [ComplexStrokeProperties](/docs/rest-api/file-property-types/#complexstrokeproperties-type) object that describes brush and dynamic strokes.
+*   Added `variableWidthPoints` to all supported node types. This property is an array of [VariableWidthPoint](/docs/rest-api/file-property-types/#variablewidthpoint-type) objects that describe the width profile of variable width strokes.
+*   Added `textPathStartData` property to [TEXT\_PATH](/docs/rest-api/file-node-types/#text-path-props) nodes. This property contains a [TextPathStartData](/docs/rest-api/file-property-types/#textpathstartdata-type) object.
+*   Added `transformModifiers` property to [TRANSFORM\_GROUP](/docs/rest-api/file-node-types/#transform-group-props) nodes. This property is an array of [TransformModifier](/docs/rest-api/file-property-types/#transformmodifier-type) objects that describe the transform applied to nodes within the group.
+
+## January 21, 2026[​](#2026-01-21 "Direct link to January 21, 2026")
+
+Using the [Discovery API](/docs/rest-api/discovery/) for Enterprise plans with Governance+, you can now obtain the text of user-submitted AI prompts in Figma, such as prompts for Figma's design AI tools or Figma Make. For more information, see the documentation for the [Discovery API JSON schema](/docs/rest-api/discovery-schema/#text_type) and [text types](/docs/rest-api/discovery-text-types/#user_ai_chat).
+
+## December 11, 2025[​](#2025-12-11 "Direct link to December 11, 2025")
+
+**Documentation Updates**
+
+*   Added documentation for [refreshing access tokens](/docs/rest-api/authentication/#refreshing-tokens) upon expiration.
+*   Clarified the API URL for Figma for Government in documentation.
+
+## November 18, 2025[​](#2025-11-18 "Direct link to November 18, 2025")
+
+**Documentation Updates**
+
+*   Added comprehensive documentation for **extended collections** in the [Variables endpoints](/docs/rest-api/variables-endpoints/) and [Variables types](/docs/rest-api/variables-types/). Extended collections allow you to create variants of existing variable collections with custom override values while maintaining a single source of truth.
+    *   New `parentVariableCollectionId` parameter for creating extended collections
+    *   New fields for extended collections: `isExtension`, `parentVariableCollectionId`, and `variableOverrides`
+    *   New `initialModeIdToParentModeIdMapping` parameter for referencing inherited modes during creation
+*   Documented **variable overrides** feature for extended collections:
+    *   Extended mode ID format (e.g., `VariableCollectionId:2:5/1:0`) to distinguish between updating root values and creating overrides
+    *   Ability to override any inherited variable value in extended collections
+    *   Setting override values to `null` to remove overrides and fall back to parent values
+*   Added detailed examples demonstrating extended collection creation, override management, and mode referencing
+
+## September 23, 2025[​](#2025-09-23 "Direct link to September 23, 2025")
+
+**New**
+
+*   New OAuth app publishing flow for all public and private OAuth apps built on Figma’s REST API. All apps need to complete this flow by **November 17, 2025** in order to stay active. [Read more about the changes here](/docs/updates-to-figmas-developer-platform/) and check out the new [Apps page](https://figma.com/developers/apps).
+*   Documentation about the new [Figma MCP Server](https://figma.com/blog/design-context-everywhere-you-build/), now in beta, is available [here](/docs/figma-mcp-server/).
+
+**Updates**
+
+*   Published and adjusted REST API rate limits will go into effect on **November 17, 2025**. [Read more about rate limits here](/docs/rest-api/rate-limits/).
+*   Developer documentation is now consolidated into a single instance. The REST API docs are split across multiple pages instead of a single scrollable page. As a result, the “try it out” and personal access token (PAT) generation functionality in the docs is not available right now. You can instead use our [Postman public workspace](https://www.postman.com/figma-dev/figma-public-workspace/overview) to test REST API functionality and use [this reference](/docs/rest-api/authentication/#access-tokens) to generate PATs
+
+## July 7, 2025[​](#2025-07-07 "Direct link to July 7, 2025")
+
+*   The [GET team components](/docs/rest-api/component-endpoints/#get-team-components-endpoint) endpoint `page_size` parameter has a new maximum value of 1000. Values exceeding the maximum will automatically be capped to 1000.
+*   Added API methods to obtain information about nodes or children of nodes with layout mode `GRID`. These updates include:
+    *   `gridRowCount` & `gridColumnCount`
+    *   `gridRowGap` & `gridColumnGap`
+    *   `gridRowsSizing` & `gridColumnsSizing`
+    *   `gridRowAnchorIndex` & `gridColumnAnchorIndex`
+    *   `gridRowSpan` & `gridColumnSpan`
+    *   `gridChildHorizontalAlign` & `gridChildVerticalAlign`
+
+## June 27, 2025[​](#2025-06-27 "Direct link to June 27, 2025")
+
+Figma is introducing the [Discovery API](/docs/rest-api/discovery/) for Enterprise plans with Governance+.
+
+The Discovery API is used to obtain text events that have occurred in Figma files throughout your organization.
+
+The text events returned by the Discovery API include:
+
+*   **In-file text**: Text that's been added to layers (text layers and shapes with text) in Figma Design, as well as stickies and tables in FigJam.
+*   **Cursor chat**: Chat messages associated with the cursor.
+*   **File comments and reactions**: Comments and reactions that appear in files.
+*   **Component documentation descriptions and links**: Text and links that have been added to component documentation.
+*   **Annotations and developer-related links in Dev Mode**: Annotations and developer-related links (dev resources) that have been added in Dev Mode.
+
+Requests to the Discovery API return links to JSON files that can be downloaded. The API provides one JSON file for each hour of data in the timeframe covered by the request, up to 24 hours.
+
+For details about using the API, see the [Discovery API documentation](/docs/rest-api/discovery/).
+
+## May 28, 2025[​](#2025-05-28 "Direct link to May 28, 2025")
+
+We've introduced some changes to how [Webhooks V2](/docs/rest-api/webhooks/) works that enable additional ways you can utilize webhooks.
+
+The improvements include:
+
+*   In addition to teams, you can now attach webhooks to specific files and projects. When you create a webhook, you now specify a context (`team`, `file`, or `project`) and the id of the context you want to attach the webhook to. This allows you to receive events related to a specific file or project, in addition to team-level events.
+*   We've introduced a new [GET /v2/webhooks](/docs/rest-api/webhooks-endpoints/#webhooks-v2-get-endpoint) endpoint, along with the `plan_api_id` property. The endpoint can be used to get all webhooks for a given context, or, using `plan_api_id`, all existing webhooks that you have access to across all contexts.
+*   We've added a new [DEV\_MODE\_STATUS\_UPDATE](/docs/rest-api/webhooks-events/#dev-mode-status-update-event) event type. The `DEV_MODE_STATUS_UPDATE` event is triggered when the Dev Mode status of a layer changes. This can be used to track when layers are marked Ready for Dev, Completed, or a Dev Status is cleared in Figma Design, and includes information like a change message if one was provided when the status changed.
+
+Because we are introducing context-based webhooks, we're deprecating the old `GET /v2/teams/:team_id/webhooks` endpoint.
+
+For now, the old endpoint will continue to work, but we recommend you migrate to the new `GET /v2/webhooks` endpoint and use the `team` context: `GET v2/webhooks?context=team&context_id=:team_id`
+
+To learn more about the changes, see the [Webhooks V2 documentation](/docs/rest-api/webhooks/).
+
+## May 16, 2025[​](#2025-05-16 "Direct link to May 16, 2025")
+
+To align with the OAuth 2.0 specification, Figma is migrating the endpoint for refreshing OAuth tokens.
+
+Previously, you used the `https://api.figma.com/v1/oauth/refresh` endpoint to refresh existing OAuth tokens.
+
+Now, when you refresh your OAuth tokens, you should use the `https://api.figma.com/v1/oauth/token` endpoint.
+
+The legacy endpoint will continue to be supported for now, but we recommend you migrate to using the new endpoint. For specific instructions about how to refresh your OAuth tokens, see [Refreshing OAuth tokens](/docs/rest-api/authentication/#refresh-oauth-token).
+
+## May 7, 2025[​](#2025-05-07 "Direct link to May 7, 2025")
+
+Added the following new node types and properties in beta:
+
+*   [TEXT\_PATH](/docs/rest-api/file-node-types/#text-path-props) node type supporting [TextPathTypeStyle](/docs/rest-api/file-property-types/#textpathtypestyle-type) properties.
+*   [TRANSFORM\_GROUP](/docs/rest-api/file-node-types/#transform-group-props) node type.
+*   `TEXTURE` and `NOISE` [effect](/docs/rest-api/file-property-types/#effect-type) property types.
+*   `PROGRESSIVE` blur [effect](/docs/rest-api/file-property-types/#effect-type).
+*   `PATTERN` [paint](/docs/rest-api/file-property-types/#paint-type) property type.
+
+The node types and properties in beta can be used with Figma Design and Figma Draw.
+
+## April 29, 2025[​](#2025-04-29 "Direct link to April 29, 2025")
+
+Added a [GET file metadata](/docs/rest-api/file-endpoints/#get-file-metadata-endpoint) endpoint. This endpoint provides the same file metadata provided by the [GET file](/docs/rest-api/file-endpoints/#get-files-endpoint) endpoint but does not contain the file content. Requires the `file_metadata:read` scope.
+
+## April 28, 2025[​](#2025-04-28 "Direct link to April 28, 2025")
+
+*   We have updated the policy for generating Personal Access Tokens (PATs). Users can now create PATs with a maximum expiry of 90 days. Non-expiring PATs can no longer be created. Please update your token management practices accordingly to accommodate this change.
+*   Approval is now required to use the [Projects](/docs/rest-api/projects-endpoints/) endpoints. If you're building a new app and would like to use these endpoints, you can [request access](https://forms.gle/xoWgCx5K25iYci5L6).
+
+## April 17, 2025[​](#2025-04-17 "Direct link to April 17, 2025")
+
+Added new [scopes](/docs/rest-api/authentication/#scopes) for the REST API. The `files:read` scope is no longer recommended and will be deprecated in the future. Instead of `files:read`, use a more specific scope like `file_content:read` or `file_comments:read`. Using a more specific scope helps Figma customers understand what data your app is accessing.
+
+## April 15, 2025[​](#2025-04-15 "Direct link to April 15, 2025")
+
+The [POST /v1/oauth/token](/docs/rest-api/authentication/#post-oauth-token-endpoint) endpoint now returns user IDs in string format via the `user_id_string` property. The numeric `user_id` property is deprecated.
+
+## March 19, 2025[​](#2025-03-19 "Direct link to March 19, 2025")
+
+Added `containingComponentSet` to [FrameInfo](/docs/rest-api/component-types/#frameinfo-type), and deprecated `containingStateGroup` which retains the same data.
+
+## February 24, 2025[​](#2025-02-24 "Direct link to February 24, 2025")
+
+The sunset date of the OAuth security migration has been extended to February 26th, 2025.
+
+## February 13, 2025[​](#2025-02-13 "Direct link to February 13, 2025")
+
+Added support for `targetAspectRatio` in the [GET files](/docs/rest-api/file-endpoints/#get-files-endpoint) endpoint. `targetAspectRatio` allows for proper proportional resizing on the canvas, unlike the legacy `preserveRatio` field. `preserveRatio` is kept for backwards-compatibility, but will now be powered by `targetAspectRatio` under the hood.
+
+## February 11, 2025[​](#2025-02-11 "Direct link to February 11, 2025")
+
+The Library Analytics API is now available. Users on an Enterprise plan can leverage the API to fetch analytics data about how your organization's design system libraries are being used, including usage of components, styles, and variables.
+
+For more information, see the [Library Analytics API documentation](/docs/rest-api/library-analytics-intro/).
+
+## January 23, 2025[​](#2025-01-23 "Direct link to January 23, 2025")
+
+`TypeStyle` objects, which describe text formatting properties, now contain a `fontStyle` property that indicates whether text is bold, italicized, etc.
+
+## December 5, 2024[​](#2024-12-05 "Direct link to December 5, 2024")
+
+In the [GET files](/docs/rest-api/file-endpoints/#get-files-endpoint) endpoint, we occasionally return the error message `Request timeout, try a smaller request`. Moving forwards, we will return the error message `Request too large. If applicable, filter by query params`. We recommend filtering by using the `ids` and `depth` query parameters to reduce the size of the request.
+
+## November 25, 2024[​](#2024-11-25 "Direct link to November 25, 2024")
+
+Beginning December 9th, 2024, requests to `http://api.figma.com` will no longer be supported. This change enforces HTTPS-only communication for improved security. HTTP requests will fail with a `403 Forbidden` status code instead of automatically redirecting to HTTPS.
+
+To prepare for this change, please ensure all API request URLs use `https://api.figma.com` instead of `http://api.figma.com`
+
+## October 29, 2024[​](#2024-10-29 "Direct link to October 29, 2024")
+
+*   Introduced styles and variables to the beta Library Analytics API. Get action time series data and usage data for styles and variables.
+*   Added new endpoints for the Library Analytics API
+    *   [GET styles actions](/docs/rest-api/library-analytics-endpoints/#get-styles-actions-endpoint)
+    *   [GET styles usages](/docs/rest-api/library-analytics-endpoints/#get-styles-usages-endpoint)
+    *   [GET variables actions](/docs/rest-api/library-analytics-endpoints/#get-variables-actions-endpoint)
+    *   [GET variables usages](/docs/rest-api/library-analytics-endpoints/#get-variables-usages-endpoint)
+    *   [GET component actions](/docs/rest-api/library-analytics-endpoints/#get-component-actions-endpoint)
+    *   [GET component usages](/docs/rest-api/library-analytics-endpoints/#get-component-usages-endpoint)
+*   New component analytics endpoints cover the same data as the prior Library Analytics endpoints but have been updated for consistency with styles and variables. While the legacy beta endpoints will continue to work in the short-term, we recommend switching over to the new component endpoints. The new component endpoints have the following breaking changes:
+    *   `num_instances` has been renamed to `usages`
+    *   `num_teams_using` has been renamed to `teams_using`
+    *   `num_files_using` has been renamed to `files_using`
+    *   Breakdowns by component now include a `component_set_key` and `component_set_name` for components that belong to a component set. The component set name is no longer appended to the front of the `component_name`.
+    *   We no longer support the order query parameter
+*   Analytics data is now updated daily rather than weekly
+
+## October 28, 2024[​](#2024-10-28 "Direct link to October 28, 2024")
+
+*   Updated OAuth token exchange documentation to recommend sending client credentials in the `Authorization` header rather than in the request body.
+
+## October 25, 2024[​](#2024-10-25 "Direct link to October 25, 2024")
+
+*   The [GET local variables](/docs/rest-api/file-endpoints/#get-local-variables-endpoint) endpoint has been updated to include variables that have been deleted in the editor, but may still be referenced by contents in the document. This can occur if you bind a property or variable alias to a variable, and then use the "Local variables" menu to delete the variable. Variables in this state will be annotated with a `deletedButReferenced` field set to `true`.
+
+## October 22, 2024[​](#2024-10-22 "Direct link to October 22, 2024")
+
+The response from the [GET file versions](/docs/rest-api/version-history-endpoints/#get-file-versions-endpoint) endpoint has changed.
+
+**Previously**
+
+Versions returned by the `GET file versions` endpoint were ordered by an internal identifier that was logically equivalent to when a version was created.
+
+**Now**
+
+Versions returned by the `GET file versions` endpoint are now ordered explicitly by when they were created. New calls to the GET API return updated `next_page` and `prev_page` URLs that use the new ordering. Old URLs that use the previous method of ordering will stop working on November 22, 2024.
+
+## October 8, 2024[​](#2024-10-08 "Direct link to October 8, 2024")
+
+Updated recommended endpoints for OAuth token exchange to `https://api.figma.com`.
+
+## September 24, 2024[​](#2024-09-24 "Direct link to September 24, 2024")
+
+Added the `freeText` property to the [Measurement](/docs/rest-api/file-property-types/#measurement-type) object. This is the displayed value of the measurement when it's manually overridden.
+
+## September 12, 2024[​](#2024-09-12 "Direct link to September 12, 2024")
+
+Added an interactions field to the [TransitionSourceTrait](/docs/rest-api/file-property-types/#transition-source-trait-type) attribute in the [GET file](/docs/rest-api/file-endpoints/#get-files-endpoint) endpoint. This field contains full data about prototyping interactions on the node, equivalent to the [reactions](/docs/plugins/api/properties/nodes-reactions/) field of the Plugin API.
+
+## August 15, 2024[​](#2024-08-15 "Direct link to August 15, 2024")
+
+Added several new properties to the [TypeStyle](/docs/rest-api/file-property-types/#typestyle-type) object: `isOverrideOverTextStyle`, `semanticWeight`, and `semanticItalic`.
+
+## May 30, 2024[​](#2024-05-30 "Direct link to May 30, 2024")
+
+Added new [VariableScope](/docs/rest-api/file-property-types/#variable-scope-type) options for scoping variables to typography fields such as font family, font style and weight, font size, and other text fields.
+
+## April 29, 2024[​](#2024-04-29 "Direct link to April 29, 2024")
+
+Add new Enterprise beta endpoints for reading [Library Analytics](/docs/rest-api/library-analytics-intro/). Fetch action time series data and library usage grouped by different dimensions.
+
+## April 24, 2024[​](#2024-04-24 "Direct link to April 24, 2024")
+
+*   Add variable support to `gradientStops` in [ColorStop](/docs/rest-api/file-property-types/#colorstop-type). This affects Paints.
+*   Update [ColorStop](/docs/rest-api/file-property-types/#colorstop-type) documentation to reflect the addition of the `boundedVariables` field.
+
+## February 14, 2024[​](#2024-02-14 "Direct link to February 14, 2024")
+
+We are excited to announce the beta release of the OpenAPI specification and Typescript types for the Figma REST API in the open source [figma/rest-api-spec](https://github.com/figma/rest-api-spec) repository.
+
+OpenAPI is a specification for describing HTTP APIs in a language-agnostic manner. It has a large ecosystem of tools to let you generate API documentation, client SDKs, and more. We also provide custom Typescript types generated from the OpenAPI specification for those of you with Typescript codebases to make it easy to write type-safe code out of the box.
+
+## January 25, 2024[​](#2024-01-25 "Direct link to January 25, 2024")
+
+*   New `annotations` field containing an [Annotation](/docs/rest-api/file-property-types/#annotation-type) with notes and pinned properties of nodes in Dev Mode. Available in private beta; stay tuned for public release.
+*   New `measurements` field on [CANVAS](/docs/rest-api/file-node-types/#canvas-props) nodes containing an array of type [Measurement](/docs/rest-api/file-property-types/#measurement-type), which display pinned distances between nodes in Dev Mode.
+
+## January 17, 2024[​](#2024-01-17 "Direct link to January 17, 2024")
+
+Fix bugs related to `region_width` and `region_height` in [FrameOffsetRegion](/docs/rest-api/file-property-types/#frameoffsetregion-type). This affects [Comments](/docs/rest-api/comments-endpoints/) endpoints.
+
+## January 10, 2024[​](#2024-01-10 "Direct link to January 10, 2024")
+
+The `as_md` parameter in the [GET comments](/docs/rest-api/comments-endpoints/#get-comments-endpoint) endpoint now correctly respects false as a value.
+
+## December 6, 2023[​](#2023-12-06 "Direct link to December 6, 2023")
+
+*   [Comment reactions](/docs/rest-api/comments-types/#reaction-type) are no longer limited to a subset of 7 emoji. Comment Reactions now support emoji up to version 14.0.
+*   Ability to get `boundVariables` on [LayoutGrid](/docs/rest-api/file-property-types/#layoutgrid-type) and [Effect](/docs/rest-api/file-property-types/#effect-type) properties.
+*   New [VariableScope](/docs/rest-api/file-property-types/#variable-scope-type) types for scoping variables to layer opacity, stroke weight, and effect fields.
+
+## November 29, 2023[​](#2023-11-29 "Direct link to November 29, 2023")
+
+**API changes**
+
+*   The `absoluteRenderBounds` node property in the [GET file](/docs/rest-api/file-endpoints/#get-files-endpoint) and [GET file nodes](/docs/rest-api/file-endpoints/#get-file-nodes-endpoint) endpoints is now nullable, which fixes a bug where it previously gave a `Rectangle` with null values inside in some cases. A node has null render bounds if it is not visible.
+
+**Documentation changes**
+
+*   Clarify the behavior of the `ids` query parameter in the [GET file](/docs/rest-api/file-endpoints/#get-files-endpoint) endpoint where we might include extra nodes if the desired node subtrees have dependencies
+*   Add API call examples for file endpoints
+*   Remove `containing_page` property for published components and component sets, since this property doesn't exist
+*   Add missing `Path` data type for fill/stroke geometries
+*   Add missing `strokeCap` enum values
+*   Fix properties for the team entity in activity log events
+
+## November 8, 2023[​](#2023-11-08 "Direct link to November 8, 2023")
+
+The [GET image](/docs/rest-api/file-endpoints/#get-image-endpoint) endpoint now supports a `contents_only` option, which can be set to false in order to render content that overlaps the requested nodes.
+
+## October 25, 2023[​](#2023-10-25 "Direct link to October 25, 2023")
+
+Add `variableIds` property to [variable collections](/docs/rest-api/file-property-types/#variable-collection-type) to expose the order of variables within a collection.
+
+## October 18, 2023[​](#2023-10-18 "Direct link to October 18, 2023")
+
+*   Add `maskType` property to all nodes that support `isMask`, and deprecate `isMaskOutline` (which now corresponds to `maskType = 'VECTOR'`).
+*   Support variables in `LIBRARY_PUBLISH` webhook events, which are triggered when a library is published.
+
+## October 4, 2023[​](#2023-10-04 "Direct link to October 4, 2023")
+
+*   Add `svg_outline_text` query parameter for the [GET image](/docs/rest-api/file-endpoints/#get-image-endpoint) endpoint to control whether text elements are rendered as outlines (vector paths) or as `<text>` elements in SVGs.
+
+## September 20, 2023[​](#2023-09-20 "Direct link to September 20, 2023")
+
+*   Add `svg_include_node_id` as a query parameter for the [GET image](/docs/rest-api/file-endpoints/#get-image-endpoint) endpoint. This adds node ids to svg elements as `data-node-id`.
+
+## August 31, 2023[​](#2023-08-31 "Direct link to August 31, 2023")
+
+*   Variable and collection objects returned by the [GET published variables](/docs/rest-api/variables-endpoints/#get-published-variables-endpoint) endpoint include an `updatedAt` timestamp that indicates the last time a change to the variable or collection was published.
+
+## August 17, 2023[​](#2023-08-17 "Direct link to August 17, 2023")
+
+*   Get and set `codeSyntax` for local variables in the [variables endpoints](/docs/rest-api/variables-endpoints/).
+*   Support for [deleting dev resources](/docs/rest-api/dev-resources-endpoints/#delete-dev-resources-endpoint).
+*   Support filtering dev resources for specific `node_ids` when fetching [dev resources](/docs/rest-api/dev-resources-endpoints/#get-dev-resources-endpoint).
+
+## August 9, 2023[​](#2023-08-09 "Direct link to August 9, 2023")
+
+*   Support for reading `layoutSizingHorizontal` and `layoutSizingVertical` on auto-layout frames and their children.
+
+## August 2, 2023[​](#2023-08-02 "Direct link to August 2, 2023")
+
+*   Ability to get and set `scopes`, `description`, `hiddenFromPublishing` for local variables, and `hiddenFromPublishing` for local variable collections for the [variables endpoints](/docs/rest-api/variables-endpoints/).
+
+## July 26, 2023[​](#2023-07-26 "Direct link to July 26, 2023")
+
+*   Support space-separated scopes in addition to comma-separated scopes for [OAuth authentication](/docs/rest-api/authentication/#oauth2).
+
+## July 10, 2023[​](#2023-07-10 "Direct link to July 10, 2023")
+
+Add `cornerSmoothing` property to all nodes that support `cornerRadius`.
+
+## June 21, 2023[​](#2023-06-21 "Direct link to June 21, 2023")
+
+This update adds brand new endpoints for variables and dev resources, and introduces important changes to personal access and OAuth tokens.
+
+*   New endpoints for [querying, creating, updating, and deleting variables](/docs/rest-api/variables-endpoints/). Variables in Figma Design store reusable values that can be applied to all kinds of design properties and prototyping actions.
+*   New endpoints for [querying, creating, and updating dev resources](/docs/rest-api/dev-resources-endpoints/). Dev resources are developer-contributed urls that are attached to nodes in files and are shown in Figma Dev Mode.
+
+**Authentication changes**
+
+[Personal access tokens](/docs/rest-api/authentication/#access-tokens) and [OAuth 2 tokens](/docs/rest-api/authentication/#oauth2) now support [scopes](/docs/rest-api/authentication/#scopes) that limit which endpoints the token has access to. For personal access tokens, there is a new flow for assigning scopes and expiration when generating a token. For OAuth 2, applications can ask for a new set of scopes when redirecting the user to allow access for the application.
+
+Legacy tokens (personal access tokens with no scopes or OAuth tokens with the `file_read` scope) will continue to work as-is. However, the new endpoints above require additional scopes for your application to call them.
+
+## May 3, 2023[​](#2023-05-03 "Direct link to May 3, 2023")
+
+*   Introduce the [Payments REST API](/docs/rest-api/payments-endpoints/) and [GET payments](/docs/rest-api/payments-endpoints/#get-payments-endpoint) endpoint.
+
+## April 26, 2023[​](#2023-04-26 "Direct link to April 26, 2023")
+
+*   Add `strokeDashes` property to [FRAME](/docs/rest-api/file-node-types/#frame-props) nodes.
+
+## March 22, 2023[​](#2023-03-22 "Direct link to March 22, 2023")
+
+*   Add `as_md` parameter to the [GET comments](/docs/rest-api/comments-endpoints/#get-comments-endpoint) endpoint to return rich-text comments as markdown.
+
+## March 14, 2023[​](#2023-03-14 "Direct link to March 14, 2023")
+
+*   Add [TABLE](/docs/rest-api/file-node-types/#table-props) and [TABLE\_CELL](/docs/rest-api/file-node-types/#table-cell-props) node types.
+
+## February 6, 2023[​](#2023-02-06 "Direct link to February 6, 2023")
+
+*   Update `componentPropertyReferences` to also show up on applicable instance sublayers.
+
+## December 16, 2022[​](#2022-12-16 "Direct link to December 16, 2022")
+
+**Font metrics improvements**
+
+*   Node and style values for `fontWeight` will now be more accurate and reflect variable font settings and custom font style weights.
+*   Node and style values for `lineHeight` will now use the main node or text style font metadata for determining percent-based line height values. Previously, it used the maximum `lineHeight` of all fonts used in the node.
+
+## December 7, 2022[​](#2022-12-07 "Direct link to December 7, 2022")
+
+**Add support for overrides**
+
+*   Update [INSTANCE](/docs/rest-api/file-node-types/#instance-props) nodes to include an `overrides` field. The `overrides` field is an array of all of the fields directly overridden on an instance.
+
+## November 9, 2022[​](#2022-11-09 "Direct link to November 9, 2022")
+
+**Add fill overrides**
+
+*   Update [VECTOR](/docs/rest-api/file-node-types/#vector-props) nodes to have `fillOverrideTable` which shows overriden fills for different regions in the vector.
+
+## October 28, 2022[​](#2022-10-28 "Direct link to October 28, 2022")
+
+**Update component set fields**
+
+*   Update component set to include a `documentationLinks` field
+
+## September 28, 2022[​](#2022-09-28 "Direct link to September 28, 2022")
+
+**Add component properties fields**
+
+*   Update nodes to have component properties-related fields
+
+## July 20, 2022[​](#2022-07-20 "Direct link to July 20, 2022")
+
+**Increase Comments Functionalities**
+
+*   Update [Comment](/docs/rest-api/file-property-types/#comment-type) type to support [Region](/docs/rest-api/file-property-types/#region-type) and [FrameOffsetRegion](/docs/rest-api/file-property-types/#frameoffsetregion-type) types in `client_meta`
+*   Update [Comment](/docs/rest-api/file-property-types/#comment-type) type to include [Reactions](/docs/rest-api/file-property-types/#reaction-type)
+*   Create [Reaction](/docs/rest-api/file-property-types/#reaction-type), [Region](/docs/rest-api/file-property-types/#region-type), and [FrameOffsetRegion](/docs/rest-api/file-property-types/#frameoffsetregion-type) types
+*   Update [POST comments](/docs/rest-api/comments-endpoints/#post-comments-endpoint) endpoint to accept [Region](/docs/rest-api/file-property-types/#region-type) and [FrameOffsetRegion](/docs/rest-api/file-property-types/#frameoffsetregion-type) types as `client_meta`
+*   Create [GET comment reactions](/docs/rest-api/comments-endpoints/#get-comment-reactions-endpoint), [POST comment reactions](/docs/rest-api/comments-endpoints/#post-comment-reactions-endpoint), and [DELETE comment reactions](/docs/rest-api/comments-endpoints/#delete-comment-reactions-endpoint) endpoints
+
+## May 23, 2022[​](#2022-05-23 "Direct link to May 23, 2022")
+
+**New properties**
+
+The following properties have been added/updated:
+
+*   `layoutPositioning`
+*   `itemReverseZIndex`
+*   `strokesIncludedInLayout`
+*   `individualStrokeWeights`
+*   `counterAxisAlignItems` can return `BASELINE`
+*   `textAutoResize` can return `TRUNCATE`
+
+## February 9, 2022[​](#2022-02-09 "Direct link to February 9, 2022")
+
+**Bug Fixes**
+
+*   Fix bug where the [GET file](/docs/rest-api/file-endpoints/#get-files-endpoint) endpoint did not include component sets from team libraries
+
+## December 8, 2021[​](#2021-12-08 "Direct link to December 8, 2021")
+
+**Bug Fixes**
+
+*   Fix bug where PNGs exported from the REST API were of lower quality (less anti-aliasing) than those exported from the Figma UI
+
+*   [January 26, 2026](#2026-01-26)
+*   [January 21, 2026](#2026-01-21)
+*   [December 11, 2025](#2025-12-11)
+*   [November 18, 2025](#2025-11-18)
+*   [September 23, 2025](#2025-09-23)
+*   [July 7, 2025](#2025-07-07)
+*   [June 27, 2025](#2025-06-27)
+*   [May 28, 2025](#2025-05-28)
+*   [May 16, 2025](#2025-05-16)
+*   [May 7, 2025](#2025-05-07)
+*   [April 29, 2025](#2025-04-29)
+*   [April 28, 2025](#2025-04-28)
+*   [April 17, 2025](#2025-04-17)
+*   [April 15, 2025](#2025-04-15)
+*   [March 19, 2025](#2025-03-19)
+*   [February 24, 2025](#2025-02-24)
+*   [February 13, 2025](#2025-02-13)
+*   [February 11, 2025](#2025-02-11)
+*   [January 23, 2025](#2025-01-23)
+*   [December 5, 2024](#2024-12-05)
+*   [November 25, 2024](#2024-11-25)
+*   [October 29, 2024](#2024-10-29)
+*   [October 28, 2024](#2024-10-28)
+*   [October 25, 2024](#2024-10-25)
+*   [October 22, 2024](#2024-10-22)
+*   [October 8, 2024](#2024-10-08)
+*   [September 24, 2024](#2024-09-24)
+*   [September 12, 2024](#2024-09-12)
+*   [August 15, 2024](#2024-08-15)
+*   [May 30, 2024](#2024-05-30)
+*   [April 29, 2024](#2024-04-29)
+*   [April 24, 2024](#2024-04-24)
+*   [February 14, 2024](#2024-02-14)
+*   [January 25, 2024](#2024-01-25)
+*   [January 17, 2024](#2024-01-17)
+*   [January 10, 2024](#2024-01-10)
+*   [December 6, 2023](#2023-12-06)
+*   [November 29, 2023](#2023-11-29)
+*   [November 8, 2023](#2023-11-08)
+*   [October 25, 2023](#2023-10-25)
+*   [October 18, 2023](#2023-10-18)
+*   [October 4, 2023](#2023-10-04)
+*   [September 20, 2023](#2023-09-20)
+*   [August 31, 2023](#2023-08-31)
+*   [August 17, 2023](#2023-08-17)
+*   [August 9, 2023](#2023-08-09)
+*   [August 2, 2023](#2023-08-02)
+*   [July 26, 2023](#2023-07-26)
+*   [July 10, 2023](#2023-07-10)
+*   [June 21, 2023](#2023-06-21)
+*   [May 3, 2023](#2023-05-03)
+*   [April 26, 2023](#2023-04-26)
+*   [March 22, 2023](#2023-03-22)
+*   [March 14, 2023](#2023-03-14)
+*   [February 6, 2023](#2023-02-06)
+*   [December 16, 2022](#2022-12-16)
+*   [December 7, 2022](#2022-12-07)
+*   [November 9, 2022](#2022-11-09)
+*   [October 28, 2022](#2022-10-28)
+*   [September 28, 2022](#2022-09-28)
+*   [July 20, 2022](#2022-07-20)
+*   [May 23, 2022](#2022-05-23)
+*   [February 9, 2022](#2022-02-09)
+*   [December 8, 2021](#2021-12-08)

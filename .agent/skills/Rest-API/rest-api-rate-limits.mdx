@@ -1,0 +1,49 @@
+---
+title: Figma REST API – Rate limits
+slug: /figma/rest-api/rate-limits
+---
+
+# Rate limits
+
+Figma enforces rate limits to keep the REST API reliable and fair across users and apps.[page:4] Limits depend on the user’s seat type, the endpoint’s rate‑limit tier, and the plan where the requested resource lives.[page:4]
+
+As of November 17, 2025, updated rate limits are in effect, and Figma may adjust them over time.[page:4]
+
+## Tiers, seats, and plans
+
+Rate limits are defined by:[page:4]
+
+- **API tier** of the endpoint (Tier 1–3).  
+- **Seat**: View, Collab, Dev, or Full.  
+- **Plan**: Starter, Professional, Organization, Enterprise.[page:4]
+
+High‑level behavior:[page:4]
+
+- Tier 1 endpoints allow very few requests per month for View/Collab seats (e.g. up to 6 per month) and higher per‑minute budgets for Dev/Full seats depending on plan.  
+- Tier 2 and Tier 3 endpoints have higher per‑minute limits, again increasing with higher seats and plans.  
+- For resources in lower‑tier plans (e.g. Starter), the stricter plan limits apply, even if the user also has a higher seat in another plan.[page:4]
+
+## How rate limiting works
+
+Figma uses a leaky‑bucket algorithm and returns HTTP `429 Too Many Requests` when limits are exceeded.[page:4] Rate limits apply to both OAuth apps and personal access tokens.[page:4]
+
+- For OAuth apps: limits are per‑user, per‑plan, per‑app (each app has its own budget per user).[page:4]
+- For personal access tokens: limits are per‑user, per‑plan for the account that created the token.[page:4]
+
+### 429 response headers
+
+`429` responses include helpful headers:[page:4]
+
+- `Retry-After` (seconds to wait before retrying).  
+- `X-Figma-Plan-Tier` (plan tier of the resource: `enterprise`, `org`, `pro`, `starter`, `student`).  
+- `X-Figma-Rate-Limit-Type` (seat‑based type: `low` for Collab/View, `high` for Full/Dev).  
+- `X-Figma-Upgrade-Link` (URL you can show to users to suggest seat/plan upgrades).[page:4]
+
+## Coping with rate limits
+
+If your app is rate‑limited:[page:4]
+
+- Check the endpoint tier and your user’s seat/plan to understand why limits are hit.  
+- Batch requests (e.g. fetch multiple node images in a single call).  
+- Cache responses and refresh on demand or on a schedule rather than refetching constantly.  
+- Implement robust `429` handling that respects `Retry-After` and optionally surfaces `X-Figma-Upgrade-Link` to users.[page:4]

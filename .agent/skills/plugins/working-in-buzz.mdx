@@ -1,0 +1,173 @@
+---
+title: Working in Buzz | Developer Docs
+slug: /figma/plugins/working-in-buzz
+---
+
+On this page
+
+## Buzz[​](#buzz "Direct link to Buzz")
+
+[Figma Buzz](https://help.figma.com/hc/en-us/articles/31194937548951-Explore-Figma-Buzz) enables brand designers to create and share on-brand assets, so teammates can grab what they need, when they need it. Buzz's simple design editor lets marketers or other teams create the assets they need quickly. Use Figma Buzz to make assets such as social media posts, digital ads, event materials, and more.
+
+*   **Publish templates:** Build assets using the creation tools in Figma Buzz or copy and paste designs from Figma Design, make necessary tweaks in Design mode, and publish in Figma Buzz for your peers to easily access and use.
+*   **Focused editing:** Teams can edit select sections within published templates, ensuring they are always staying on brand.
+*   **Freeform editing:** Remove template guidelines from a team template, start from scratch, or use a Figma-created template to edit freely and create exactly what you need. Riff and refine with design tools in a simplified editor.
+*   **Creation at scale:** Quickly create and edit thousands of assets at once. See them all in one view, regardless of size.
+
+## Getting started with Plugins in Figma Buzz[​](#getting-started-with-plugins-in-figma-buzz "Direct link to Getting started with Plugins in Figma Buzz")
+
+To create a new plugin for Figma Buzz, follow the [Plugin Quickstart Guide](/docs/plugins/plugin-quickstart-guide/) to create a plugin, then come back to this guide.
+
+To update an existing plugin to support Figma Buzz, [follow the steps below](#update-an-existing-plugin-to-support-buzz).
+
+### Update an existing plugin to support Buzz[​](#update-an-existing-plugin-to-support-buzz "Direct link to Update an existing plugin to support Buzz")
+
+To enable plugins for Buzz, add `buzz` to the `editorType` field in your plugin's manifest:
+
+```
+{  ...  "editorType": ["buzz"] // or ["figma", "buzz", ...]}
+```
+
+Then, run `npm update` in the terminal to make sure you have the latest [plugin typings](/docs/plugins/api/typings/) for Buzz:
+
+```
+npm update
+```
+
+## Key differences between plugins in Buzz and other plugins[​](#key-differences-between-plugins-in-buzz-and-other-plugins "Direct link to Key differences between plugins in Buzz and other plugins")
+
+Plugins in Buzz have some key differences when compared to other plugins:
+
+### Plugin entry point[​](#plugin-entry-point "Direct link to Plugin entry point")
+
+To ensure better discoverability for plugins, all Buzz plugins will show up in the left side panel by default and take up the entire height. Users will also be able to pop the plugin out into a modal. Because this left panel is resizable, we strongly recommend that you design your plugin iframes using the following guidelines:
+
+*   **Make sure the content inside of your plugin iframe can handle responsive resizing**
+*   **Design your content vertically and to handle scrolling overflow**
+
+### Views[​](#views "Direct link to Views")
+
+Buzz supports two modes—grid view and asset view.
+
+*   **Grid view** lets you interact with all assets in a structured 2D layout
+*   **Asset view** allows focus on one asset in isolation
+
+tip
+
+**Tip:** While you can add nodes anywhere on the canvas, you typically want to add the node to the grid so that users can see the node in asset view. To do this, you should:
+
+*   Use `figma.buzz.createFrame()` as opposed to `figma.currentPage.appendChild()`.
+*   Use `figma.moveNodesToCoord()` to insert a node into the grid (i.e. you've duplicated a frame with `.clone` and want to insert into the canvas grid).
+
+### Asset Types[​](#asset-types "Direct link to Asset Types")
+
+Buzz introduces predefined asset types for common marketing formats like Instagram Stories or LinkedIn Ads. See the [`BuzzAssetType`](/docs/plugins/api/BuzzAssetType/) documentation for a complete enumeration of the types.
+
+### Canvas Grid Management[​](#canvas-grid-management "Direct link to Canvas Grid Management")
+
+Buzz uses a canvas grid system to organize media assets. You can programmatically manage this grid using:
+
+*   **`figma.getCanvasGrid()`** - Get the current canvas grid as a 2D array
+*   **`figma.setCanvasGrid(grid)`** - Reorganize the canvas grid layout
+*   **`figma.createCanvasRow(index?)`** - Create a new row in the canvas grid
+*   **`figma.moveNodesToCoord(nodes, row?, column?)`** - Move nodes to specific grid positions
+
+### Canvas View Management[​](#canvas-view-management "Direct link to Canvas View Management")
+
+Access or set the current view mode using `figma.viewport.canvasView`:
+
+```
+// Get current viewconst currentView = figma.viewport.canvasView // 'grid' | 'single-asset'// Set the view modefigma.viewport.canvasView = 'single-asset'
+```
+
+### Focused Node Access[​](#focused-node-access "Direct link to Focused Node Access")
+
+When in asset view, access the currently focused node:
+
+```
+// Get the focused nodeconst focusedNode = figma.currentPage.focusedNode// Set the focused nodefigma.currentPage.focusedNode = someNode
+```
+
+### Working with Buzz-Specific APIs[​](#working-with-buzz-specific-apis "Direct link to Working with Buzz-Specific APIs")
+
+The `figma.buzz` API provides specialized methods for media content:
+
+```
+// Create frames optimized for the canvas gridconst frame = figma.buzz.createFrame(0, 0) // row 0, column 0// Manage asset typesfigma.buzz.setBuzzAssetTypeForNode(frame, 'INSTAGRAM_STORY')const assetType = figma.buzz.getBuzzAssetTypeForNode(frame)// Extract and update contentconst textFields = figma.buzz.getTextContent(frame)const mediaFields = figma.buzz.getMediaContent(frame)// Smart resizing for different platformsfigma.buzz.smartResize(frame, 1080, 1080)
+```
+
+### Event Handling[​](#event-handling "Direct link to Event Handling")
+
+Listen for canvas view changes to adapt your plugin's behavior:
+
+```
+figma.on('canvasviewchange', (event) => {  if (event.view === 'SINGLE_ASSET') {    // User focused on single asset    console.log('Asset view')  } else {    // User viewing grid    console.log('Grid view')  }})
+```
+
+### Best Practices[​](#best-practices "Direct link to Best Practices")
+
+*   Any nodes that are added to the canvas should be added specifically to the grid. For example, if you clone a node, make sure you move it to the canvas:
+
+```
+// Move cloned node to gridconst cloned = node.clone();if (figma.editorType === 'buzz') {  figma.moveNodesToCoord([cloned.id], row, col); // NEW}// If creating a frame, you can use the createFrame() functionconst frame = figma.buzz.createFrame(row, col);
+```
+
+*   When inserting images into a Buzz asset, avoid directly setting image fills on the top-level frame. Instead, create a rectangle node with the image fill and insert it as a child of the top-level frame. This approach ensures that the image appears as a separate object within the frame rather than replacing the frame's background fill, which is consistent with how images are inserted from the Media side panel in the Buzz Editor.
+
+```
+// Get the selected Buzz asset (top-level frame)const buzzAsset = figma.currentPage.selection[0];// Create a rectangle to hold the imageconst rectangleNode = figma.createRectangle();// Load and apply the image fillconst image = figma.createImage(imageBytes); // your image data as Uint8ArrayrectangleNode.fills = [{  type: 'IMAGE',  imageHash: image.hash,  scaleMode: 'FILL'}];// Size the rectangle appropriatelyrectangleNode.resize(400, 300);// Insert the rectangle as a child of the Buzz assetbuzzAsset.appendChild(rectangleNode);// Alternatively, you can use the Buzz Media Content API// if working with template-based assets that have predefined media fields// and you'd like to replace the image fill of one of those media fieldsconst mediaContent = figma.buzz.getMediaContent(buzzAsset);if (mediaContent.length > 0) {  await mediaContent[0].setMediaAsync(image.hash, 'IMAGE');}
+```
+
+### Unsupported and Supported Features[​](#unsupported-and-supported-features "Direct link to Unsupported and Supported Features")
+
+#### Unsupported in Buzz[​](#unsupported-in-buzz "Direct link to Unsupported in Buzz")
+
+Buzz does not support these node types:
+
+*   `CANVAS`
+*   `STICKY`
+*   `CONNECTOR`
+*   `CODE_BLOCK`
+*   `TABLE`
+*   `MEDIA`
+*   `WEBPAGE`
+*   `SLIDE`
+*   `INTERACTIVE_SLIDE_ELEMENT`
+
+Methods unavailable in Buzz:
+
+*   `createPage()`
+*   `createConnector()`
+*   `createCodeBlock()`
+*   `createTable()`
+*   `createSticky()`
+*   `createSlide()`
+*   `createSlideRow()`
+*   `createPageDivider()`
+*   `createLinkPreviewAsync()`
+*   `setFileThumbnailNodeAsync()`
+
+### Additional Notes[​](#additional-notes "Direct link to Additional Notes")
+
+When updating existing plugins for Figma Buzz:
+
+*   Use `figma.buzz.createFrame()` instead of `figma.createFrame()` for grid-aware positioning
+*   Check for `figma.editorType === 'buzz'` to enable Buzz-specific functionality
+*   Consider responsive design for the resizable left panel interface
+*   Use asset types to ensure proper platform formatting
+
+*   [Buzz](#buzz)
+*   [Getting started with Plugins in Figma Buzz](#getting-started-with-plugins-in-figma-buzz)
+    *   [Update an existing plugin to support Buzz](#update-an-existing-plugin-to-support-buzz)
+*   [Key differences between plugins in Buzz and other plugins](#key-differences-between-plugins-in-buzz-and-other-plugins)
+    *   [Plugin entry point](#plugin-entry-point)
+    *   [Views](#views)
+    *   [Asset Types](#asset-types)
+    *   [Canvas Grid Management](#canvas-grid-management)
+    *   [Canvas View Management](#canvas-view-management)
+    *   [Focused Node Access](#focused-node-access)
+    *   [Working with Buzz-Specific APIs](#working-with-buzz-specific-apis)
+    *   [Event Handling](#event-handling)
+    *   [Best Practices](#best-practices)
+    *   [Unsupported and Supported Features](#unsupported-and-supported-features)
+    *   [Additional Notes](#additional-notes)

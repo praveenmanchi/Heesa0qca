@@ -1,0 +1,94 @@
+---
+title: Code Connect integration | Developer Docs
+slug: /figma/figma-mcp-server/code-connect-integration
+---
+
+On this page
+
+When you have [Code Connect](/docs/code-connect/) set up for your design system components, the Figma MCP server enhances its output by including real implementation details from your codebase. This helps AI agents generate code that's consistent with your actual component library and design patterns.
+
+## How Code Connect enhances the context window[​](#how-code-connect-enhances-the-context-window "Direct link to How Code Connect enhances the context window")
+
+When the MCP server processes a Figma frame that contains components connected via Code Connect, it generates special `<CodeConnectSnippet>` wrapper components in its context window. These synthetic components serve as markers that include:
+
+*   **Design properties**: The Figma component's current property values (variant, boolean props, text content, etc.)
+*   **Import statements**: Code showing how to import the component
+*   **Component snippet**: The actual component usage code
+*   **Instructions**: Any [custom instructions](#adding-custom-instructions) you've added to help guide AI code generation
+
+The specific content inside these wrappers depends on whether you're using Code Connect CLI or Code Connect UI.
+
+## Code Connect CLI mappings[​](#code-connect-cli-mappings "Direct link to Code Connect CLI mappings")
+
+When you use the [Code Connect CLI](/docs/code-connect/quickstart-guide/) to create mappings, the MCP server includes richer implementation details in the CodeConnectSnippet.
+
+### Import statements[​](#import-statements "Direct link to Import statements")
+
+For CLI mappings, the import statement is generated using:
+
+*   The `imports` field if explicitly provided in your Code Connect file, OR
+*   The `source` field, which is auto-populated in some cases (e.g., React snippets)
+
+If neither field is populated, the import line is omitted.
+
+### Component snippets[​](#component-snippets "Direct link to Component snippets")
+
+The user-defined snippets from your Code Connect file are included as children of the CodeConnectSnippet wrapper. This provides:
+
+*   **Direct implementation examples** from your codebase showing how to use the component
+*   **Prop mappings**: How Figma properties map to component props in your code
+*   **Component source paths**: File locations where components are defined
+
+This rich context helps AI agents understand not just what the design looks like, but how to implement it using your actual components with the exact patterns your team uses.
+
+## Code Connect UI mappings[​](#code-connect-ui-mappings "Direct link to Code Connect UI mappings")
+
+When you use [Code Connect UI](/docs/code-connect/code-connect-ui-setup/) to create mappings, the MCP server generates the snippet content automatically.
+
+### Import statements[​](#import-statements-1 "Direct link to Import statements")
+
+For UI mappings, the import statement is automatically generated using the **mapped component path** and **component name** you provided when creating the mapping.
+
+If no component name was specified, the component name is **inferred from the design component name**.
+
+### Component snippets[​](#component-snippets-1 "Direct link to Component snippets")
+
+A snippet is automatically generated using:
+
+*   The **design component name**
+*   The **current design properties** (variants, boolean states, text content, etc.)
+
+The MCP server includes which components to use and basic usage patterns, but doesn't include full code snippets by default.
+
+### Adding custom instructions[​](#adding-custom-instructions "Direct link to Adding custom instructions")
+
+To provide richer implementation guidance with Code Connect UI mappings, use the [**Add instructions for MCP**](/docs/code-connect/code-connect-ui-setup/#add-instructions-for-ai-code-generation) feature. This lets you specify how components should be used, including prop patterns, accessibility considerations, and team conventions.
+
+These custom instructions are included in the CodeConnectSnippet as **user rules**, helping the AI generate code that better matches your design system's implementation.
+
+## Best practices[​](#best-practices "Direct link to Best practices")
+
+To get the most value from Code Connect integration with the MCP server:
+
+1.  **Connect your core components**: Start by connecting the most frequently used components in your design system
+2.  **Add custom instructions**: Use the ["Add instructions for MCP"](/docs/code-connect/code-connect-ui-setup/#add-instructions-for-ai-code-generation) feature to document component-specific patterns, accessibility requirements, and edge cases
+3.  **Keep mappings up to date**: When component APIs change in your codebase, update the corresponding Code Connect mappings
+4.  **Iterate on your instructions**: Use the preview feature in Code Connect UI to test your instructions and refine them until the AI-generated snippets match your team's patterns and expectations
+
+## Related resources[​](#related-resources "Direct link to Related resources")
+
+*   [Code Connect introduction](/docs/code-connect/)
+*   [Getting started with Code Connect CLI](/docs/code-connect/quickstart-guide/)
+*   [Getting started with Code Connect UI](/docs/code-connect/code-connect-ui-setup/)
+*   [Add custom rules for the MCP server](/docs/figma-mcp-server/add-custom-rules/)
+
+*   [How Code Connect enhances the context window](#how-code-connect-enhances-the-context-window)
+*   [Code Connect CLI mappings](#code-connect-cli-mappings)
+    *   [Import statements](#import-statements)
+    *   [Component snippets](#component-snippets)
+*   [Code Connect UI mappings](#code-connect-ui-mappings)
+    *   [Import statements](#import-statements-1)
+    *   [Component snippets](#component-snippets-1)
+    *   [Adding custom instructions](#adding-custom-instructions)
+*   [Best practices](#best-practices)
+*   [Related resources](#related-resources)

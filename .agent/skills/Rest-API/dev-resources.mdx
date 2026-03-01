@@ -1,0 +1,25 @@
+---
+title: Dev Resources | Developer Docs
+slug: /figma/rest-api/dev-resources
+---
+
+On this page
+
+Dev resources are developer-contributed urls that are attached to nodes in files and are shown in Figma Dev Mode.
+
+## Getting started[​](#getting-started "Direct link to Getting started")
+
+The Dev Resources REST API lets you manage the dev resources available in Figma Dev Mode. Dev resources can be added to any node in a file.
+
+Unlike variables, components, and styles, dev resources do not need to be published. Dev resources are available immediately when they are created or updated. For example, dev resources added or updated on published components are immediately available in other files where the components are used. The component does not need to be republished.
+
+Use the Dev Resources REST API to integrate bi-directional linking between Figma and your products and workflows.
+
+For a practical example of the Dev Resources API at work, check out [Figma's Jira integration](https://help.figma.com/hc/articles/360039827834-Jira-and-Figma). This integration uses the Dev Resources API in the following ways:
+
+*   In Jira, when you link to a Figma file from a Jira issue, the Dev Resources API is used to automatically add a dev resource to the linked Figma file. The dev resource links back to the Jira issue.
+*   In Figma, when you add a dev resource that links to a Jira issue, the Dev Resources API is used to update the corresponding Jira issue with a link back to the Figma file.
+
+The Dev Resources API can also be used to programmatically extract all of the resources that designers and contributors add to Figma files.
+
+*   [Getting started](#getting-started)

@@ -1,0 +1,19 @@
+---
+title: It's stuck or too slow | Developer Docs
+slug: /figma/figma-mcp-server/stuck-or-slow
+---
+
+Sometimes the request hangs, takes too long, or returns incomplete results. Most often, it's due to selection size:
+
+*   **Selection is too large**
+    
+    Try selecting smaller sections or individual components (e.g. a card, header, sidebar). Large, deeply nested frames can overwhelm the context window and slow things down, or silently fail.
+    
+    For more details, see [5\. Avoid selecting large, heavy frames](/docs/figma-mcp-server/avoid-large-frames/)
+    
+*   **Local model timeout or confusion**
+    
+    If you see an error like **"lost connection to MCP server"**, that's coming from the **AI agent**. It likely timed out or misinterpreted the context. Retry with a smaller selection or clearer prompt.
+    
+
+> Note: Since the MCP server runs locally, it's not affected by traffic. Most slowdowns come from the size of the selection or how the model handles it.

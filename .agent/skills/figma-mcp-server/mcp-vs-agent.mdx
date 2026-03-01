@@ -1,0 +1,23 @@
+---
+title: What the MCP sends vs. what the agent does | Developer Docs
+slug: /figma/figma-mcp-server/mcp-vs-agent
+---
+
+On this page
+
+The MCP server is not a one-click “design to perfect code” tool. Instead, it acts as a bridge between Figma and your IDE, providing your AI model with structured design input and a code starting point.
+
+## What the MCP server does[​](#what-the-mcp-server-does "Direct link to What the MCP server does")
+
+1.  **Extracts structured design context** from your selected Figma elements. This includes frames, components, layouts, tokens, variables, and more.
+2.  **Passes that context and code to your AI assistant** (like Cursor, Copilot, or Claude Code). The assistant generates the final code output by adapting layouts, reusing components, and following your prompts and codebase.
+3.  **Supports design system reuse** when you use Figma features like Code Connect and variable syntax. These help your assistant recognize and reuse your actual components and tokens.
+
+## What the MCP doesn't do[​](#what-the-mcp-doesnt-do "Direct link to What the MCP doesn't do")
+
+1.  **Generate final code.** That’s your AI assistant’s role.
+2.  **Understand your design system by default.** It won’t know your conventions or strategies unless you provide that information through Code Connect, variables or prompts.
+3.  **Automatically fix or adapt code when issues arise**. The results depend on context quality, model behavior, and prompt clarity.
+
+*   [What the MCP server does](#what-the-mcp-server-does)
+*   [What the MCP doesn't do](#what-the-mcp-doesnt-do)

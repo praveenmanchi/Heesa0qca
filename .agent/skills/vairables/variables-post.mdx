@@ -1,0 +1,269 @@
+---
+title: POST variables
+slug: /rest-api/variables/post-variables
+---
+
+# POST variables
+
+`POST /v1/files/:file_key/variables` lets you bulk create, update, and delete variables and variable collections.[page:2] It is available only to full members of Enterprise orgs with edit access to the file.[page:2] This is a Tier 3 endpoint and requires `file_variables:write`.[page:2]
+
+The request body supports four top‑level arrays, applied in this order:[page:2]
+
+1. `variableCollections` – create, update, delete collections, and create extended collections.[page:2]
+2. `variableModes` – create, update, delete modes in collections (up to 40 modes per collection; names ≤ 40 chars; cannot create or update modes in extended collections).[page:2]
+3. `variables` – create, update, delete variables (up to 5000 per collection; unique names per collection; certain characters such as `.{}` are disallowed; cannot create variables in extended collections).[page:2]
+4. `variableModeValues` – set or override variable values per mode in root or extended collections.[page:2]
+
+When using aliases, a variable cannot alias itself or form alias cycles.[page:2]
+
+## Temporary IDs
+
+You can use temporary IDs anywhere you create entities and need to reference them later in the same request.[page:2]
+
+- Allowed in `id` for variable collections, modes, and variables, and in `initialModeId` for collections.[page:2]
+- Scoped to a single request body and must be unique.[page:2]
+- The response includes a `tempIdToRealId` mapping to resolve generated IDs.[page:2]
+
+## Key behaviors
+
+- Request body must be **≤ 4MB**.[page:2]
+- `action` is required for collections, modes, and variables (`CREATE`, `UPDATE`, or `DELETE`).[page:2]
+- Newly created collections always include one mode; you can reference it using `initialModeId` and a temporary mode ID.[page:2]
+- Adding new modes or variables applies default values, consistent with the Figma UI.[page:2]
+- The entire payload executes atomically: any validation error yields HTTP 400 and no changes are persisted.[page:2]
+- You cannot update remote variables or collections; only the file where the variable was originally created is writable.[page:2]
+
+> Warning: If a string variable is bound to a text node that uses an organization shared font, updates to that variable will fail with HTTP 400.[page:2]
+
+## Extended collections
+
+To create an extended collection, set `parentVariableCollectionId` to the ID of the collection you want to extend.[page:2]
+
+- Extended collections inherit all variables and modes from the parent.[page:3]
+- Do not use `initialModeId` on extended collections; instead use `initialModeIdToParentModeIdMapping` to map parent mode IDs to temporary IDs you can reference elsewhere in the request.[page:2]
+- Only **local** collections can be extended; attempting to extend remote collections is an error.[page:2]
+
+## Variable overrides
+
+The `modeId` in `variableModeValues` determines whether you update a root value or create an override:[page:2]
+
+- Original mode ID (e.g. `1:0`) – updates the value in the root collection.[page:2]
+- Extended mode ID (e.g. `VariableCollectionId:2:5/2:0`) – creates or updates an override in the extended collection.[page:2]
+- To remove an override in an extended collection, pass `null` as `value` with an extended mode ID; the variable falls back to the parent value.[page:2]
+
+## Types accepted in request
+
+### `VariableCollectionChange`
+
+Object describing a collection change.[page:2]
+
+Key properties:
+
+- `action` (required) – `CREATE` | `UPDATE` | `DELETE`.[page:2]
+- `id` – required for `UPDATE`/`DELETE`, optional for `CREATE` (may be temporary).[page:2]
+- `name` – required for `CREATE`, optional for `UPDATE`.[page:2]
+- `parentVariableCollectionId` – optional; when set on `CREATE`, makes an extended collection; mutually exclusive with `initialModeId`.[page:2]
+- `initialModeId` – optional; temporary ID for the default mode in a newly created root collection.[page:2]
+- `initialModeIdToParentModeIdMapping` – optional mapping from parent mode IDs to temporary mode IDs, valid only when extending a collection.[page:2]
+- `hiddenFromPublishing` – whether the collection is hidden when publishing the file as a library.[page:2]
+
+### `VariableModeChange`
+
+Describes a mode change.[page:2]
+
+Key properties:
+
+- `action` – `CREATE` | `UPDATE` | `DELETE`.[page:2]
+- `id` – required for `UPDATE`/`DELETE`, optional for `CREATE` (can be temporary).[page:2]
+- `name` – required for `CREATE`, optional for `UPDATE`.[page:2]
+- `variableCollectionId` – required; can reference a temporary collection ID.[page:2]
+
+### `VariableChange`
+
+Describes a variable change.[page:2]
+
+Key properties:
+
+- `action` – `CREATE` | `UPDATE` | `DELETE`.[page:2]
+- `id` – required for `UPDATE`/`DELETE`, optional for `CREATE` (can be temporary).[page:2]
+- `name` – required for `CREATE`, optional for `UPDATE`.[page:2]
+- `variableCollectionId` – required for `CREATE`; may be a temporary ID.[page:2]
+- `resolvedType` – required for `CREATE`; one of `BOOLEAN`, `FLOAT`, `STRING`, `COLOR`.[page:2]
+- `description`, `hiddenFromPublishing`, `scopes`, `codeSyntax` – optional metadata fields.[page:2]
+
+### `VariableModeValue`
+
+Represents a value for a particular variable in a particular mode.[page:2]
+
+Key properties:
+
+- `variableId` – required; may be a temporary ID.[page:2]
+- `modeId` – required; must refer to a mode in either the root or an extended collection.[page:2]
+- `value` – required except when removing an override; must match variable type or be a `VariableAlias`.[page:2]
+  - Passing `null` is only valid with extended mode IDs and removes overrides.[page:2]
+
+## HTTP endpoint
+
+```http
+POST /v1/files/:file_key/variables
+```[page:2]
+
+### Response shape (simplified)
+
+```json
+{
+  "status": Number,
+  "error": Boolean,
+  "meta": {
+    "tempIdToRealId": {
+      "[temporaryId: string]": "String"
+    }
+  }
+}
+```[page:2]
+
+### Path parameter
+
+| Name       | Type   | Description                                                                                                  |
+|------------|--------|--------------------------------------------------------------------------------------------------------------|
+| `file_key` | string | File (or branch) to modify variables in. Use `GET /v1/files/:key?branch_data=true` to get branch file keys. |[page:2]
+
+### Body parameters
+
+| Field               | Type                                             | Description                                                                                   |
+|---------------------|--------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| `variableCollections` | `VariableCollectionChange[]` (optional)        | Create, update, or delete variable collections.                                              |
+| `variableModes`     | `VariableModeChange[]` (optional)               | Create, update, or delete modes in collections.                                              |
+| `variables`         | `VariableChange[]` (optional)                   | Create, update, or delete variables.                                                         |
+| `variableModeValues` | `VariableModeValue[]` (optional)               | Set or override variable values under specific modes.                                        |[page:2]
+
+### Error codes
+
+| Code | Meaning                                                                                                                                                |
+|------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 400  | Invalid parameter or validation failure; `message` describes the error.                                                                               |
+| 403  | API not available (plan limits, account type, scope, permissions, or invalid/expired token, or non‑design file).                                      |
+| 404  | File not found.                                                                                                                                        |
+| 413  | Request payload too large; body exceeds 4 MB.                                                                                                          |[page:2]
+
+## Request body examples
+
+### Create a new variable collection
+
+```json
+{
+  "variableCollections": [
+    {
+      "action": "CREATE",
+      "name": "Example variable collection"
+    }
+  ]
+}
+```[page:2]
+
+### Create a variable in an existing collection
+
+```json
+{
+  "variables": [
+    {
+      "action": "CREATE",
+      "name": "New Variable",
+      "variableCollectionId": "VariableCollectionId:1:2",
+      "resolvedType": "FLOAT"
+    }
+  ]
+}
+```[page:2]
+
+### Create a mode in an existing collection
+
+```json
+{
+  "variableModes": [
+    {
+      "action": "CREATE",
+      "name": "New Mode",
+      "variableCollectionId": "VariableCollectionId:1:2"
+    }
+  ]
+}
+```[page:2]
+
+### Set a value for an existing variable
+
+```json
+{
+  "variableModeValues": [
+    {
+      "variableId": "VariableID:2:3",
+      "modeId": "1:0",
+      "value": { "r": 1, "g": 0, "b": 0 }
+    }
+  ]
+}
+```[page:2]
+
+### Set a variable alias
+
+```json
+{
+  "variableModeValues": [
+    {
+      "variableId": "VariableID:2:4",
+      "modeId": "1:0",
+      "value": {
+        "type": "VARIABLE_ALIAS",
+        "id": "VariableID:1:3"
+      }
+    }
+  ]
+}
+```[page:2]
+
+### Rename a variable
+
+```json
+{
+  "variables": [
+    {
+      "action": "UPDATE",
+      "id": "VariableID:1:3",
+      "name": "New Variable"
+    }
+  ]
+}
+```[page:2]
+
+### Set code syntax for a variable
+
+```json
+{
+  "variables": [
+    {
+      "action": "UPDATE",
+      "id": "VariableID:1:3",
+      "codeSyntax": {
+        "WEB": "variable-name",
+        "ANDROID": "variableName",
+        "iOS": "variableName"
+      }
+    }
+  ]
+}
+```[page:2]
+
+### Rename a variable mode
+
+```json
+{
+  "variableModes": [
+    {
+      "action": "UPDATE",
+      "id": "1:0",
+      "name": "New Mode Name",
+      "variableCollectionId": "VariableCollectionId:1:2"
+    }
+  ]
+}
+```[page:2]

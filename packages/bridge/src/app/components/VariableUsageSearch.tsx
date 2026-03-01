@@ -1,8 +1,11 @@
 import React, {
   useCallback, useEffect, useRef, useState, startTransition,
 } from 'react';
-import { TextInput, Badge, Select, Spinner } from '@tokens-studio/ui';
+import {
+  TextInput, Badge, Spinner, Button, DropdownMenu,
+} from '@tokens-studio/ui';
 import { Search, Xmark, MultiWindow } from 'iconoir-react';
+import { ChevronDownIcon } from '@radix-ui/react-icons';
 import Box from './Box';
 import Stack from './Stack';
 import { TabRoot } from '@/app/components/ui';
@@ -125,19 +128,31 @@ function VariableUsageSearch() {
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [expandedVars, setExpandedVars] = useState<Set<string>>(new Set());
-  const [allPages, setAllPages] = useState(true);
-  const [includeLibraries, setIncludeLibraries] = useState(false);
+  const [allPages, setAllPages] = useState(true); // true means "All Pages"
+  const [availablePages, setAvailablePages] = useState<{ id: string; name: string }[]>([]);
+  const [selectedPageIds, setSelectedPageIds] = useState<string[]>([]);
+  const [showPageDropdown, setShowPageDropdown] = useState(false);
+  const pageDropdownRef = useRef<HTMLDivElement>(null);
   const [filter, setFilter] = useState<FilterType>('all');
   const [displayCount, setDisplayCount] = useState(50);
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [progressText, setProgressText] = useState('');
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (pageDropdownRef.current && !pageDropdownRef.current.contains(event.target as Node)) {
+        setShowPageDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Live suggestions state
   const [allVarNames, setAllVarNames] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchInputRef = useRef<HTMLDivElement>(null);
 
   // Load variable and text style names on mount for suggestions (plugin provides them via search with empty query)
@@ -147,14 +162,23 @@ function VariableUsageSearch() {
       type: AsyncMessageTypes.SEARCH_VARIABLE_USAGE,
       query: '',
       allPages: true,
-      includeLibraries: false,
-    }).then((resp) => {
+      suggestionsOnly: true,
+    }).then((resp: any) => {
       if (!cancelled) {
-        const varNames = resp.variables.map((v) => v.variableName);
-        const styleNames = (resp.textStyles || []).map((s) => s.styleName);
+        const varNames = resp.variables.map((v: any) => v.variableName);
+        const styleNames = (resp.textStyles || []).map((s: any) => s.styleName);
         setAllVarNames([...varNames, ...styleNames]);
       }
     }).catch(() => { /* ignore */ });
+
+    AsyncMessageChannel.ReactInstance.message({
+      type: AsyncMessageTypes.GET_PAGES,
+    }).then((resp: any) => {
+      if (!cancelled && resp.pages) {
+        setAvailablePages(resp.pages);
+      }
+    }).catch(() => { /* ignore */ });
+
     return () => { cancelled = true; };
   }, []);
 
@@ -171,7 +195,8 @@ function VariableUsageSearch() {
   }, []);
 
   // Debounced full search
-  const runSearch = useCallback(async (q: string, pages: boolean, libs: boolean) => {
+  const runSearch = useCallback(async (q: string, pages: boolean, pageIds: string[]) => {
+    console.log(`[UI] runSearch triggered with query: "${q}", allPages: ${pages}`);
     setIsLoading(true);
     setHasSearched(true);
     setProgressText('');
@@ -181,11 +206,11 @@ function VariableUsageSearch() {
         type: AsyncMessageTypes.SEARCH_VARIABLE_USAGE,
         query: q,
         allPages: pages,
-        includeLibraries: libs,
+        pageIds,
       });
-      const variableItems: SearchResultItem[] = (response.variables || []).map((v) => ({ ...v, itemType: 'variable' }));
-      const textStyleItems: SearchResultItem[] = (response.textStyles || []).map((s) => ({ ...s, itemType: 'textStyle' }));
-      const sorted = [...variableItems, ...textStyleItems].sort((a, b) => (b.totalCount || 0) - (a.totalCount || 0));
+      const variableItems: SearchResultItem[] = (response.variables || []).map((v: any) => ({ ...v, itemType: 'variable' }));
+      const textStyleItems: SearchResultItem[] = (response.textStyles || []).map((s: any) => ({ ...s, itemType: 'textStyle' }));
+      const sorted = [...variableItems, ...textStyleItems].sort((a: any, b: any) => (b.totalCount || 0) - (a.totalCount || 0));
       setIsLoading(false);
       startTransition(() => setResults(sorted));
     } catch (err) {
@@ -195,9 +220,9 @@ function VariableUsageSearch() {
   }, []);
 
   const handleSearch = useCallback(() => {
-    runSearch(searchQuery, allPages, includeLibraries);
+    runSearch(searchQuery, allPages, selectedPageIds);
     setShowSuggestions(false);
-  }, [includeLibraries, runSearch, searchQuery, allPages]);
+  }, [runSearch, searchQuery, allPages, selectedPageIds]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -226,18 +251,7 @@ function VariableUsageSearch() {
         setShowSuggestions(matched.length > 0);
       }
     }, 150);
-
-    // Debounced auto-search after 400ms of no typing
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-    searchDebounceRef.current = setTimeout(() => {
-      if (val.trim().length >= 1) {
-        runSearch(val, allPages, includeLibraries);
-      } else if (val.trim().length === 0) {
-        setResults([]);
-        setHasSearched(false);
-      }
-    }, 400);
-  }, [allVarNames, allPages, includeLibraries, runSearch]);
+  }, [allVarNames]);
 
   const handleClear = useCallback(() => {
     setSearchQuery('');
@@ -250,38 +264,26 @@ function VariableUsageSearch() {
   const handleSuggestionSelect = useCallback((s: string) => {
     setSearchQuery(s);
     setShowSuggestions(false);
-    runSearch(s, allPages, includeLibraries);
-  }, [allPages, includeLibraries, runSearch]);
+    runSearch(s, allPages, selectedPageIds);
+  }, [allPages, selectedPageIds, runSearch]);
 
   const toggleAllPages = useCallback(() => {
-    setAllPages((prev) => {
-      const next = !prev;
-      if (hasSearched) runSearch(searchQuery, next, includeLibraries);
-      return next;
-    });
-  }, [hasSearched, includeLibraries, runSearch, searchQuery]);
+    setAllPages(true);
+    setSelectedPageIds([]);
+    setShowPageDropdown(false);
+  }, []);
 
-  const toggleIncludeLibraries = useCallback(() => {
-    setIncludeLibraries((prev) => {
-      const next = !prev;
-      if (hasSearched) runSearch(searchQuery, allPages, next);
-      return next;
-    });
-  }, [allPages, hasSearched, runSearch, searchQuery]);
-
-  const toggleExpand = useCallback((varId: string) => {
-    setExpandedVars((prev) => {
-      const next = new Set(prev);
-      if (next.has(varId)) next.delete(varId);
-      else next.add(varId);
+  const handlePageSelect = useCallback((id: string) => {
+    setAllPages(false);
+    setSelectedPageIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id];
+      // If toggling off the last one, revert to All Pages
+      if (next.length === 0) {
+        setAllPages(true);
+      }
       return next;
     });
   }, []);
-
-  const handleToggleExpand = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    const { id } = e.currentTarget.dataset;
-    if (id) toggleExpand(id);
-  }, [toggleExpand]);
 
   const handleSelectNodes = useCallback(async (nodeIds: string[]) => {
     try {
@@ -292,22 +294,14 @@ function VariableUsageSearch() {
     } catch (_) { /* ignore */ }
   }, []);
 
-  const handleExpandAll = useCallback(() => {
-    setExpandedVars(new Set(results.map((r) => getItemId(r))));
-  }, [results]);
-
-  const handleCollapseAll = useCallback(() => {
-    setExpandedVars(new Set());
-  }, []);
-
   const handleLoadMore = useCallback(() => {
     setDisplayCount((prev) => prev + 50);
   }, []);
 
   // Apply component-type filter
-  const filteredResults = results.filter((v) => {
+  const filteredResults = results.filter((v: any) => {
     if (filter === 'all') return true;
-    const hasComponents = v.components.some((c) => c.componentName !== '(Unstyled / Frame)');
+    const hasComponents = v.components.some((c: any) => c.componentName !== '(Unstyled / Frame)');
     if (filter === 'components') return hasComponents;
     if (filter === 'frames') return !hasComponents && v.totalCount > 0;
     return true;
@@ -319,16 +313,144 @@ function VariableUsageSearch() {
   const visibleResults = filteredResults.slice(0, displayCount);
 
   return (
-    <TabRoot css={{ gap: '$2', overflow: 'hidden' }}>
+    <TabRoot css={{ gap: '$2' }}>
 
       {/* ── Search Header ─────────────────────────────── */}
       <Box css={{
-        padding: '$3 $4', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', display: 'flex', flexDirection: 'column', gap: '$3',
+        padding: '$3 $4', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', display: 'flex', alignItems: 'center', gap: '$2',
       }}
       >
+        {/* Pages Dropdown */}
+        <Box css={{ position: 'relative' }} ref={pageDropdownRef}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowPageDropdown((p) => !p)}
+            css={{ display: 'flex', gap: '$1', alignItems: 'center', minWidth: 'max-content' }}
+          >
+            {allPages ? 'All Pages' : `${selectedPageIds.length} Pages`}
+            <ChevronDownIcon />
+          </Button>
+
+          {showPageDropdown && (
+            <Box css={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              zIndex: 200,
+              background: '$bgCanvas',
+              border: '1px solid $borderSubtle',
+              borderRadius: '$medium',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+              minWidth: '200px',
+              maxHeight: '240px',
+              overflowY: 'auto',
+              marginTop: '4px',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '$2',
+              gap: '4px',
+              '&::-webkit-scrollbar': { width: '4px' },
+              '&::-webkit-scrollbar-track': { background: 'var(--colors-bgSubtle)' },
+              '&::-webkit-scrollbar-thumb': { background: 'var(--colors-borderMuted)', borderRadius: '10px' },
+            }}
+            >
+              <Box
+                as="button"
+                onClick={toggleAllPages}
+                css={{
+                  textAlign: 'left',
+                  padding: '$1 $2',
+                  fontSize: '$bodyXs',
+                  color: allPages ? '$fgOnEmphasis' : '$fgDefault',
+                  background: allPages ? '$accentDefault' : 'transparent',
+                  border: 'none',
+                  borderRadius: '$small',
+                  cursor: 'pointer',
+                  '&:hover': { background: allPages ? '$accentDefault' : '$bgSubtle' },
+                }}
+              >
+                Select All Pages
+              </Box>
+              <Box css={{
+                height: '1px', background: '$borderSubtle', margin: '4px 0', flexShrink: 0,
+              }}
+              />
+              {availablePages.map((page) => {
+                const isSelected = selectedPageIds.includes(page.id);
+                return (
+                  <Box
+                    key={page.id}
+                    as="button"
+                    onClick={() => handlePageSelect(page.id)}
+                    css={{
+                      textAlign: 'left',
+                      padding: '$1 $2',
+                      fontSize: '$bodyXs',
+                      color: isSelected ? '$fgOnEmphasis' : '$fgDefault',
+                      background: isSelected ? '$accentDefault' : 'transparent',
+                      border: 'none',
+                      borderRadius: '$small',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '$2',
+                      '&:hover': { background: isSelected ? '$accentDefault' : '$bgSubtle' },
+                    }}
+                  >
+                    <Box css={{
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '2px',
+                      border: isSelected ? 'none' : '1px solid $borderMuted',
+                      background: isSelected ? 'currentColor' : 'transparent',
+                      position: 'relative',
+                    }}
+                    >
+                      {isSelected && (
+                        <Box css={{
+                          position: 'absolute',
+                          top: '1px',
+                          left: '4px',
+                          width: '4px',
+                          height: '8px',
+                          border: 'solid $bgCanvas',
+                          borderWidth: '0 2px 2px 0',
+                          transform: 'rotate(45deg)',
+                        }}
+                        />
+                      )}
+                    </Box>
+                    {page.name}
+                  </Box>
+                );
+              })}
+            </Box>
+          )}
+        </Box>
+
+        {/* Filter / Components Dropdown (Matches mockup "Components" button) */}
+        <DropdownMenu>
+          <DropdownMenu.Trigger asChild>
+            <Button variant="secondary" css={{ display: 'flex', gap: '$1', alignItems: 'center', minWidth: 'max-content', textTransform: 'capitalize' }}>
+              {filter}
+              <ChevronDownIcon />
+            </Button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content>
+            {(['all', 'components', 'frames'] as FilterType[]).map((f) => (
+              <DropdownMenu.Item
+                key={f}
+                onSelect={() => setFilter(f)}
+                css={{ textTransform: 'capitalize' }}
+              >
+                {f}
+              </DropdownMenu.Item>
+            ))}
+          </DropdownMenu.Content>
+        </DropdownMenu>
 
         {/* Search row */}
-        <Box css={{ display: 'flex', alignItems: 'center', gap: '$2' }}>
+        <Box css={{ display: 'flex', alignItems: 'center', gap: '$2', flexGrow: 1 }}>
           {/* Input wrapper for suggestions positioning */}
           <Box css={{ flexGrow: 1, position: 'relative' }} ref={searchInputRef}>
             <TextInput
@@ -337,7 +459,7 @@ function VariableUsageSearch() {
               onKeyDown={handleKeyDown}
               onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
               type="text"
-              placeholder="Search variables and text styles…"
+              placeholder="Search variables..."
               leadingVisual={<Search />}
               trailingAction={
                 searchQuery
@@ -365,108 +487,15 @@ function VariableUsageSearch() {
           </Box>
 
           {/* Search button */}
-          <Box
-            as="button"
+          <Button
+            variant="primary"
             onClick={handleSearch}
-            css={{
-              padding: '$2 $4',
-              background: '$accentDefault',
-              color: '$fgOnEmphasis',
-              border: 'none',
-              borderRadius: '$small',
-              cursor: 'pointer',
-              fontSize: '$bodySm',
-              fontWeight: '$sansBold',
-              flexShrink: 0,
-              '&:hover': { opacity: 0.9 },
-              '&:disabled': { opacity: 0.5, cursor: 'not-allowed' },
-            }}
+            disabled={isLoading}
+            css={{ flexShrink: 0, gap: '$1' }}
           >
+            <Search width={14} height={14} />
             {isLoading ? '…' : 'Search'}
-          </Box>
-        </Box>
-
-        {/* Control row: All Pages toggle + Libraries toggle + Filter dropdown */}
-        <Box css={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '$2',
-        }}
-        >
-          {/* Toggles: All Pages + Team Libraries */}
-          <Box css={{ display: 'flex', gap: '$2' }}>
-            <Box
-              as="button"
-              onClick={toggleAllPages}
-              css={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '$1',
-                padding: '$1 $2',
-                borderRadius: '$small',
-                border: '1px solid',
-                borderColor: allPages ? '$accentDefault' : '$borderMuted',
-                background: allPages ? '$accentMuted' : 'transparent',
-                color: allPages ? '$accentDefault' : '$fgMuted',
-                fontSize: '$bodyXs',
-                cursor: 'pointer',
-                fontWeight: allPages ? '$sansBold' : '$sans',
-                transition: 'all 0.15s',
-                '&:hover': { borderColor: '$accentDefault', color: '$accentDefault' },
-              }}
-            >
-              <MultiWindow width={12} height={12} />
-              All Pages
-            </Box>
-            <Box
-              as="button"
-              onClick={toggleIncludeLibraries}
-              css={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '$1',
-                padding: '$1 $2',
-                borderRadius: '$small',
-                border: '1px solid',
-                borderColor: includeLibraries ? '$accentDefault' : '$borderMuted',
-                background: includeLibraries ? '$accentMuted' : 'transparent',
-                color: includeLibraries ? '$accentDefault' : '$fgMuted',
-                fontSize: '$bodyXs',
-                cursor: 'pointer',
-                fontWeight: includeLibraries ? '$sansBold' : '$sans',
-                transition: 'all 0.15s',
-                '&:hover': { borderColor: '$accentDefault', color: '$accentDefault' },
-              }}
-            >
-              Team Libraries
-            </Box>
-          </Box>
-
-          {/* Filter: All / Components / Frames */}
-          {hasSearched && results.length > 0 && (
-            <Box css={{ display: 'flex', gap: '2px' }}>
-              {(['all', 'components', 'frames'] as FilterType[]).map((f) => (
-                <Box
-                  key={f}
-                  as="button"
-                  onClick={() => setFilter(f)}
-                  css={{
-                    padding: '$1 $2',
-                    fontSize: '$bodyXs',
-                    border: '1px solid',
-                    borderRadius: '$small',
-                    cursor: 'pointer',
-                    background: filter === f ? '$accentDefault' : 'transparent',
-                    color: filter === f ? '$fgOnEmphasis' : '$fgMuted',
-                    borderColor: filter === f ? '$accentDefault' : '$borderMuted',
-                    transition: 'all 0.1s',
-                    textTransform: 'capitalize',
-                    '&:hover': { borderColor: '$accentDefault' },
-                  }}
-                >
-                  {f}
-                </Box>
-              ))}
-            </Box>
-          )}
+          </Button>
         </Box>
       </Box>
 
@@ -529,15 +558,15 @@ function VariableUsageSearch() {
             <Box css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '$2' }}>No variables found</Box>
             Try searching for a different term or adjust your filters.
             {filter !== 'all' && (
-              <Box
-                as="button"
+              <Button
+                variant="invisible"
                 onClick={() => setFilter('all')}
                 css={{
-                  display: 'block', margin: '$3 auto 0', color: '$accentDefault', fontSize: '$bodySm', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline',
+                  display: 'block', margin: '$3 auto 0', color: '$accentDefault', fontSize: '$bodySm', textDecoration: 'underline',
                 }}
               >
                 Clear filter
-              </Box>
+              </Button>
             )}
           </Box>
         )}
@@ -564,41 +593,18 @@ function VariableUsageSearch() {
           </Box>
         )}
 
-        {/* Expand / Collapse controls */}
-        {!isLoading && visibleResults.length > 1 && (
-          <Box css={{
-            display: 'flex', justifyContent: 'flex-end', gap: '$3', marginBottom: '$3', padding: '0 $1',
-          }}
-          >
-            <Box
-              as="button"
-              onClick={handleExpandAll}
-              css={{
-                fontSize: '$bodyXs', fontWeight: 500, color: '$accentDefault', background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '$fgDefault' },
-              }}
-            >
-              Expand all
-            </Box>
-            <Box
-              as="button"
-              onClick={handleCollapseAll}
-              css={{
-                fontSize: '$bodyXs', fontWeight: 500, color: '$fgMuted', background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '$fgDefault' },
-              }}
-            >
-              Collapse all
-            </Box>
-          </Box>
-        )}
-
         {/* Result cards */}
         {!isLoading && visibleResults.map((item) => {
           const componentsToShow = item.components.filter((c) => c.componentName !== '(Unstyled / Frame)');
           const framesOnly = item.components.filter((c) => c.componentName === '(Unstyled / Frame)');
-          const isExpanded = expandedVars.has(getItemId(item));
           const itemId = getItemId(item);
           const itemName = getItemName(item);
           const collectionLabel = item.itemType === 'variable' ? item.collectionName : 'Local';
+
+          const isExpanded = !!expandedItems[itemId];
+          const MAX_COMPONENTS = 20;
+          const componentsVisible = isExpanded ? componentsToShow : componentsToShow.slice(0, MAX_COMPONENTS);
+          const hiddenCount = componentsToShow.length - MAX_COMPONENTS;
 
           return (
             <Box
@@ -609,9 +615,7 @@ function VariableUsageSearch() {
             >
               {/* Header row */}
               <Box
-                as="button"
                 data-id={itemId}
-                onClick={handleToggleExpand}
                 css={{
                   display: 'flex',
                   alignItems: 'center',
@@ -620,9 +624,7 @@ function VariableUsageSearch() {
                   padding: '$3',
                   background: item.totalCount > 0 ? '$bgSubtle' : 'transparent',
                   border: 'none',
-                  cursor: 'pointer',
                   textAlign: 'left',
-                  '&:hover': { background: '$bgSubtle' },
                 }}
               >
                 <Stack direction="column" gap={1} css={{ flexGrow: 1, overflow: 'hidden' }}>
@@ -676,130 +678,128 @@ function VariableUsageSearch() {
                       {(item as VariableUsageResult).modeCount === 1 ? 'mode' : 'modes'}
                     </Badge>
                   )}
-                  <Box css={{
-                    fontSize: '$bodySm', color: '$fgSubtle', transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s',
-                  }}
-                  >
-                    ▼
-                  </Box>
                 </Stack>
               </Box>
 
-              {/* Expanded: component list */}
-              {isExpanded && (
-                <Box css={{ borderTop: '1px solid $borderMuted' }}>
-                  {componentsToShow.length > 0 && (
-                    <Box>
-                      <Box css={{
-                        padding: '$1 $3', fontSize: '$bodyXs', color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas',
-                      }}
+              {/* Component list */}
+              <Box css={{ borderTop: '1px solid $borderMuted' }}>
+                {componentsToShow.length > 0 && (
+                  <Box>
+                    <Box css={{
+                      padding: '$1 $3', fontSize: '$bodyXs', color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas',
+                    }}
+                    >
+                      Components (
+                      {componentsToShow.length}
+                      )
+                    </Box>
+                    {componentsVisible.map((comp) => (
+                      <ComponentUsageItem
+                        key={comp.componentName}
+                        componentName={comp.componentName}
+                        nodeIds={comp.nodeIds}
+                        onSelect={handleSelectNodes}
+                      />
+                    ))}
+                    {!isExpanded && hiddenCount > 0 && (
+                      <Button
+                        variant="invisible"
+                        onClick={() => setExpandedItems((prev) => ({ ...prev, [itemId]: true }))}
+                        css={{ width: '100%', padding: '$2', fontSize: '$bodySm', color: '$accentDefault', textDecoration: 'underline' }}
                       >
-                        Components (
-                        {componentsToShow.length}
-                        )
-                      </Box>
-                      {componentsToShow.map((comp) => (
-                        <ComponentUsageItem
-                          key={comp.componentName}
-                          componentName={comp.componentName}
-                          nodeIds={comp.nodeIds}
-                          onSelect={handleSelectNodes}
-                        />
-                      ))}
-                    </Box>
-                  )}
+                        Show {hiddenCount} more components
+                      </Button>
+                    )}
+                  </Box>
+                )}
 
-                  {framesOnly.length > 0 && (
-                    <Box>
-                      <Box css={{
-                        padding: '$1 $3', fontSize: '$bodyXs', color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas', borderTop: componentsToShow.length > 0 ? '1px solid $borderMuted' : 'none',
-                      }}
+                {framesOnly.length > 0 && (
+                  <Box>
+                    <Box css={{
+                      padding: '$1 $3', fontSize: '$bodyXs', color: '$fgSubtle', fontWeight: '$sansBold', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid $borderMuted', background: '$bgCanvas', borderTop: componentsToShow.length > 0 ? '1px solid $borderMuted' : 'none',
+                    }}
+                    >
+                      Frames / Groups (
+                      {framesOnly[0].nodeIds.length}
+                      {' '}
+                      nodes)
+                    </Box>
+                    <Box css={{
+                      padding: '$2 $3', fontSize: '$bodySm', color: '$fgMuted', display: 'flex', alignItems: 'center', gap: '$2',
+                    }}
+                    >
+                      Used in unstyled frames or groups.
+                      <Button
+                        variant="invisible"
+                        onClick={() => handleSelectNodes(framesOnly[0].nodeIds)}
+                        css={{
+                          color: '$accentDefault', fontSize: '$bodySm', textDecoration: 'underline', padding: 0, height: 'auto', minHeight: 'auto',
+                        }}
                       >
-                        Frames / Groups (
-                        {framesOnly[0].nodeIds.length}
-                        {' '}
-                        nodes)
-                      </Box>
-                      <Box css={{ padding: '$2 $3', fontSize: '$bodySm', color: '$fgMuted' }}>
-                        Used in unstyled frames or groups.
-                        {' '}
-                        <Box
-                          as="button"
-                          onClick={() => handleSelectNodes(framesOnly[0].nodeIds)}
-                          css={{
-                            background: 'none', border: 'none', color: '$accentDefault', cursor: 'pointer', fontSize: '$bodySm', textDecoration: 'underline',
-                          }}
-                        >
-                          Select all
-                        </Box>
-                      </Box>
+                        Select all
+                      </Button>
                     </Box>
-                  )}
+                  </Box>
+                )}
 
-                  {componentsToShow.length === 0 && framesOnly.length === 0 && (
-                    <Box css={{ padding: '$2 $3', fontSize: '$bodySm', color: '$fgSubtle' }}>
-                      No usage found on this page.
-                    </Box>
-                  )}
-                </Box>
-              )}
+                {componentsToShow.length === 0 && framesOnly.length === 0 && (
+                  <Box css={{ padding: '$2 $3', fontSize: '$bodySm', color: '$fgSubtle' }}>
+                    No usage found on this page.
+                  </Box>
+                )}
+              </Box>
             </Box>
           );
         })}
 
         {/* Load more */}
-        {!isLoading && filteredResults.length > displayCount && (
-          <Box
-            as="button"
-            onClick={handleLoadMore}
-            css={{
-              display: 'block',
-              width: '100%',
-              padding: '$2',
-              textAlign: 'center',
-              fontSize: '$bodySm',
-              color: '$accentDefault',
-              background: 'transparent',
-              border: '1px solid $borderMuted',
-              borderRadius: '$small',
-              cursor: 'pointer',
-              marginTop: '$2',
-              '&:hover': { background: '$bgSubtle' },
-            }}
-          >
-            Load more (showing
-            {' '}
-            {displayCount}
-            {' '}
-            of
-            {' '}
-            {filteredResults.length}
-            )
-          </Box>
-        )}
+        {
+          !isLoading && filteredResults.length > displayCount && (
+            <Button
+              variant="secondary"
+              onClick={handleLoadMore}
+              css={{
+                display: 'block',
+                width: '100%',
+                marginTop: '$2',
+              }}
+            >
+              Load more (showing
+              {' '}
+              {displayCount}
+              {' '}
+              of
+              {' '}
+              {filteredResults.length}
+              )
+            </Button>
+          )
+        }
       </Box>
 
       {/* ── Footer Summary ────────────────────────────── */}
-      {!isLoading && hasSearched && results.length > 0 && (
-        <Box css={{
-          padding: '$2 $4', borderTop: '1px solid $borderSubtle', fontSize: '$bodySm', color: '$fgSubtle', display: 'flex', justifyContent: 'space-between', flexShrink: 0,
-        }}
-        >
-          <span>
-            {filteredResults.length}
-            {filter !== 'all' ? ` ${filter}` : ''}
-            {' '}
-            variable
-            {filteredResults.length !== 1 ? 's' : ''}
-            {allPages ? ' (all pages)' : ''}
-          </span>
-          <span>
-            {results.reduce((sum, v) => sum + v.totalCount, 0)}
-            {' '}
-            total uses
-          </span>
-        </Box>
-      )}
+      {
+        !isLoading && hasSearched && results.length > 0 && (
+          <Box css={{
+            padding: '$2 $4', borderTop: '1px solid $borderSubtle', fontSize: '$bodySm', color: '$fgSubtle', display: 'flex', justifyContent: 'space-between', flexShrink: 0,
+          }}
+          >
+            <span>
+              {filteredResults.length}
+              {filter !== 'all' ? ` ${filter}` : ''}
+              {' '}
+              variable
+              {filteredResults.length !== 1 ? 's' : ''}
+              {allPages ? ' (all pages)' : ''}
+            </span>
+            <span>
+              {results.reduce((sum, v) => sum + v.totalCount, 0)}
+              {' '}
+              total uses
+            </span>
+          </Box>
+        )
+      }
     </TabRoot>
   );
 }

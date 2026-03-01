@@ -1,0 +1,20 @@
+---
+title: Figma files – Node types
+slug: /figma/rest-api/file-node-types
+---
+
+# Node types
+
+Node type identifies what kind of object a node represents (for example `FRAME`, `VECTOR`, `RECTANGLE`, `TEXT`).[page:6] Each node type adds specific properties on top of the global node properties.[page:6]
+
+## Examples of node types
+
+- `DOCUMENT`: root node of a file, with a `children` array of canvases.[page:6]
+- `CANVAS`: page node, with properties such as `children`, `backgroundColor`, prototype device settings, and flow starting points.[page:6]
+- `FRAME` / `GROUP`: container nodes with layout, auto‑layout, padding, alignment, constraints, fills, strokes, effects, export settings, and more.[page:6]
+- `SECTION`: section nodes with content visibility, dev status, and similar paint properties.[page:6]
+- `VECTOR`, `ELLIPSE`, `RECTANGLE`, `LINE`, `STAR`, `REGULAR_POLYGON`, and boolean operations: geometrical nodes with stroke, fill, and path data.[page:6]
+- `TEXT` and `TEXT_PATH`: text nodes with `characters`, type style, style override tables, list line types, and line indentation information.[page:6]
+- FigJam‑specific nodes like `TABLE` and `TABLE_CELL` with coordinates, size, strokes, and cell content.[page:6]
+
+Each node type’s specific properties are enumerated in the full node‑types table (e.g. layout, constraints, transformations, auto‑layout, grids, effects, dev status, annotations).[page:6]

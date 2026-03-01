@@ -30,20 +30,21 @@ async function extractVarIdsFromNode(node: SceneNode): Promise<string[]> {
     extractVariableIdsRecursive(node.boundVariables, ids);
   }
 
-  // Styles with boundVariables – must use async API in dynamic-page mode
+  // Styles with boundVariables – fetch in parallel for better performance
   const styleProps = ['fillStyleId', 'strokeStyleId', 'textStyleId', 'effectStyleId', 'gridStyleId'] as const;
-  for (const prop of styleProps) {
-    if (prop in node && typeof (node as any)[prop] === 'string' && (node as any)[prop]) {
-      const styleId = (node as any)[prop] as string;
-      try {
-        const style = await figma.getStyleByIdAsync(styleId);
-        if (style && (style as any).boundVariables) {
-          extractVariableIdsRecursive((style as any).boundVariables, ids);
-        }
-      } catch {
-        // Ignore styles that cannot be resolved (e.g. missing or inaccessible)
+  const styleIds = styleProps
+    .filter((prop) => prop in node && typeof (node as any)[prop] === 'string' && (node as any)[prop])
+    .map((prop) => (node as any)[prop] as string);
+
+  if (styleIds.length > 0) {
+    const styles = await Promise.all(
+      styleIds.map((styleId) => figma.getStyleByIdAsync(styleId).catch(() => null)),
+    );
+    styles.forEach((style) => {
+      if (style && (style as any).boundVariables) {
+        extractVariableIdsRecursive((style as any).boundVariables, ids);
       }
-    }
+    });
   }
 
   return Array.from(ids);
@@ -64,10 +65,12 @@ async function buildSelectionTree(
 
     const children: SelectionVisualizationNode[] = [];
     if ('children' in node) {
-      for (const child of (node as ChildrenMixin).children) {
-        // Walk children sequentially to avoid overwhelming the host with async work
-        // eslint-disable-next-line no-await-in-loop
-        children.push(await walk(child as SceneNode));
+      const childNodes = (node as ChildrenMixin).children;
+      if (childNodes.length > 0) {
+        const childTrees = await Promise.all(
+          childNodes.map((child) => walk(child as SceneNode)),
+        );
+        children.push(...childTrees);
       }
     }
 
@@ -85,7 +88,7 @@ async function buildSelectionTree(
 }
 
 export const getSelectionVisualization: Handler = async () => {
-  const selection = figma.currentPage.selection;
+  const { selection } = figma.currentPage;
   if (!selection.length) {
     return {
       type: AsyncMessageTypes.GET_SELECTION_VISUALIZATION,
@@ -97,18 +100,27 @@ export const getSelectionVisualization: Handler = async () => {
 
   // Cache basic metadata for variables so we can show human-readable names
   // without doing a full document-wide usage scan.
-  const variableMetaCache = new Map<string, { name: string; collectionName: string }>();
+  const variableMetaCache = new Map<string, { name: string; collectionName: string; resolvedType: string }>();
 
-  async function getVariableMeta(id: string): Promise<{ name: string; collectionName: string }> {
+  async function getVariableMeta(id: string): Promise<{ name: string; collectionName: string; resolvedType: string }> {
     const cached = variableMetaCache.get(id);
     if (cached) return cached;
 
     try {
       const variable = await figma.variables.getVariableByIdAsync(id);
       if (variable) {
+        let collectionName = 'Local variables';
+        if (variable.variableCollectionId) {
+          try {
+            const coll = await figma.variables.getVariableCollectionByIdAsync(variable.variableCollectionId);
+            if (coll) collectionName = coll.name;
+          } catch { /* ignore */ }
+        }
+
         const meta = {
           name: variable.name,
-          collectionName: 'Local variables',
+          collectionName,
+          resolvedType: variable.resolvedType,
         };
         variableMetaCache.set(id, meta);
         return meta;
@@ -117,21 +129,22 @@ export const getSelectionVisualization: Handler = async () => {
       // ignore resolution errors and fall back to id
     }
 
-    const fallback = { name: id, collectionName: 'Unknown Collection' };
+    const fallback = { name: id, collectionName: 'Unknown Collection', resolvedType: 'UNKNOWN' };
     variableMetaCache.set(id, fallback);
     return fallback;
   }
 
   async function enrich(node: SelectionVisualizationNode): Promise<SelectionVisualizationNode> {
     const vIds = nodeVarIds.get(node.id) || [];
-    const variables: SelectionVisualizationVariable[] = await Promise.all(
+    const variables: (SelectionVisualizationVariable & { resolvedType?: string })[] = await Promise.all(
       vIds.map(async (id) => {
         const meta = await getVariableMeta(id);
         return {
           variableId: id,
           variableName: meta.name,
           collectionName: meta.collectionName,
-          totalCount: 0,
+          resolvedType: meta.resolvedType,
+          totalCount: 0, // to be populated if needed, or left as 0 for this isolated graph
           componentCount: 0,
         };
       }),
@@ -154,4 +167,3 @@ export const getSelectionVisualization: Handler = async () => {
     selectionName: rootNode.name,
   };
 };
-

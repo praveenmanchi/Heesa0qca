@@ -1,0 +1,70 @@
+---
+title: Components and styles – Types
+slug: /figma/rest-api/component-types
+---
+
+# Components and styles – Types
+
+These types describe metadata for **published** components, component sets, and styles in team libraries.[page:1] For local or subscribed assets, use the file endpoints instead of these library types.[page:1]
+
+## Component
+
+An individual published UI component that can be instantiated across files.[page:1]
+
+Key properties:[page:1]
+
+- `key`: unique identifier of the component.  
+- `file_key`: key of the Figma file containing the component.  
+- `node_id`: node ID of the component within the file.  
+- `thumbnail_url`: URL to the component’s thumbnail image.  
+- `name`: component name.  
+- `description`: description entered by the publisher.  
+- `created_at`, `updated_at`: UTC ISO‑8601 timestamps for creation and last update.  
+- `user`: user who last updated the component (see user type).[page:1]
+- `containing_frame`: optional frame info describing the frame that contains the component.[page:1]
+
+## ComponentSet
+
+A node representing a set of related component variants.[page:1]
+
+Key properties:[page:1]
+
+- `key`: unique identifier of the component set.  
+- `file_key`: key of the file containing the set.  
+- `node_id`: node ID of the component set in the file.  
+- `thumbnail_url`: URL to the component set thumbnail.  
+- `name`: component set name.  
+- `description`: description entered by the publisher.  
+- `created_at`, `updated_at`: creation and last update timestamps.  
+- `user`: user who last updated the component set.  
+- `containing_frame`: frame info if the set resides in a frame.[page:1]
+
+## Style
+
+A reusable set of properties that can be applied to nodes (e.g. color, text, effects, grids).[page:1]
+
+Key properties:[page:1]
+
+- `key`: unique identifier of the style.  
+- `file_key`: key of the file containing the style.  
+- `node_id`: node ID of the style in the file.  
+- `style_type`: enum string: `FILL`, `TEXT`, `EFFECT`, or `GRID`.  
+- `thumbnail_url`: URL to the style thumbnail.  
+- `name`: style name.  
+- `description`: description entered by the publisher.  
+- `created_at`, `updated_at`: creation and last update timestamps.  
+- `user`: user who last updated the style.  
+- `containing_frame`: frame info if the style node resides in a frame.[page:1]
+
+## FrameInfo
+
+Metadata about the frame containing a component or style.[page:1]
+
+Key properties:[page:1]
+
+- `node_id`: frame node ID within the file.  
+- `name`: frame name.  
+- `backgroundColor`: frame background color.  
+- `pageId`: ID of the page that contains the frame.  
+- `pageName`: name of that page.  
+- `containingComponentSet`: component set node containing the frame, if applicable (preferred over deprecated `containingStateGroup`).[page:1]

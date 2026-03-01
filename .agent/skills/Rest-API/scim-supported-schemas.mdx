@@ -1,0 +1,150 @@
+---
+title: Supported Schemas | Developer Docs
+slug: /figma/rest-api/scim-supported-schemas
+---
+
+On this page
+
+The SCIM API supports the following schemas.
+
+## `["urn:ietf:params:scim:schemas:core:2.0:User"]`[​](#core-user-schema "Direct link to core-user-schema")
+
+Parameter name
+
+Example
+
+Description
+
+roles
+
+```
+"roles": [  {    "type": "seatType",    "value": "Full"  }]
+```
+
+Array. Enterprise plan only. Each item in the array is an object with two properties: `"type": "seatType"` and `"value":`, which must be one of `Full`, `Dev`, `Collab`, or `View`.
+
+givenName
+
+`John`
+
+familyName
+
+`Doe`
+
+displayName
+
+`John Doe`
+
+This value is limited to 100 characters or less.
+
+title
+
+`Design Manager`
+
+userName
+
+`johndoe@example.com`
+
+String. The user's email. Changing this attribute will change the user account's email in Figma. This value is limited to 100 characters or less.
+
+active
+
+`true`
+
+Boolean. Use this parameter to deactivate or reactivate users in Figma. Deactivated users are removed from the organization.
+
+externalId
+
+`aaaabbbbbbccccc`
+
+String. The IdP's external ID for the user. Figma stores but does not use this parameter. This value is limited to 255 characters or less.
+
+## `["urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"]`[​](#enterprise-user-schema "Direct link to enterprise-user-schema")
+
+Parameter name
+
+Example
+
+employeeNumber
+
+`70198422`
+
+costCenter
+
+`093923`
+
+organization
+
+`Product`
+
+division
+
+`Mobile`
+
+department
+
+`Designers`
+
+managerValue
+
+`examplemanager@example.com`
+
+managerDisplayName
+
+`John Doe`
+
+## `["urn:ietf:params:scim:schemas:core:2.0:Group"]`[​](#core-group-schema "Direct link to core-group-schema")
+
+Parameter name
+
+Example
+
+Description
+
+displayName
+
+`example_group_name`
+
+String. Sets the name of the SCIM group. This value is limited to 255 characters or less.
+
+members
+
+```
+"members": [    {        "value": "1427545874257949557",        "display": "scimuser@example.com"    },    {        "value": "1360815874257948001",        "display": "anotherscimuser@example.com"    },]
+```
+
+Array. A list of members for the SCIM group.
+
+externalId
+
+`123456789`
+
+String. An ID that uniquely identifies the group in the IdP. This value is limited to 255 characters or less.
+
+## Custom Parameters[​](#custom-parameters "Direct link to Custom Parameters")
+
+The custom parameter provided by this schema is used to designate organization administrators.
+
+info
+
+**Note:** Previously, product seats were managed using custom parameters. Seats are now managed using the `roles` parameter, a part of the `Core` user schema.
+
+### `["urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User"]`[​](#figma-enterprise-user-schema "Direct link to figma-enterprise-user-schema")
+
+Parameter name
+
+Example
+
+Description
+
+figmaAdmin
+
+`true`
+
+Boolean. Enterprise plan only. If `true` sets the user as a Figma organization administrator.
+
+*   [`["urn:ietf:params:scim:schemas:core:2.0:User"]`](#core-user-schema)
+*   [`["urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"]`](#enterprise-user-schema)
+*   [`["urn:ietf:params:scim:schemas:core:2.0:Group"]`](#core-group-schema)
+*   [Custom Parameters](#custom-parameters)
+    *   [`["urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User"]`](#figma-enterprise-user-schema)

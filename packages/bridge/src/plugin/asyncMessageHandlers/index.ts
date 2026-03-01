@@ -55,3 +55,4 @@ export * from './generateStyleGuide';
 export * from './updateStyleGuide';
 export * from './generateStyleGuideFromVariables';
 export * from './selectionVisualization';
+export * from './getNodeVariables';

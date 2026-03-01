@@ -1,0 +1,49 @@
+---
+title: Variables | Developer Docs
+slug: /figma/rest-api/variables
+---
+
+On this page
+
+## Getting started[​](#getting-started "Direct link to Getting started")
+
+The Variables REST API includes endpoints for querying, creating, updating, and deleting variables. Variables in Figma store reusable values that can be applied to all kinds of design properties and prototyping actions. With the Variables REST API, you can:
+
+*   Integrate Figma directly with continuous integration (CI) systems.
+*   Sync design system source of truth to and from Figma ([see step-by-step instructions in this FigJam](https://www.figma.com/community/file/1270821372236564565)).
+
+If you use the Variables REST API to update variables in a Figma file, you will need to [publish the variables](https://help.figma.com/hc/articles/360025508373-Publish-styles-and-components) before they can be used in other files.
+
+The Variables REST API can be used with the [Plugin API](/docs/plugins/working-with-variables/) to support more use cases. For a broad overview, see the [Guide to variables in Figma](https://help.figma.com/hc/articles/15339657135383).
+
+To use this API, you must have a Full seat in an Enterprise org; guests cannot use the API. The following table describes the requirements.
+
+`GET`
+
+`POST`
+
+**Plan**
+
+Enterprise
+
+Enterprise
+
+**Account type**
+
+Any organization member
+
+Full seats, admins
+
+**File permissions**
+
+View access
+
+Edit access
+
+**Token scopes**
+
+`file_variables:read`
+
+`file_variables:write`
+
+*   [Getting started](#getting-started)

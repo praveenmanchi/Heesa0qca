@@ -1,0 +1,60 @@
+---
+title: SCIM API Reference | Developer Docs
+slug: /figma/rest-api/scim
+---
+
+On this page
+
+info
+
+**Note:** Figma's SCIM API is distinct from the Figma REST API. The SCIM API uses a different base URL, provides a separate set of endpoints, and uses a different method of authentication.
+
+SCIM is an API that Figma supports for managing the creation, updating, and deletion of user accounts. SCIM is not used for authentication, only for user lifecycle management. Read through Figma's [SSO guides](https://help.figma.com/hc/articles/360039957374-Get-started-with-organizations#saml-sso) for more information about authentication. Figma supports dedicated integrations with the following identity providers (IdP) who leverage the SCIM API:
+
+*   [Microsoft Entra ID](https://help.figma.com/hc/articles/360040532413)
+*   [Okta](https://help.figma.com/hc/articles/360040532353)
+*   [OneLogin](https://help.figma.com/hc/articles/360040533373)
+*   [Google SSO](https://help.figma.com/hc/articles/360040047614)
+*   [Active Directory Federation Service (AD FS)](https://help.figma.com/hc/articles/360048269533)
+
+Customers with IdPs outside of those mentioned can still integrate with Figma for user lifecycle management by leveraging our SCIM endpoints.
+
+warning
+
+**Note:** SCIM is not supported on the Starter or Professional Plan.
+
+The SCIM API is a REST API that can be accessed over HTTP protocol using verbs. `GET` for retrieving information, `POST` for creating new objects, `PUT` for overwriting objects, `PATCH` for modifying objects, and `DELETE` to remove objects.
+
+## SCIM Prerequisites[​](#scim-prerequisites "Direct link to SCIM Prerequisites")
+
+To interact with Figma's SCIM API, two pieces of information are required to be generated from Figma Admin Settings by an Organization Administrator.
+
+### Generate an API Token[​](#generate-an-api-token "Direct link to Generate an API Token")
+
+*   In the [Login and Provisioning](https://help.figma.com/hc/articles/360048514653-Set-up-automatic-provisioning-via-SCIM#h_01HKBBEECSE7G6J30VA86KFB8F) section of **Admin Settings**, click **SCIM Provisioning**.
+*   Click **Generate Token**.
+*   Copy the **API Token** value. Note: This will only be shown once, so record it somewhere safe for future reference.
+
+### Find your Tenant ID[​](#find-your-tenant-id "Direct link to Find your Tenant ID")
+
+*   In the **Login and Provisioning** section of **Admin Settings**, click **SAML SSO**.
+*   Copy the **Tenant ID**. Note: The Tenant ID is required to form the SCIM base URL.
+
+## SCIM API Base URL[​](#scim-api-base-url "Direct link to SCIM API Base URL")
+
+Use your Tenant ID to construct the base URL for the SCIM API: `https://www.figma.com/scim/v2/:tenantid`
+
+The API token must be included in an Authorization header using `Bearer` when calling any of the SCIM methods.
+
+For `POST` or `PUT` write operations, provide a JSON request body and set the HTTP Content-type header to `application/json`.
+
+**Example**
+
+```
+GET https://www.figma.com/scim/v2/:tenantid/UsersAuthorization: "Bearer [Figma API Token]"
+```
+
+*   [SCIM Prerequisites](#scim-prerequisites)
+    *   [Generate an API Token](#generate-an-api-token)
+    *   [Find your Tenant ID](#find-your-tenant-id)
+*   [SCIM API Base URL](#scim-api-base-url)

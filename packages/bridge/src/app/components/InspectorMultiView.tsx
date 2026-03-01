@@ -2,17 +2,18 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
-  Box, Checkbox, Label, Stack, Button, EmptyState, DropdownMenu, Link, TextInput, IconButton,
+  Box, Stack, Button, EmptyState, IconButton,
 } from '@tokens-studio/ui';
 import {
-  ArrowUpIcon, ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ChevronDownIcon,
+  ArrowUpIcon, ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon,
+  ComponentInstanceIcon, TokensIcon, TextIcon, GroupIcon,
 } from '@radix-ui/react-icons';
-import { Download } from 'iconoir-react';
+import { IconSpacing } from '@/icons';
 import { Dispatch } from '../store';
 import useTokens from '../store/useTokens';
 import InspectorTokenGroup from './InspectorTokenGroup';
 import { SingleToken } from '@/types/tokens';
-import { inspectStateSelector, uiStateSelector, settingsStateSelector } from '@/selectors';
+import { inspectStateSelector, uiStateSelector } from '@/selectors';
 import { AsyncMessageTypes } from '@/types/AsyncMessages';
 import { AsyncMessageChannel } from '@/AsyncMessageChannel';
 import { isEqual } from '@/utils/isEqual';
@@ -42,7 +43,6 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
 
   const inspectState = useSelector(inspectStateSelector, isEqual);
   const uiState = useSelector(uiStateSelector, isEqual);
-  const settings = useSelector(settingsStateSelector, isEqual);
   const { removeTokensByValue } = useTokens();
   const [bulkRemapModalVisible, setShowBulkRemapModalVisible] = React.useState(false);
   const [typeFilter, setTypeFilter] = React.useState<TypeFilter>('all');
@@ -85,8 +85,8 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
 
   const groupedSelectionValues = React.useMemo(() => {
     const grouped = filteredSelectionValues.reduce<Partial<
-    Record<TokenTypes, SelectionGroup[]>
-    & Record<Properties, SelectionGroup[]>
+      Record<TokenTypes, SelectionGroup[]>
+      & Record<Properties, SelectionGroup[]>
     >>((acc, curr) => {
       if (StyleIdBackupKeys.includes(curr.type)) return acc;
       if (acc[curr.category]) {
@@ -117,11 +117,11 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
 
   const removeTokens = React.useCallback(() => {
     const valuesToRemove = uiState.selectionValues
-      .filter((v) => inspectState.selectedTokens.includes(`${v.category}-${v.value}`))
+      .filter((v) => inspectState.selectedTokens.includes(`${v.category} -${v.value} `))
       .map((v) => ({ nodes: v.nodes, property: v.type })) as ({
-      property: Properties;
-      nodes: NodeInfo[];
-    }[]);
+        property: Properties;
+        nodes: NodeInfo[];
+      }[]);
 
     removeTokensByValue(valuesToRemove);
   }, [inspectState.selectedTokens, removeTokensByValue, uiState.selectionValues]);
@@ -130,7 +130,7 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
     dispatch.inspectState.setSelectedTokens(
       inspectState.selectedTokens.length === filteredSelectionValues.length
         ? []
-        : filteredSelectionValues.map((v) => `${v.category}-${v.value}`),
+        : filteredSelectionValues.map((v) => `${v.category} -${v.value} `),
     );
   }, [dispatch.inspectState, inspectState.selectedTokens.length, filteredSelectionValues]);
 
@@ -139,14 +139,14 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
     const pattern = selectPattern.trim().toLowerCase();
     const isWildcard = pattern.includes('*');
     const regex = isWildcard
-      ? new RegExp(`^${pattern.replace(/\*/g, '.*')}$`, 'i')
+      ? new RegExp(`^ ${pattern.replace(/\*/g, '.*')} $`, 'i')
       : null;
     const matches = filteredSelectionValues.filter((v) => {
       const val = v.value.toLowerCase();
       if (regex) return regex.test(val);
       return val.includes(pattern);
     });
-    dispatch.inspectState.setSelectedTokens(matches.map((v) => `${v.category}-${v.value}`));
+    dispatch.inspectState.setSelectedTokens(matches.map((v) => `${v.category} -${v.value} `));
   }, [selectPattern, filteredSelectionValues, dispatch.inspectState]);
 
   const handleShowBulkRemap = React.useCallback(() => {
@@ -161,60 +161,58 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
     createAnnotation(uiState.mainNodeSelectionValues, direction);
   }, [uiState.mainNodeSelectionValues]);
 
-  const handleExportSelection = React.useCallback(() => {
-    const lines: string[] = [
-      `# Inspector Export - ${new Date().toISOString().slice(0, 10)}`,
-      '',
-      '## Summary',
-      `- ${filteredSelectionValues.length} variables across ${Object.keys(groupedSelectionValues).length} property groups`,
-      `- ${uiState.selectedLayers} layer${uiState.selectedLayers !== 1 ? 's' : ''} selected`,
-      '',
-      '## Variables',
-      '',
-    ];
-    Object.entries(groupedSelectionValues).forEach(([groupKey, tokens]) => {
-      lines.push(`### ${groupKey}`);
-      tokens!.forEach((tok) => {
-        const compCount = new Set(tok.nodes.map((n) => n.componentName ?? '(Unstyled)')).size;
-        lines.push(`- ${tok.value} (${tok.nodes.length} uses, ${compCount} components)`);
-      });
-      lines.push('');
-    });
-    const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `inspector-export-${Date.now()}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, [filteredSelectionValues, groupedSelectionValues, uiState.selectedLayers]);
-
-  const handleToggleDeepInspect = React.useCallback(() => {
-    dispatch.settings.setInspectDeep(!settings.inspectDeep);
-  }, [dispatch.settings, settings.inspectDeep]);
-
-  // Keyboard: Escape clears search (handled by parent), Cmd/Ctrl+E exports
-  React.useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
-        e.preventDefault();
-        if (filteredSelectionValues.length > 0) handleExportSelection();
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [filteredSelectionValues.length, handleExportSelection]);
-
+  // ── Computed summary values ──────────────────────────────────────
   const uniqueVarCount = filteredSelectionValues.length;
   const totalUseCount = filteredSelectionValues.reduce((sum, v) => sum + v.nodes.length, 0);
-  const sharedCount = filteredSelectionValues.filter((v) => {
-    const comps = new Set(v.nodes.map((n) => n.componentName ?? '(Unstyled)'));
-    return comps.size >= 2;
-  }).length;
+  const groupCount = Object.keys(groupedSelectionValues).length;
+
+  const totalCompCount = React.useMemo(() => new Set(
+    filteredSelectionValues.flatMap((v) => v.nodes.map((n) => n.componentName ?? n.id)),
+  ).size, [filteredSelectionValues]);
+
+  // Per-category unique component counts (Set<string> per category)
+  const categoryComponentCounts = React.useMemo(() => {
+    const catMap: Record<string, Set<string>> = {};
+    Object.entries(groupedSelectionValues).forEach(([key, tokens]) => {
+      const cat = getPropertyCategory(key);
+      if (!catMap[cat]) catMap[cat] = new Set();
+      tokens!.forEach((tok) => {
+        tok.nodes.forEach((n) => catMap[cat].add(n.componentName ?? n.id));
+      });
+    });
+    return catMap;
+  }, [groupedSelectionValues]);
 
   const hasSearchNoResults = tokenToSearch && uiState.selectionValues.length > 0 && filteredSelectionValues.length === 0;
+
+  // ── Local FilterPill helper ──────────────────────────────────────
+  const FilterPill = ({
+    active, accent = false, onClick, children,
+  }: {
+    active: boolean; accent?: boolean; onClick: () => void; children: React.ReactNode;
+  }) => (
+    <Box
+      as="button"
+      onClick={onClick}
+      css={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '3px',
+        padding: '$1 $2',
+        fontSize: '$label',
+        border: '1px solid',
+        borderRadius: '$small',
+        cursor: 'pointer',
+        lineHeight: 1,
+        background: active ? (accent ? '$accentMuted' : '$accentDefault') : 'transparent',
+        color: active ? (accent ? '$accentDefault' : '$fgOnEmphasis') : '$fgMuted',
+        borderColor: active ? '$accentDefault' : '$borderMuted',
+        '&:hover': { borderColor: '$accentDefault' },
+      }}
+    >
+      {children}
+    </Box>
+  );
 
   return (
     <>
@@ -230,178 +228,162 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
             padding: '$3 $4',
             display: 'flex',
             flexDirection: 'column',
-            gap: '$3',
+            gap: '$2',
           }}
         >
-          {/* Selection summary */}
+          {/* ── Row 1: Stat chips ── */}
           <Box css={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '$2',
+            display: 'flex', alignItems: 'center', gap: '$4', flexWrap: 'wrap',
           }}
           >
-            <Box css={{ fontSize: '$bodyXs', color: '$fgMuted' }}>
-              <strong>{uniqueVarCount}</strong>
-              {' '}
-              variable
-              {uniqueVarCount !== 1 ? 's' : ''}
-              {' '}
-              across
-              {' '}
-              <strong>{Object.keys(groupedSelectionValues).length}</strong>
-              {' '}
-              groups
-              {' · '}
-              <strong>{totalUseCount}</strong>
-              {' '}
-              total uses
-              {sharedCount > 0 && (
-                <>
-                  {' · '}
-                  <strong>{sharedCount}</strong>
-                  {' '}
-                  shared
-                </>
-              )}
+            {/* Variables */}
+            <Box css={{ display: 'flex', alignItems: 'center', gap: '4px', color: '$fgMuted', fontSize: '$bodyXs' }}>
+              <TokensIcon width={12} height={12} />
+              <Box as="strong" css={{ color: '$fgDefault' }}>{uniqueVarCount}</Box>
+              <span>variables</span>
             </Box>
-            <Box css={{
-              display: 'flex', alignItems: 'center', gap: '$2', flexWrap: 'wrap',
-            }}
-            >
-              <Button size="small" variant="secondary" onClick={handleToggleDeepInspect} css={{ fontSize: '$label' }}>
-                {settings.inspectDeep ? '✓ Deep Inspect' : 'Deep Inspect'}
-              </Button>
-              <IconButton icon={<Download width={14} height={14} />} size="small" variant="invisible" onClick={handleExportSelection} title="Export (⌘E)" />
+            {/* Components */}
+            <Box css={{ display: 'flex', alignItems: 'center', gap: '4px', color: '$fgMuted', fontSize: '$bodyXs' }}>
+              <ComponentInstanceIcon width={12} height={12} />
+              <Box as="strong" css={{ color: '$fgDefault' }}>{totalCompCount}</Box>
+              <span>components</span>
+            </Box>
+            {/* Groups */}
+            <Box css={{ display: 'flex', alignItems: 'center', gap: '4px', color: '$fgMuted', fontSize: '$bodyXs' }}>
+              <GroupIcon width={12} height={12} />
+              <Box as="strong" css={{ color: '$fgDefault' }}>{groupCount}</Box>
+              <span>groups</span>
+            </Box>
+            {/* Uses */}
+            <Box css={{ display: 'flex', alignItems: 'center', gap: '4px', color: '$fgMuted', fontSize: '$bodyXs' }}>
+              <Box as="strong" css={{ color: '$fgDefault' }}>{totalUseCount}</Box>
+              <span>uses</span>
             </Box>
           </Box>
 
-          {/* Filters row */}
-          <Box css={{
-            display: 'flex', flexWrap: 'wrap', gap: '$2', alignItems: 'center',
-          }}
-          >
-            <Box css={{ display: 'flex', gap: '2px' }}>
-              {(['all', 'color', 'typography', 'spacing', 'other'] as TypeFilter[]).map((f) => (
-                <Box
-                  key={f}
-                  as="button"
-                  onClick={() => setTypeFilter(f)}
-                  css={{
-                    padding: '$1 $2',
-                    fontSize: '$label',
-                    border: '1px solid',
-                    borderRadius: '$small',
-                    cursor: 'pointer',
-                    background: typeFilter === f ? '$accentDefault' : 'transparent',
-                    color: typeFilter === f ? '$fgOnEmphasis' : '$fgMuted',
-                    borderColor: typeFilter === f ? '$accentDefault' : '$borderMuted',
-                    textTransform: 'capitalize',
-                    '&:hover': { borderColor: '$accentDefault' },
-                  }}
+          {/* ── Row 2: Category breakdown chips ── */}
+          {(categoryComponentCounts.color?.size > 0
+            || categoryComponentCounts.typography?.size > 0
+            || categoryComponentCounts.spacing?.size > 0) && (
+            <Box css={{ display: 'flex', alignItems: 'center', gap: '$2', flexWrap: 'wrap' }}>
+              {categoryComponentCounts.color?.size > 0 && (
+                <Box css={{
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  padding: '2px $2', border: '1px solid $borderMuted', borderRadius: '$small',
+                  fontSize: '$label', color: '$fgMuted',
+                }}
                 >
-                  {f}
-                </Box>
-              ))}
-            </Box>
-            <Box
-              as="button"
-              onClick={() => setModeFilter((m) => (m === 'all' ? 'modeDependent' : 'all'))}
-              css={{
-                padding: '$1 $2',
-                fontSize: '$label',
-                border: '1px solid',
-                borderRadius: '$small',
-                cursor: 'pointer',
-                background: modeFilter === 'modeDependent' ? '$accentMuted' : 'transparent',
-                color: modeFilter === 'modeDependent' ? '$accentDefault' : '$fgMuted',
-                borderColor: modeFilter === 'modeDependent' ? '$accentDefault' : '$borderMuted',
-                '&:hover': { borderColor: '$accentDefault' },
-              }}
-            >
-              Mode-dependent only
-            </Box>
-          </Box>
-
-          {/* Select all + Select by pattern + Bulk actions */}
-          <Box css={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '$3',
-          }}
-          >
-            <Box css={{
-              display: 'flex', alignItems: 'center', gap: '$3', flexWrap: 'wrap',
-            }}
-            >
-              <Checkbox
-                checked={inspectState.selectedTokens.length === filteredSelectionValues.length && filteredSelectionValues.length > 0}
-                id="selectAll"
-                onCheckedChange={handleSelectAll}
-              />
-              <Label htmlFor="selectAll" css={{ fontSize: '$small', fontWeight: '$sansBold', whiteSpace: 'nowrap' }}>
-                {t('selectAll')}
-              </Label>
-              <Box css={{ display: 'flex', alignItems: 'center', gap: '$1' }}>
-                <TextInput
-                  value={selectPattern}
-                  onChange={(e) => setSelectPattern(e.target.value)}
-                  placeholder="Select by pattern (e.g. *button*)"
-                  css={{ width: '180px', fontSize: '$label', height: '24px' }}
-                />
-                <Button size="small" variant="secondary" onClick={handleSelectByPattern} disabled={!selectPattern.trim()}>
-                  Select
-                </Button>
-              </Box>
-            </Box>
-            <Box css={{ display: 'flex', gap: '$2' }}>
-              <Button size="small" onClick={handleShowBulkRemap} variant="secondary">
-                {t('bulkRemap')}
-              </Button>
-              {uiState.selectedLayers === 1 && (
-                <Box css={{ display: 'flex' }}>
-                  <Button size="small" onClick={() => handleAnnotate(Direction.LEFT)} variant="secondary" css={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}>
-                    {t('annotate')}
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenu.Trigger asChild>
-                      <Button
-                        size="small"
-                        variant="secondary"
-                        css={{
-                          borderTopLeftRadius: 0, borderBottomLeftRadius: 0, paddingLeft: '$2', paddingRight: '$2',
-                        }}
-                      >
-                        <ChevronDownIcon />
-                      </Button>
-                    </DropdownMenu.Trigger>
-                    <DropdownMenu.Portal>
-                      <DropdownMenu.Content>
-                        <DropdownMenu.Item onSelect={() => handleAnnotate(Direction.TOP)}>
-                          <ArrowUpIcon />
-                          {' '}
-                          Top
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Item onSelect={() => handleAnnotate(Direction.RIGHT)}>
-                          <ArrowRightIcon />
-                          {' '}
-                          Right
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Item onSelect={() => handleAnnotate(Direction.BOTTOM)}>
-                          <ArrowDownIcon />
-                          {' '}
-                          Bottom
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Item onSelect={() => handleAnnotate(Direction.LEFT)}>
-                          <ArrowLeftIcon />
-                          {' '}
-                          Left
-                        </DropdownMenu.Item>
-                      </DropdownMenu.Content>
-                    </DropdownMenu.Portal>
-                  </DropdownMenu>
+                  <Box css={{
+                    width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                    background: 'linear-gradient(135deg, #f87171 0%, #60a5fa 50%, #34d399 100%)',
+                  }}
+                  />
+                  {`Colors: ${categoryComponentCounts.color.size} ${categoryComponentCounts.color.size === 1 ? 'comp' : 'comps'}`}
                 </Box>
               )}
-              <Button size="small" onClick={removeTokens} disabled={inspectState.selectedTokens.length === 0} variant="danger">
-                {t('removeSelected')}
-              </Button>
+              {categoryComponentCounts.typography?.size > 0 && (
+                <Box css={{
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  padding: '2px $2', border: '1px solid $borderMuted', borderRadius: '$small',
+                  fontSize: '$label', color: '$fgMuted',
+                }}
+                >
+                  <TextIcon width={10} height={10} />
+                  {`Typography: ${categoryComponentCounts.typography.size} ${categoryComponentCounts.typography.size === 1 ? 'comp' : 'comps'}`}
+                </Box>
+              )}
+              {categoryComponentCounts.spacing?.size > 0 && (
+                <Box css={{
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  padding: '2px $2', border: '1px solid $borderMuted', borderRadius: '$small',
+                  fontSize: '$label', color: '$fgMuted',
+                }}
+                >
+                  <IconSpacing style={{ width: 10, height: 10 }} />
+                  {`Spacing: ${categoryComponentCounts.spacing.size} ${categoryComponentCounts.spacing.size === 1 ? 'comp' : 'comps'}`}
+                </Box>
+              )}
             </Box>
+          )}
+
+          {/* ── Row 3: Filter pills ── */}
+          <Box css={{ display: 'flex', flexWrap: 'wrap', gap: '3px', alignItems: 'center' }}>
+            <FilterPill
+              active={typeFilter === 'all' && modeFilter === 'all'}
+              onClick={() => { setTypeFilter('all'); setModeFilter('all'); }}
+            >
+              All
+            </FilterPill>
+
+            <FilterPill active={typeFilter === 'color'} onClick={() => setTypeFilter('color')}>
+              <Box css={{
+                width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                background: 'linear-gradient(135deg, #f87171, #60a5fa, #34d399)',
+              }}
+              />
+              Color
+            </FilterPill>
+
+            <FilterPill active={typeFilter === 'typography'} onClick={() => setTypeFilter('typography')}>
+              <TextIcon width={10} height={10} />
+              Typography
+            </FilterPill>
+
+            <FilterPill active={typeFilter === 'spacing'} onClick={() => setTypeFilter('spacing')}>
+              <IconSpacing style={{ width: 10, height: 10 }} />
+              Spacing
+            </FilterPill>
+
+            <FilterPill active={typeFilter === 'other'} onClick={() => setTypeFilter('other')}>
+              Other
+            </FilterPill>
+
+            {/* Divider */}
+            <Box css={{ width: '1px', height: 14, background: '$borderMuted', margin: '0 2px', flexShrink: 0 }} />
+
+            <FilterPill
+              accent
+              active={modeFilter === 'modeDependent'}
+              onClick={() => setModeFilter((m) => (m === 'all' ? 'modeDependent' : 'all'))}
+            >
+              Mode-dep
+            </FilterPill>
           </Box>
+
+          {/* ── Row 4: Annotate direct icon buttons (single layer only) ── */}
+          {uiState.selectedLayers === 1 && (
+            <Box css={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+              <Box css={{ fontSize: '$label', color: '$fgMuted', marginRight: '$1' }}>Annotate:</Box>
+              <IconButton
+                size="small"
+                variant="secondary"
+                icon={<ArrowUpIcon />}
+                tooltip="Annotate Top"
+                onClick={() => handleAnnotate(Direction.TOP)}
+              />
+              <IconButton
+                size="small"
+                variant="secondary"
+                icon={<ArrowRightIcon />}
+                tooltip="Annotate Right"
+                onClick={() => handleAnnotate(Direction.RIGHT)}
+              />
+              <IconButton
+                size="small"
+                variant="secondary"
+                icon={<ArrowDownIcon />}
+                tooltip="Annotate Bottom"
+                onClick={() => handleAnnotate(Direction.BOTTOM)}
+              />
+              <IconButton
+                size="small"
+                variant="secondary"
+                icon={<ArrowLeftIcon />}
+                tooltip="Annotate Left"
+                onClick={() => handleAnnotate(Direction.LEFT)}
+              />
+            </Box>
+          )}
         </Box>
       )}
 
@@ -419,15 +401,14 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
           <Stack direction="column" gap={4} css={{ padding: '$5', margin: 'auto' }}>
             <EmptyState
               title="No variables match your search"
-              description={`No variables found matching "${tokenToSearch}". Try a different search term or clear the search.`}
+              description={`No variables found matching "${tokenToSearch}".Try a different search term or clear the search.`}
             />
-            {/* Help link removed per request */}
           </Stack>
         ) : uiState.selectionValues.length > 0 ? (
           <Box css={{ display: 'flex', flexDirection: 'column', gap: '$1' }}>
             {Object.entries(groupedSelectionValues).map((group) => (
               <InspectorTokenGroup
-                key={`inspect-group-${group[0]}`}
+                key={`inspect - group - ${group[0]} `}
                 group={group as [Properties, SelectionGroup[]]}
                 resolvedTokens={resolvedTokens}
                 selectedMode={selectedMode}
@@ -441,7 +422,6 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
               title={uiState.selectedLayers > 0 ? t('noTokensFound') : t('noLayersSelected')}
               description={uiState.selectedLayers > 0 ? t('noLayersWithTokens') : 'Select a layer in Figma to view its applied tokens here.'}
             />
-            {/* Help link removed per request */}
           </Stack>
         )}
       </Box>

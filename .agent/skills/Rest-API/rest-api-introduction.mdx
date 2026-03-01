@@ -1,0 +1,47 @@
+---
+title: Figma REST API – Introduction
+slug: /figma/rest-api/introduction
+---
+
+# Figma REST API – Introduction
+
+Figma’s REST API lets you inspect and manipulate Figma resources such as files, images, versions, comments, projects, components, styles, variables, dev resources, analytics, and webhooks as JSON over HTTP.[page:1] Each object and layer in a file is represented as a node in a JSON tree, which you can traverse and query.[page:1]
+
+## What you can do
+
+- Read file structure and layer properties, including a JSON representation of documents and canvases.[page:1]
+- Request rendered assets like images for specific nodes.[page:1]
+- Read usage and analytics endpoints (activity logs, text events, library analytics) on supported plans.[page:1]
+- Work with variables and dev resources via dedicated endpoints.[page:1]
+- Create and manage webhooks to react to changes in Figma.[page:1]
+
+## How it works
+
+The API is REST‑style and uses HTTPS endpoints with clear resource paths and standard status codes.[page:1] You authenticate using either personal access tokens or OAuth2, and then call endpoints under a shared base URL.[page:1]
+
+### Base URL
+
+- Standard: `https://api.figma.com`.[page:1]
+- Figma for Government: `https://api.figma-gov.com`.[page:1]
+
+Example:
+
+```http
+GET https://api.figma.com/v1/files/:key
+
+or, for Figma for Government:
+
+text
+GET https://api.figma-gov.com/v1/activity_logs
+```[page:1]
+
+## Getting started
+
+1. Create a Figma account if you don’t have one.[page:1]
+2. Set up authentication (OAuth app or personal access token).[page:1]
+3. Start with file endpoints to understand file structure, then move to comments, users, versions, and projects as needed.[page:1]
+4. If you plan to build a reusable integration, register it under “My apps” in your Figma account.[page:1]
+
+## OpenAPI specification
+
+The REST API is fully described in an OpenAPI specification in the public `figma/rest-api-spec` GitHub repository.[page:1] You can use it to generate docs, client SDKs, and custom TypeScript types for type‑safe integrations.[page:1]

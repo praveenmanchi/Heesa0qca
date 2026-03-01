@@ -1,0 +1,40 @@
+---
+title: Discovery | Developer Docs
+slug: /figma/rest-api/discovery
+---
+
+On this page
+
+## Getting started[​](#getting-started "Direct link to Getting started")
+
+The Discovery API is used to obtain text events that have occurred in Figma files throughout your organization.
+
+### Who can use the Discovery API[​](#who-can-use-the-discovery-api "Direct link to Who can use the Discovery API")
+
+*   The Discovery API is only available to Enterprise plans with Governance+.
+*   Only organization admins can query the Discovery API.
+
+To use the Discovery API, you need to authenticate your request using an OAuth 2 token with the `org:discovery_read` scope in order to act on behalf of the organization whose text event logs you want to access. Follow our [OAuth guide](/docs/rest-api/authentication/#oauth2) to register your application and token.
+
+### Types of data provided[​](#types-of-data-provided "Direct link to Types of data provided")
+
+The text events returned by the Discovery API include:
+
+*   **In-file text**: Text that’s been added to layers (text layers and shapes with text) in Figma Design, FigJam, Buzz, Sites and Slides. This includes sticky notes and tables in FigJam.
+*   **Cursor chat**: Chat messages associated with the cursor.
+*   **File comments and reactions**: Comments and reactions that appear in files.
+*   **Component documentation descriptions and links**: Text and links that have been added to component documentation.
+*   **Annotations and developer-related links in Dev Mode**: Annotations and developer-related links (dev resources) that have been added in Dev Mode.
+*   **AI prompts:** Prompts submitted by users to AI-powered features in Figma.
+
+By default, the API returns one hour of events beginning from the start time you send in the request. You can also specify a longer timeframe up to a maximum of 24 hours from the start date.
+
+When you send a request to the API, text event data is aggregated by hour and returned in JSON files, one file for each hour requested by the query. For example, if your request is for a four-hour period, the API returns four JSON files, each containing the text events for one hour of that period.
+
+The response from the API includes links, organized by hour, to the JSON files that contain the text events. By default, the links to the JSON files are valid for 24 hours. In your request, you can also shorten the link availability to less than 24 hours, down to a minimum of one minute.
+
+You can regenerate links for specific blocks of time repeatedly. The links generated will change, but the content of the files will remain the same.
+
+*   [Getting started](#getting-started)
+    *   [Who can use the Discovery API](#who-can-use-the-discovery-api)
+    *   [Types of data provided](#types-of-data-provided)

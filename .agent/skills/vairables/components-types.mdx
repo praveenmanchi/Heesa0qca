@@ -1,0 +1,58 @@
+---
+title: Components and styles – Types
+slug: /rest-api/components/types
+---
+
+# Components and styles – Types
+
+Figma exposes metadata for published components and styles in team libraries.[page:4] These types are used in the components and styles endpoints under the REST API.[page:4] For local and subscribed assets, use `GET /v1/files/:key` instead.[page:4]
+
+## `Component`
+
+Represents a published UI component that can be instantiated across files.[page:4]
+
+Key properties:
+
+- `key` – unique identifier of the component.[page:4]
+- `file_key` – ID of the Figma file that contains the component.[page:4]
+- `node_id` – ID of the component node within the file.[page:4]
+- `thumbnail_url` – URL to the component’s thumbnail image.[page:4]
+- `name` – component name.[page:4]
+- `description` – text description provided by the publisher.[page:4]
+- `created_at`, `updated_at` – UTC ISO 8601 timestamps for creation and last update.[page:4]
+- `user` – `User` who last updated the component.[page:4]
+- `containing_frame` – `FrameInfo` describing the frame that contains the component, if any.[page:4]
+
+## `ComponentSet`
+
+Represents a published component set (a group of variants).[page:4]
+
+Key properties mirror `Component`:[page:4]
+
+- `key`, `file_key`, `node_id`, `thumbnail_url`, `name`, `description`, `created_at`, `updated_at`, `user`, and `containing_frame`.[page:4]
+
+## `Style`
+
+Represents a published style (e.g. color, text, effect, grid).[page:4]
+
+Key properties:
+
+- `key`, `file_key`, `node_id` – identifiers for the style and its file.[page:4]
+- `style_type` – one of `FILL`, `TEXT`, `EFFECT`, or `GRID`.[page:4]
+- `thumbnail_url` – preview image.[page:4]
+- `name`, `description` – style metadata.[page:4]
+- `created_at`, `updated_at` – timestamps.[page:4]
+- `user` – `User` who last updated the style.[page:4]
+- `containing_frame` – `FrameInfo` describing the frame that contains the style node, if relevant.[page:4]
+
+## `FrameInfo`
+
+Describes the frame that contains a component, component set, or style.[page:4]
+
+Key properties:
+
+- `node_id` – frame node ID in the file.[page:4]
+- `name` – frame name.[page:4]
+- `backgroundColor` – frame background color.[page:4]
+- `pageId`, `pageName` – page containing this frame.[page:4]
+- `containingComponentSet` – component set node that contains this frame (replacing deprecated `containingStateGroup`).[page:4]

@@ -91,9 +91,10 @@ export class Worker {
   }
 }
 
-export const defaultWorker = new Worker();
+// Smaller batch size for UI-heavy work (nodes, styles) – keeps UI responsive
+export const defaultWorker = new Worker(20);
 defaultWorker.start();
 
-// Create a specialized worker for variable creation with higher batch size
-export const variableWorker = new Worker(100);
+// Larger batch size for variable creation – fewer round-trips, faster bulk ops
+export const variableWorker = new Worker(120);
 variableWorker.start();

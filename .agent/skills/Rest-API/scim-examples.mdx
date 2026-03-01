@@ -1,0 +1,77 @@
+---
+title: Examples | Developer Docs
+slug: /figma/rest-api/scim-examples
+---
+
+On this page
+
+This section provides examples of how the SCIM API endpoints can be used.
+
+## PATCH groups: Add User to Group[​](#patch-groups-add-user-to-group "Direct link to PATCH groups: Add User to Group")
+
+Adds a user to an existing group in Figma using the SCIM API. This example demonstrates how to use the [PATCH groups](/docs/rest-api/scim-endpoints/#patch-groups-endpoint) endpoint to update group membership. You must know the Figma group ID and the user ID of the member you want to add.
+
+### HTTP endpoint[​](#http-endpoint "Direct link to HTTP endpoint")
+
+`PATCH :baseURL/Groups/:figmaGroupId`
+
+`:figmaGroupId` is a required path parameter, the Figma group ID of the target group.
+
+For example, a group ID returned from `GET :baseURL/Groups`: `"id": "1b5f9234-df40-4664-9767-334fdd7d51f6"`
+
+**Headers**
+
+```
+Authorization = "Bearer [FIGMA API TOKEN]"Content-Type = application/json
+```
+
+**Example request body**
+
+```
+{  "schemas": [    "urn:ietf:params:scim:api:messages:2.0:PatchOp"  ],  "Operations": [    {      "op": "add",      "path": "members",      "value": [        {          "value": "1360815874257948001",          "display": "newscimuser@example.com"        }      ]    }  ]}
+```
+
+**Example response body**
+
+```
+{  "schemas": [    "urn:ietf:params:scim:schemas:core:2.0:Group"  ],  "id": "1b5f9234-df40-4664-9767-334fdd7d51f6",  "members": [    {        "value": "1427545874257949557",        "display": "existingscimuser@example.com"    },    {        "value": "1360815874257948001",        "display": "newscimuser@example.com"    },  ],  "external_id": "123456789",  "displayName": "Existing Group",  "meta": {    "resourceType": "Group",    "created": "2024-10-17T02:22:22Z",    "lastModified": "2024-10-17T04:03:06Z",    "version": "W/\"1729137786\"",    "location": "https://www.figma.com/scim/v2/1401286822445493852/Groups/1b5f9234-df40-4664-9767-334fdd7d51f6"  }}
+```
+
+In this example, after adding the user to the group, a subsequent request to GET the group will show the updated membership list.
+
+## PUT users: Soft Delete User[​](#put-users-soft-delete-user "Direct link to PUT users: Soft Delete User")
+
+Deletes a user in Figma but maintains SCIM provisioning of that user. This is an example of a specific usage of the [PUT users](/docs/rest-api/scim-endpoints/#put-users-endpoint) endpoint. You can update the `active` attribute to `false`. This will delete the user from Figma, but maintain a record in the SCIM provisioning log of the user. This means the user will be listed if you were to leverage the [GET users](/docs/rest-api/scim-endpoints/#get-users-endpoint) endpoint in bulk or by email filter.
+
+### HTTP endpoint[​](#http-endpoint-1 "Direct link to HTTP endpoint")
+
+`PUT :baseURL/Users/:figmaUserId`
+
+`:figmaUserId` is a required path parameter, the Figma user ID of the operation's target user.
+
+For example, a user ID returned from `GET :baseURL/USERS`: `"id": "977321366678728562"`
+
+**Headers**
+
+```
+Authorization = "Bearer [FIGMA API TOKEN]"Content-Type = application/json
+```
+
+**Example request body**
+
+```
+{  "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User", "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"],  "userName": "scimuser@example.com",  "name": {    "givenName": "Scim",    "familyName": "User"  },  "emails": {    "primary": "true",    "value": "scimuser@example.com",    "type": "work"  },  "title": "Developer",  "displayName": "Scim User",  "active": false,  "externalId": "123456789"}
+```
+
+**Example response body**
+
+```
+{  "schemas": [    "urn:ietf:params:scim:schemas:core:2.0:User",    "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"  ],  "userName": "scimuser@example.com",  "name": {    "givenName": "Scim",    "familyName": "User"  },  "emails": {    "primary": "true",    "value": "scimuser@example.com",    "type": "work"  },  "title": "Developer",  "displayName": "Scim User",  "active": false,  "external_id": "123456789",  "id": "974330387624283297",  "meta": {    "resourceType": "User",    "created": "2021-05-12T15:21:06Z",    "lastModified": "2021-05-13T00:11:04Z",    "version": "W/\"1620864664\"",    "location": "https://www.figma.com/scim/v2/964615200748176016/Users/974330387624283297"  }}
+```
+
+In this example, when running a subsequent request to GET Users, the `totalResults` are 5, and the user is still listed.
+
+*   [PATCH groups: Add User to Group](#patch-groups-add-user-to-group)
+    *   [HTTP endpoint](#http-endpoint)
+*   [PUT users: Soft Delete User](#put-users-soft-delete-user)
+    *   [HTTP endpoint](#http-endpoint-1)

@@ -8,7 +8,7 @@ import { init } from '@/utils/plugin';
 import { sendDocumentChange } from './sendDocumentChange';
 import { performCodeGen } from './performCodeGen';
 
-const SELECTION_DEBOUNCE_MS = 150;
+const SELECTION_DEBOUNCE_MS = 250;
 let selectionDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 function debouncedSendSelectionChange() {
@@ -107,6 +107,10 @@ AsyncMessageChannel.PluginInstance.handle(AsyncMessageTypes.GENERATE_STYLE_GUIDE
 AsyncMessageChannel.PluginInstance.handle(AsyncMessageTypes.UPDATE_STYLE_GUIDE, asyncHandlers.updateStyleGuide);
 AsyncMessageChannel.PluginInstance.handle(AsyncMessageTypes.GENERATE_STYLE_GUIDE_FROM_VARIABLES, asyncHandlers.generateStyleGuideFromVariablesHandler);
 AsyncMessageChannel.PluginInstance.handle(AsyncMessageTypes.GET_SELECTION_VISUALIZATION, asyncHandlers.getSelectionVisualization);
+AsyncMessageChannel.PluginInstance.handle(AsyncMessageTypes.GET_NODE_VARIABLES, asyncHandlers.getNodeVariables);
+AsyncMessageChannel.PluginInstance.handle(AsyncMessageTypes.GET_PAGES, async () => ({
+  pages: figma.root.children.map((p) => ({ id: p.id, name: p.name })),
+}));
 
 figma.on('close', () => {
   defaultWorker.stop();

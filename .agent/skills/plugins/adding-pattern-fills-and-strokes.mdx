@@ -1,0 +1,18 @@
+---
+title: Adding Pattern Fills and Strokes | Developer Docs
+slug: /figma/plugins/adding-pattern-fills-and-strokes
+---
+
+On this page
+
+Adding pattern fills and strokes to nodes is a bit different from adding other fill and stroke types, as described in [Editing Properties](/docs/plugins/editing-properties/). This is because pattern fills and strokes reference other nodes in the document as their source, and those nodes need to be loaded before they can be used (see [Migrating to Dynamic Loading](/docs/plugins/migrating-to-dynamic-loading/) for more information on how we load nodes dynamically).
+
+Rather than setting the `fill` or `stroke` property of a node directly, you need to use [`setFillsAsync`](/docs/plugins/api/node-properties/#setfillsasync) or [`setStrokesAsync`](/docs/plugins/api/node-properties/#setstrokesasync), which return promises that resolve when the pattern fills or strokes have been applied. Setting `node.fills` or `node.strokes` directly with a [`PatternPaint`](/docs/plugins/api/Paint/#patternpaint) will result in an error.
+
+## Example[​](#example "Direct link to Example")
+
+```
+// Create a circle to use as the pattern sourceconst circle = figma.createEllipse();circle.resize(10, 10);// Create a rectangle to apply the pattern fill toconst rectangle = figma.createRectangle();rectangle.x = 20;rectangle.resize(100, 100);// Define the pattern paint referencing the circleconst patternPaint = {  type: 'PATTERN',  sourceNodeId: circle.id, // Reference the circle as the pattern source  tileType: 'HORIZONTAL_HEXAGONAL',  scalingFactor: 1,  spacing: {x: 0.2, y: 0.2},  horizontalAlignment: 'CENTER',}// Apply the pattern fill to the rectangleawait rectangle.setFillsAsync([patternPaint]);
+```
+
+*   [Example](#example)

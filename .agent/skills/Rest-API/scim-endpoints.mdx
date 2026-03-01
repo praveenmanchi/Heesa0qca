@@ -1,0 +1,852 @@
+---
+title: Endpoints | Developer Docs
+slug: /figma/rest-api/scim-endpoints
+---
+
+On this page
+
+The following sections list the endpoints that are available for the SCIM API. All of the endpoints use the same [base URL](/docs/rest-api/scim/#scim-api-base-url).
+
+## Configuration endpoints[​](#configuration-endpoints "Direct link to Configuration endpoints")
+
+### GET Service Provider Config[​](#get-service-provider-config-endpoint "Direct link to GET Service Provider Config")
+
+Get Figma's configuration details for the SCIM API, including which operations are supported.
+
+#### HTTP endpoint[​](#http-endpoint "Direct link to HTTP endpoint")
+
+`GET :baseURL/ServiceProviderConfig`
+
+**Response**
+
+```
+{  "schemas": ["urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig"],  "documentationUri": "https://help.figma.com/hc/en-us/articles/360048514653-Set-up-automatic-provisioning-via-SCIM",  "patch": {    "supported": true  },  "bulk": {    "supported": false,    "maxOperations": 0,    "maxPayloadSize": 0  },  "filter": {    "supported": true,    "maxResults": 200  },  "changePassword": {    "supported": false  },  "sort": {    "supported": false  },  "etag": {    "supported": false  },  "authenticationSchemes": [    {      "name": "OAuth Bearer Token",      "description": "Authentication scheme using the OAuth Bearer Token Standard",      "specUri": "http://www.rfc-editor.org/info/rfc6750",      "documentationUri": "https://help.figma.com/hc/en-us/articles/360048514653-Set-up-automatic-provisioning-via-SCIM",      "type": "oauthbearertoken",      "primary": true    }  ],  "meta": {    "location": "https://www.figma.com/v2/ServiceProviderConfig",    "resourceType": "ServiceProviderConfig",    "created": "2020-09-01T04:56:22Z",    "lastModified": "2020-09-01T04:56:22Z",    "version": "1"  }}
+```
+
+### GET Tenant ID[​](#get-tenant-id-endpoint "Direct link to GET Tenant ID")
+
+Used to check if a tenant ID is valid. Returns 200 if the tenant ID is valid, returns 400 if the tenant ID is not valid.
+
+#### HTTP endpoint[​](#http-endpoint-1 "Direct link to HTTP endpoint")
+
+`GET :baseURL`
+
+**Response**
+
+`200`
+
+## Users endpoints[​](#users-endpoints "Direct link to Users endpoints")
+
+The following endpoints are used to work with SCIM managed users.
+
+### GET Users[​](#get-users-endpoint "Direct link to GET Users")
+
+Returns a list of currently SCIM provisioned users in the organization. This will 'bind' the user accounts to the SCIM table.
+
+#### HTTP endpoint[​](#http-endpoint-2 "Direct link to HTTP endpoint")
+
+`GET :baseURL/Users`
+
+**Example paths**
+
+```
+GET :baseURL/Users?filter&count&startIndexGET :baseURL/Users?filter=userName eq "email@domain.com"GET :baseURL/Users?filter=externalId eq "external-id-value"
+```
+
+**Headers**
+
+`Authorization: Bearer [FIGMA API TOKEN]`
+
+**Parameters**
+
+Path parameter
+
+Description
+
+filter
+
+String
+
+Filters the users by the provided string. The string can be an `email` or an `externalId`.
+
+count
+
+Number
+
+The number of results to return
+
+startIndex
+
+Number
+
+When paginating through the results, this is the start index offset (where to start returning results)
+
+**Example response**
+
+```
+{  "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],  "totalResults": 1,  "Resources": [    {      "name": {        "givenName": "Scim",        "familyName": "User"      },      "roles": [        {          "type": "seatType",          "value": "Dev"        }      ],      "title": "Developer",      "emails": {        "type": "work",        "value": "scimuser@example.com",        "primary": "true"      },      "schemas": [        "urn:ietf:params:scim:schemas:core:2.0:User",        "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",        "urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User"      ],      "userName": "scimuser@example.com",      "externalId": "123456789",      "displayName": "Scim User",      "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {        "costCenter": "323245",        "department": "Mobile Engineering",        "organization": "Product"      },      "urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User": {        "figmaAdmin": false      },      "id": "974343320676444348",      "meta": {        "resourceType": "User",        "created": "2021-05-12T16:12:30Z",        "lastModified": "2021-05-12T16:12:30Z",        "version": "W/\"1620835950\"",        "location": "https://www.figma.com/scim/v2/964615200748176016/Users/974343320676444348"      }    }  ]}
+```
+
+### POST Users[​](#post-users-endpoint "Direct link to POST Users")
+
+Provisions a new or existing user in Figma. For existing users, this will bind your identity provider with a username that was created within Figma. The parameters provided are applied to the Figma user whose email matches the `userName` parameter.
+
+#### HTTP endpoint[​](#http-endpoint-3 "Direct link to HTTP endpoint")
+
+`POST :baseURL/Users`
+
+**Headers**
+
+```
+Authorization: Bearer [FIGMA API TOKEN]Content-Type = application/json
+```
+
+**Parameters**
+
+Body parameter
+
+Description
+
+schemas
+
+String\[\]required
+
+Supported schemas:
+
+*   `urn:ietf:params:scim:schemas:core:2.0:User`
+*   `urn:ietf:params:scim:schemas:extension:enterprise:2.0:User`
+*   `urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User`
+
+userName
+
+Stringrequired
+
+`Core` schema. The user's email and account identifier. Changing this attribute will change the user account's email in Figma. This value is limited to 100 characters or less.
+
+If the email address doesn't belong to the organization (for example, if the organization hasn't [added the domain in Figma](https://help.figma.com/hc/articles/360045953273-Manage-domain-capture-for-an-organization#h_01J3RESBMNAZX741MQD3BF49RM)), then the operation to change the user's email may fail.
+
+active
+
+Booleanrequired
+
+`Core` schema. Use this parameter to deactivate or reactivate users in Figma. Note: Deactivated users will also be removed from the Organization.
+
+roles
+
+Map<String, String>\[\]
+
+`Core` schema. Enterprise plan only. Each item in the array is an object with two properties: `type`: "seatType" and `value`:, which must be one of `Full`, `Dev`, `Collab`, or `View`. For example: `{"type": "seatType", "value": "Full"}`.
+
+externalId
+
+String
+
+`Core` schema. The IdP's external ID for the user. Figma stores but does not use this parameter. This value is limited to 255 characters or less.
+
+displayName
+
+String
+
+`Core` schema. Display name for the user profile in Figma. If this is not provided we will use the value for `userName`. This value is limited to 100 characters or less.
+
+title
+
+String
+
+`Core` schema. Job title of the user, displayed in the user profile.
+
+givenName
+
+String
+
+`Core` schema. First name of user.
+
+familyName
+
+String
+
+`Core` schema. Last name of user.
+
+employeeNumber
+
+Number
+
+Unique identifier of employee within your HR system.
+
+costCenter
+
+Number
+
+`Enterprise` schema. Cost center of employee. Figma allows for one extra metadata field to be present in Admin Console.
+
+organization
+
+String
+
+`Enterprise` schema. Organization of the employee. Figma allows for one extra metadata field to be present in Admin Console.
+
+division
+
+String
+
+`Enterprise` schema. Division of the employee. Figma allows for one extra metadata field to be present in Admin Console.
+
+department
+
+String
+
+`Enterprise` schema. Department of the employee. Figma allows for one extra metadata field to be present in Admin Console.
+
+managerValue
+
+String
+
+`Enterprise` schema. Username or email of the manager.
+
+managerDisplayName
+
+String
+
+`Enterprise` schema. User profile name of the manager.
+
+figmaAdmin
+
+Boolean
+
+`Figma` schema. Enterprise plan only. If `true` sets the user as a Figma organization administrator.
+
+This request also supports [custom parameters](/docs/rest-api/scim-supported-schemas/#custom-parameters).
+
+**Example request body**
+
+```
+{  "schemas": [    "urn:ietf:params:scim:schemas:core:2.0:User",    "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",    "urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User"  ],  "userName": "scimuser@example.com",  "name": {    "givenName": "Scim",    "familyName": "User"  },    "roles" : [    {      "type": "seatType",      "value": "Dev"    }  ],  "emails": {    "primary": "true",    "value": "scimuser@example.com",    "type": "work"  },  "title": "Developer",  "displayName": "Scim User",  "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {    "costCenter": "323245",    "department": "Mobile Engineering",    "organization": "Product"  },  "externalId": "123456789",    "urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User": {      "figmaAdmin": false    }}
+```
+
+**Example response body**
+
+```
+{  "schemas": [    "urn:ietf:params:scim:schemas:core:2.0:User",    "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",    "urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User"  ],  "userName": "scimuser@example.com",  "name": {    "givenName": "Scim",    "familyName": "User"  },  "roles": [    {      "type": "seatType",      "value": "Dev"    }  ],  "emails": {    "primary": "true",    "value": "scimuser@example.com",    "type": "work"  },  "title": "Developer",  "displayName": "Scim User",  "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {    "costCenter": "323245",    "department": "Mobile Engineering",    "organization": "Product"  },  "externalId": "123456789",  "urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User": {    "figmaAdmin": false  },  "id": "977321366678728562",  "meta": {    "resourceType": "User",    "created": "2025-02-27T21:39:39Z",    "lastModified": "2025-02-27T21:40:20Z",    "version": "W/\"1740692420\"",    "location": "https://www.figma.com/scim/v2/964615200748176016/Users/977321366678728562"  }}
+```
+
+### PUT Users[​](#put-users-endpoint "Direct link to PUT Users")
+
+Overwrites the attributes for a user with the provided parameters in the request body. The parameters provided are applied to the Figma user whose email matches the `userName` parameter. In order to update attributes, you must know the Figma ID of the user and include the ID at the end of the Users path. Common use cases for this operation are changing emails, updating display names, and adding cost center values.
+
+#### HTTP endpoint[​](#http-endpoint-4 "Direct link to HTTP endpoint")
+
+`PUT :baseURL/Users/:figmaUserId`
+
+`:figmaUserId` is a required path parameter, the Figma user ID of the operation's target user.
+
+For example, a user ID returned from `GET :baseURL/USERS`: `"id": "977321366678728562"`
+
+**Headers**
+
+```
+Authorization = "Bearer [FIGMA API TOKEN]"Content-Type = application/json
+```
+
+**Parameters**
+
+Body parameter
+
+Description
+
+schemas
+
+Stringrequired
+
+Supported schemas:
+
+*   `urn:ietf:params:scim:schemas:core:2.0:User`
+*   `urn:ietf:params:scim:schemas:extension:enterprise:2.0:User`
+*   `urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User`
+
+userName
+
+Stringrequired
+
+`Core` schema. The user's email and account identifier. Changing this attribute will change the user account's email in Figma. This value is limited to 100 characters or less.
+
+If the email address doesn't belong to the organization (for example, if the organization hasn't [added the domain in Figma](https://help.figma.com/hc/articles/360045953273-Manage-domain-capture-for-an-organization#h_01J3RESBMNAZX741MQD3BF49RM)), then the operation to change the user's email may fail.
+
+active
+
+Booleanrequired
+
+`Core` schema. Use this parameter to deactivate or reactivate users in Figma. Note: Deactivated users will also be removed from the Organization.
+
+roles
+
+Array
+
+`Core` schema. Enterprise plan only. Each item in the array is an object with two properties: `"type": "seatType"` and `"value":`, which must be one of `Full`, `Dev`, `Collab`, or `View`. For example: `{"type": "seatType", "value": "Full"}`.
+
+externalId
+
+String
+
+`Core` schema. The IdP's external ID for the user. Figma stores but does not use this parameter. This value is limited to 255 characters or less.
+
+displayName
+
+String
+
+`Core` schema. Display name for the user profile in Figma. If this is not provided we will use the value for `userName`. This value is limited to 100 characters or less.
+
+title
+
+String
+
+`Core` schema. Job title of the user, displayed in the user profile.
+
+givenName
+
+String
+
+`Core` schema. First name of user.
+
+familyName
+
+String
+
+`Core` schema. Last name of user.
+
+employeeNumber
+
+Number
+
+Unique identifier of employee within your HR system.
+
+costCenter
+
+Number
+
+`Enterprise` schema. Cost center of employee. Figma allows for one extra metadata field to be present in Admin Console.
+
+organization
+
+String
+
+`Enterprise` schema. Organization of the employee. Figma allows for one extra metadata field to be present in Admin Console.
+
+division
+
+String
+
+`Enterprise` schema. Division of the employee. Figma allows for one extra metadata field to be present in Admin Console.
+
+department
+
+String
+
+`Enterprise` schema. Department of the employee. Figma allows for one extra metadata field to be present in Admin Console.
+
+managerValue
+
+String
+
+`Enterprise` schema. Username or email of the manager.
+
+managerDisplayName
+
+String
+
+`Enterprise` schema. User profile name of the manager.
+
+figmaAdmin
+
+Boolean
+
+`Figma` schema. Enterprise plan only. If `true` sets the user as a Figma organization administrator.
+
+This request also supports [custom parameters](/docs/rest-api/scim-supported-schemas/#custom-parameters).
+
+**Example request body**
+
+```
+{  "schemas": [    "urn:ietf:params:scim:schemas:core:2.0:User",    "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",    "urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User"  ],  "userName": "scimuser@example.com",  "name": {    "givenName": "Scim",    "familyName": "User"  },    "roles" : [      {        "type": "seatType",        "value": "Full"      }  ],  "emails": {    "primary": "true",    "value": "scimuser@example.com",    "type": "work"  },  "title": "Developer",  "displayName": "Scim User",  "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {    "costCenter": "323245",    "department": "Mobile Engineering",    "organization": "Product"  },  "externalId": "123456789",    "urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User": {        "figmaAdmin": false    }}
+```
+
+**Example response body**
+
+```
+{  "schemas": [    "urn:ietf:params:scim:schemas:core:2.0:User",    "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",    "urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User"  ],  "userName": "scimuser@example.com",  "name": {    "givenName": "Scim",    "familyName": "User"  },  "roles": [    {      "type": "seatType",      "value": "Full"    }  ],  "emails": {    "primary": "true",    "value": "scimuser@example.com",    "type": "work"  },  "title": "Developer",  "displayName": "Scim User",  "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {    "costCenter": "323245",    "department": "Mobile Engineering",    "organization": "Product"  },  "externalId": "123456789",  "urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User": {    "figmaAdmin": false  },  "id": "977321366678728562",  "meta": {    "resourceType": "User",    "created": "2025-02-27T21:39:39Z",    "lastModified": "2025-02-27T23:38:04Z",    "version": "W/\"1740699484\"",    "location": "https://www.figma.com/scim/v2/964615200748176016/Users/977321366678728562"  }}
+```
+
+### PATCH Users[​](#patch-users-endpoint "Direct link to PATCH Users")
+
+Updates a targeted user attribute based on the request body. The parameters provided are applied to the Figma user whose email matches the `userName` parameter. In order to update attributes, you must know the Figma user ID of the user and populate this at the end of the `Users` path. Common use cases for this operation are changed emails, updated display names and adding cost center values.
+
+#### HTTP endpoint[​](#http-endpoint-5 "Direct link to HTTP endpoint")
+
+`PATCH :baseURL/Users/:figmaUserId`
+
+`:figmaUserId` is a required path parameter, the Figma user ID of the operation's target user.
+
+For example, a user ID returned from `GET :baseURL/USERS`: `"id": "977321366678728562"`
+
+**Headers**
+
+```
+Authorization = "Bearer [FIGMA API TOKEN]"Content-Type = application/json
+```
+
+**Parameters**
+
+Body parameter
+
+Description
+
+schemas
+
+Stringrequired
+
+Supported schemas:
+
+*   `urn:ietf:params:scim:schemas:core:2.0:User`
+*   `urn:ietf:params:scim:schemas:extension:enterprise:2.0:User`
+*   `urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User`
+
+userName
+
+Stringrequired
+
+`Core` schema. The user's email and account identifier. Changing this attribute will change the user account's email in Figma. This value is limited to 100 characters or less.
+
+If the email address doesn't belong to the organization (for example, if the organization hasn't [added the domain in Figma](https://help.figma.com/hc/articles/360045953273-Manage-domain-capture-for-an-organization#h_01J3RESBMNAZX741MQD3BF49RM)), then the operation to change the user's email may fail.
+
+active
+
+Booleanrequired
+
+`Core` schema. Use this parameter to deactivate or reactivate users in Figma. Note: Deactivated users will also be removed from the Organization.
+
+roles
+
+Array
+
+`Core` schema. Enterprise plan only. Each item in the array is an object with two properties: `"type": "seatType"` and `"value":`, which must be one of `Full`, `Dev`, `Collab`, or `View`. For example: `{"type": "seatType", "value": "Full"}`.
+
+externalId
+
+String
+
+`Core` schema. The IdP's external ID for the user. Figma stores but does not use this parameter. This value is limited to 255 characters or less.
+
+displayName
+
+String
+
+`Core` schema. Display name for the user profile in Figma. If this is not provided we will use the value for `userName`. This value is limited to 100 characters or less.
+
+title
+
+String
+
+`Core` schema. Job title of the user, displayed in the user profile.
+
+givenName
+
+String
+
+`Core` schema. First name of user.
+
+familyName
+
+String
+
+`Core` schema. Last name of user.
+
+employeeNumber
+
+Number
+
+Unique identifier of employee within your HR system.
+
+costCenter
+
+Number
+
+`Enterprise` schema. Cost center of employee. Figma allows for one extra metadata field to be present in Admin Console.
+
+organization
+
+String
+
+`Enterprise` schema. Organization of the employee. Figma allows for one extra metadata field to be present in Admin Console.
+
+division
+
+String
+
+`Enterprise` schema. Division of the employee. Figma allows for one extra metadata field to be present in Admin Console.
+
+department
+
+String
+
+`Enterprise` schema. Department of the employee. Figma allows for one extra metadata field to be present in Admin Console.
+
+managerValue
+
+String
+
+`Enterprise` schema. Username or email of the manager.
+
+managerDisplayName
+
+String
+
+`Enterprise` schema. User profile name of the manager.
+
+figmaAdmin
+
+Boolean
+
+`Figma` schema. Enterprise plan only. If `true` sets the user as a Figma organization administrator.
+
+This request also supports [custom parameters](/docs/rest-api/scim-supported-schemas/#custom-parameters).
+
+**Example request body**
+
+This example request gives an existing user a Dev seat.
+
+```
+{  "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],  "Operations": [    {      "op": "replace",      "path": "roles",      "value": [        {          "type": "seatType",          "value": "Dev"        }      ]    }  ] }
+```
+
+**Example response body**
+
+```
+{  "name": {    "givenName": "Scim",    "familyName": "User"  },  "roles": [    {      "type": "seatType",      "value": "Dev"    }  ],  "title": "Developer",  "emails": {    "type": "work",    "value": "scimuser@example.com",    "primary": "true"  },  "schemas": [    "urn:ietf:params:scim:schemas:core:2.0:User",    "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",    "urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User"  ],  "userName": "scimuser@example.com",  "externalId": "123456789",  "displayName": "Scim User",  "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {    "costCenter": "323245",    "department": "Mobile Engineering",    "organization": "Product"  },  "urn:ietf:params:scim:schemas:extension:figma:enterprise:2.0:User": {    "figmaAdmin": false  },  "id": "977321366678728562",  "meta": {    "resourceType": "User",    "created": "2025-02-27T21:39:39Z",    "lastModified": "2025-02-27T23:05:42Z",    "version": "W/\"1740697542\"",    "location": "https://www.figma.com/scim/v2/964615200748176016/Users/977321366678728562"  }}
+```
+
+### DELETE Users[​](#delete-users-endpoint "Direct link to DELETE Users")
+
+Permanently deletes the user from Figma and the SCIM Provisioning log associated with Figma. A Figma user ID is required for this operation. You can retrieve a Figma user ID by leveraging the `GET` users endpoint with an email filter. Returns 204 if the user is successfully deleted.
+
+#### HTTP endpoint[​](#http-endpoint-6 "Direct link to HTTP endpoint")
+
+`DELETE :baseURL/Users/:figmaUserId`
+
+`:figmaUserId` is a required path parameter, the Figma user ID of the operation's target user.
+
+For example, a user ID returned from `GET :baseURL/USERS`: `"id": "977321366678728562"`
+
+**Headers**
+
+```
+Authorization = "Bearer [FIGMA API TOKEN]"Content-Type = application/json
+```
+
+**Response**
+
+```
+204
+```
+
+info
+
+**Note:** An easy way to validate deletion is to try to get the user with an email filter or review the get users list.
+
+## Groups endpoints[​](#groups-endpoints "Direct link to Groups endpoints")
+
+### GET Groups[​](#get-groups-endpoint "Direct link to GET Groups")
+
+Returns a list of SCIM managed groups in the organization.
+
+#### HTTP endpoint[​](#http-endpoint-7 "Direct link to HTTP endpoint")
+
+`GET :baseURL/Groups`
+
+**Example paths**
+
+```
+GET :baseURL/Groups?filter&count&startIndexGET :baseURL/Groups?filter=displayName eq "ExampleWorkspaceName"GET :baseURL/Groups?filter=externalId eq "external-id-value"
+```
+
+**Headers**
+
+```
+Authorization: Bearer [FIGMA API TOKEN]
+```
+
+**Parameters**
+
+Path parameter
+
+Description
+
+filter
+
+String
+
+Filters the groups by the provided string. The string can be the display name of the group, or an externalId.
+
+count
+
+Number
+
+The number of results to return
+
+startIndex
+
+Number
+
+When paginating through the results, this is the start index offset (where to start returning results)
+
+**Example response body**
+
+```
+{  "schemas": [    "urn:ietf:params:scim:api:messages:2.0:ListResponse"  ],  "totalResults": 1,  "Resources": [    {      "schemas": [        "urn:ietf:params:scim:schemas:core:2.0:Group"      ],      "id":"1b5f9234-df40-4664-9767-334fdd7d51f6",      "members": [        {          "value":"1427545874257949557",          "display":"scimuser@example.com"        }      ],      "external_id": "32a50c8f-798b-4040-b2e3-daf6e71ffd88",      "displayName": "bill_group1",      "meta": {        "resourceType":"Group",        "created":"2024-10-17T02:22:22Z",        "lastModified":"2024-10-17T02:22:23Z",        "version":"W/\"1729131743\"",        "location":"https://www.figma.com/scim/v2/TENANTID/Groups/1b5f9234-df40-4664-9767-334fdd7d51f6"      }    }  ]}
+```
+
+### POST Groups[​](#post-groups-endpoint "Direct link to POST Groups")
+
+Creates a SCIM group linked to an existing Figma workspace, or billing group, or both. The parameters define the SCIM group's name along with its corresponding members. Members of a SCIM group automatically inherit the workspace or billing group that matches the `displayName` parameter.
+
+#### HTTP endpoint[​](#http-endpoint-8 "Direct link to HTTP endpoint")
+
+`POST :baseURL/Groups`
+
+**Headers**
+
+```
+Authorization: Bearer [FIGMA API TOKEN]Content-Type = application/json
+```
+
+**Parameters**
+
+Body parameter
+
+Description
+
+schemas
+
+Stringrequired
+
+The supported schema is `urn:ietf:params:scim:schemas:core:2.0:Group`.
+
+displayName
+
+Stringrequired
+
+Display name for the group. To link with a workspace or billing group in Figma, the display name must match the name of the workspace or billing group. The name is case sensitive. This value is limited to 255 characters or less.
+
+externalId
+
+String
+
+An ID that can uniquely identify the group in the IdP. This value is limited to 255 characters or less.
+
+members
+
+Map<String, String>\[\]
+
+A list of members that you want to include in the group. The list must use the following format:
+
+```
+"members": [    {        "value": "1427545874257949557",        "display": "scimuser@example.com"    }]
+```
+
+Where `value` is the ID of the user, and `display` is the display name of the user.
+
+**Example request body**
+
+```
+{  "schemas": [    "urn:ietf:params:scim:schemas:core:2.0:Group"  ],  "displayName": "bill_group_1",  "externalId": "123456789",  "members": [        {            "value": "1427545874257949557",            "display": "scimuser@example.com"        }  ],}
+```
+
+**Example response body**
+
+```
+{  "schemas":[    "urn:ietf:params:scim:schemas:core:2.0:Group"  ],  "id":"185607a2-cae4-46f5-9ab0-1d12dbd1af29",  "members":[    {      "value":"1427545874257949557",      "display":"scimuser@example.com"    }  ],  "external_id":"123456789",  "displayName":"bill_group_1",  "meta": {    "resourceType":"Group",    "created":"2024-10-17T02:56:11Z",    "lastModified":"2024-10-17T02:56:11Z",    "version":"W/\"1729133771\"",    "location":"https://www.figma.com/scim/v2/TENANTID/Groups/185607a2-cae4-46f5-9ab0-1d12dbd1af29"  }}
+```
+
+### PUT Groups[​](#put-groups-endpoint "Direct link to PUT Groups")
+
+Overwrites the attributes of a group with the provided parameters in the request body. The parameters provided are applied to the SCIM group. In order to update attributes, you must know the Figma group ID of the group and populate this at the end of the `groups` path. Common use cases for this operation are updating membership and updating display names.
+
+When you use this endpoint to add or remove members:
+
+*   New members inherit the Figma workspace or billing group that is linked to the SCIM group.
+*   Removed members no longer inherit the Figma workspace or billing group.
+
+#### HTTP endpoint[​](#http-endpoint-9 "Direct link to HTTP endpoint")
+
+`PUT :baseURL/Groups/:figmaGroupId`
+
+`:figmaGroupId` is a required path parameter, the Figma group ID of the operation's target group.
+
+For example, a group ID returned from `GET :baseURL/Groups`: `"id": "1b5f9234-df40-4664-9767-334fdd7d51f6"`
+
+**Headers**
+
+```
+Authorization: Bearer [FIGMA API TOKEN]Content-Type = application/json
+```
+
+**Parameters**
+
+Body parameter
+
+Description
+
+schemas
+
+Stringrequired
+
+The supported schema is `urn:ietf:params:scim:schemas:core:2.0:Group`.
+
+displayName
+
+Stringrequired
+
+Display name for the group. When you update this value, the current link to a Figma workspace or billing group is preserved. This value is limited to 255 characters or less.
+
+externalId
+
+String
+
+An ID that can uniquely identify the group in the IdP. This value is limited to 255 characters or less.
+
+members
+
+Map<String, String>\[\]
+
+A list of members that you want to include in the group. The list must use the following format:
+
+```
+"members": [    {        "value": "1427545874257949557",        "display": "scimuser@example.com"    }]
+```
+
+Where `value` is the ID of the user, and `display` is the display name of the user.
+
+**Example request body**
+
+```
+{  "schemas": [    "urn:ietf:params:scim:schemas:core:2.0:Group"  ],  "displayName": "bill_group_2",  "externalId": "123456789",  "members": [    {      "value": "1427545874257949557",      "display": "scimuser@example.com"    }  ]}
+```
+
+**Example response body**
+
+```
+{  "schemas": [    "urn:ietf:params:scim:schemas:core:2.0:Group"  ],  "id":"1b5f9234-df40-4664-9767-334fdd7d51f6",  "members": [    {      "value":"1427545874257949557",      "display":"scimuser@example.com"    }  ],  "external_id":"123456789",  "displayName":"bill_group_2",  "meta": {    "resourceType":"Group",    "created":"2024-10-17T02:22:22Z",    "lastModified":"2024-10-17T03:51:36Z",    "version":"W/\"1729137096\"",    "location":"https://www.figma.com/scim/v2/TENANTID/Groups/1b5f9234-df40-4664-9767-334fdd7d51f6"  }}
+```
+
+In this example, the `lastModified` field matches when the operation is successfully completed.
+
+### PATCH Groups[​](#patch-groups-endpoint "Direct link to PATCH Groups")
+
+Updates a targeted group attribute based on the request body. The parameters provided are applied to the SCIM group. In order to update attributes, you must know the Figma group ID of the group and populate this at the end of the `groups` path. Common use cases for this operation are updating membership and updating display names.
+
+When you use this endpoint to add or remove members:
+
+*   New members inherit the Figma workspace or billing group that is linked to the SCIM group.
+*   Removed members no longer inherit the Figma workspace or billing group.
+
+#### HTTP endpoint[​](#http-endpoint-10 "Direct link to HTTP endpoint")
+
+`PATCH :baseURL/Groups/:figmaGroupId`
+
+`:figmaGroupId` is a required path parameter, the Figma group ID of the operation's target group.
+
+For example, a group ID returned from `GET :baseURL/Groups`: `"id": "1b5f9234-df40-4664-9767-334fdd7d51f6"`
+
+**Headers**
+
+```
+Authorization = "Bearer [FIGMA API TOKEN]"Content-Type = application/json
+```
+
+**Parameters**
+
+Body parameter
+
+Description
+
+schemas
+
+Stringrequired
+
+The supported schema is `urn:ietf:params:scim:schemas:core:2.0:Group`.
+
+For the PATCH operation, you must also include the `urn:ietf:params:scim:api:messages:2.0:PatchOp` schema.
+
+displayName
+
+Stringrequired
+
+Display name for the group. When you update this value, the current link to a Figma workspace or billing group is preserved. This value is limited to 255 characters or less.
+
+externalId
+
+String
+
+An ID that can uniquely identify the group in the IdP. This value is limited to 255 characters or less.
+
+members
+
+Map<String, String>\[\]
+
+A list of members that you want to include in the group. The list must use the following format:
+
+```
+"members": [    {        "value": "1427545874257949557",        "display": "scimuser@example.com"    }]
+```
+
+Where `value` is the ID of the user, and `display` is the display name of the user.
+
+**Example request body**
+
+```
+{  "schemas": [    "urn:ietf:params:scim:api:messages:2.0:PatchOp"  ],  "Operations": [    {      "op":"replace",      "value":        {          "displayName": "updatedGroup"        }    } ]}
+```
+
+**Example response body**
+
+```
+{  "schemas": [    "urn:ietf:params:scim:schemas:core:2.0:Group"  ],  "id": "1b5f9234-df40-4664-9767-334fdd7d51f6",  "members": [    {      "value": "1427545874257949557",      "display": "scimuser@example.com"    }  ],  "external_id": "123456789",  "displayName": "updatedGroup",  "meta": {    "resourceType": "Group",    "created": "2024-10-17T02:22:22Z",    "lastModified": "2024-10-17T04:03:06Z",    "version": "W/\"1729137786\"",    "location": "https://www.figma.com/scim/v2/1401286822445493852/Groups/1b5f9234-df40-4664-9767-334fdd7d51f6"  }}
+```
+
+### DELETE Groups[​](#delete-groups-endpoint "Direct link to DELETE Groups")
+
+Permanently deletes a group from Figma and the SCIM Provisioning log associated with Figma. Requires a Figma group ID. You can retrieve a Figma group ID using the `GET groups` endpoint. Returns `204` if the group is successfully deleted.
+
+#### HTTP endpoint[​](#http-endpoint-11 "Direct link to HTTP endpoint")
+
+`DELETE :baseURL/Groups/:figmaGroupId`
+
+`:figmaGroupId` is a required path parameter, the Figma group ID of the operation's target group.
+
+For example, a group ID returned from `GET :baseURL/Groups`: `"id": "1b5f9234-df40-4664-9767-334fdd7d51f6"`
+
+**Headers**
+
+```
+Authorization = "Bearer [FIGMA API TOKEN]"Content-Type = application/json
+```
+
+**Response**
+
+```
+204
+```
+
+*   [Configuration endpoints](#configuration-endpoints)
+    *   [GET Service Provider Config](#get-service-provider-config-endpoint)
+    *   [GET Tenant ID](#get-tenant-id-endpoint)
+*   [Users endpoints](#users-endpoints)
+    *   [GET Users](#get-users-endpoint)
+    *   [POST Users](#post-users-endpoint)
+    *   [PUT Users](#put-users-endpoint)
+    *   [PATCH Users](#patch-users-endpoint)
+    *   [DELETE Users](#delete-users-endpoint)
+*   [Groups endpoints](#groups-endpoints)
+    *   [GET Groups](#get-groups-endpoint)
+    *   [POST Groups](#post-groups-endpoint)
+    *   [PUT Groups](#put-groups-endpoint)
+    *   [PATCH Groups](#patch-groups-endpoint)
+    *   [DELETE Groups](#delete-groups-endpoint)

@@ -168,7 +168,10 @@ function Inspector() {
                 display: 'flex', alignItems: 'center', gap: '$2', padding: '0 $1',
               }}
               >
-                <Box css={{ width: 12, height: 12, borderRadius: 999, border: '1px solid $borderSubtle', backgroundColor: '$bgSubtle' }} />
+                <Box css={{
+                  width: 12, height: 12, borderRadius: 999, border: '1px solid $borderSubtle', backgroundColor: '$bgSubtle',
+                }}
+                />
                 <Box css={{ whiteSpace: 'nowrap' }}>Visualization</Box>
               </Box>
             </ToggleGroup.Item>

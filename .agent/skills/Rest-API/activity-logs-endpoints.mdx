@@ -1,0 +1,107 @@
+---
+title: Endpoints | Developer Docs
+slug: /figma/rest-api/activity-logs-endpoints
+---
+
+On this page
+
+## GET Activity Logs[​](#activity-logs-get-endpoint "Direct link to GET Activity Logs")
+
+Returns a list of activity log events.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`org:activity_log_read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint "Direct link to HTTP Endpoint")
+
+`GET /v1/activity_logs`
+
+Path parameters
+
+Description
+
+events
+
+String
+
+Event type(s) to include in the response. Can have multiple values separated by comma. All events are returned by default.
+
+start\_time
+
+Number
+
+Unix timestamp of the least recent event to include. This param defaults to one year ago if unspecified.
+
+end\_time
+
+Number
+
+Unix timestamp of the most recent event to include. This param defaults to the current timestamp if unspecified.
+
+limit
+
+Number
+
+Maximum number of events to return. This param defaults to 1000 if unspecified.
+
+order
+
+Stringdefault: asc
+
+Event order by timestamp, as a string enum.
+
+*   `asc`: Oldest events first
+*   `desc`: Newest events first
+
+Error codes
+
+Description
+
+401
+
+You do not have permissions to access the requested logs
+
+### Filtering[​](#filtering "Direct link to Filtering")
+
+Add filters to your request using query string parameters. You can add combinations of path parameters to create specific queries. Here are a few examples:
+
+*   Get the first 100 `org_user_create` and `org_user_delete` events from the last year
+    
+    ```
+    curl -H 'Authorization: Bearer <TOKEN>' 'https://api.figma.com/v1/activity_logs?limit=100&events=org_user_create,org_user_delete'
+    ```
+    
+*   Get all changes made to a person’s paid status for a product
+    
+    ```
+    curl -H 'Authorization: Bearer <TOKEN>' 'https://api.figma.com/v1/activity_logs?events=org_user_account_type_change'
+    ```
+    
+*   Get all the events between `2021-11-30 19:20:00 UTC` and `2021-12-01 23:06:40 UTC`
+    
+    ```
+    curl -H 'Authorization: Bearer <TOKEN>' 'https://api.figma.com/v1/activity_logs?start_time=1638300000&end_time=1638400000'
+    ```
+    
+
+## Pagination[​](#pagination "Direct link to Pagination")
+
+The API sorts returned events by timestamp in ascending order by default. The max number of events the endpoint can return at a time is 1000 events. You can set a lower value using the `limit` parameter.
+
+If the total number of events is higher than the limit, the API will paginate the response. The JSON response will contain `cursor` and `next_page: true`, fields. The cursor encodes the last event—the most recent event—in the response.
+
+```
+{  "error": false,  "i18n": null,  "meta": {    "activity_logs": [      …    ],    "cursor": "NjYzMDMxMjM5ODA4NjcvNDAwMDA=",    "next_page": true,  },  "status": 200}
+```
+
+To get the next batch of events, add the cursor parameter to your new query string.
+
+```
+curl -H 'Authorization: Bearer <TOKEN>' 'https://api.figma.com/v1/activity_logs?cursor=NjYzMDMxMjM5ODA4NjcvNDAwMDA='
+```
+
+You'll likely poll this endpoint every few minutes to get the latest batch of events. You can append the `cursor` from the previous query to your new query. This will return any unseen events since your last query.
+
+*   [GET Activity Logs](#activity-logs-get-endpoint)
+*   [Pagination](#pagination)

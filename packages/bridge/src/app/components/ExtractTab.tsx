@@ -517,9 +517,12 @@ export default function ExtractTab() {
   const [diff, setDiff] = useState<VariableDiff | null>(null);
   const [collectionsInfo, setCollectionsInfo] = useState<CollectionInfo[]>([]);
   const [impactData, setImpactData] = useState<VariableUsageResult[]>([]);
+  const [allVariablesImpact, setAllVariablesImpact] = useState<VariableUsageResult[]>([]);
   const [variableIdToName, setVariableIdToName] = useState<Map<string, string>>(new Map());
   const [hasDrift, setHasDrift] = useState<boolean | null>(null);
   const [driftError, setDriftError] = useState<string | null>(null);
+  const [showVarsAnalysis, setShowVarsAnalysis] = useState(true);
+  const [varsAnalysisSearch, setVarsAnalysisSearch] = useState('');
 
   // Notification toggles
   const [notifyDevTeam, setNotifyDevTeam] = useState(false);
@@ -582,6 +585,7 @@ export default function ExtractTab() {
     setJsonResult('');
     setOldJsonPreview('');
     setImpactData([]);
+    setAllVariablesImpact([]);
     setVariableIdToName(new Map());
 
     try {
@@ -597,6 +601,19 @@ export default function ExtractTab() {
       }
       setJsonResult(freshJson);
 
+      // Always scan all extracted variables for component usage and modes (standalone — no GitHub needed)
+      const newArr = Array.isArray(newVars) ? newVars : [];
+      const allVarIds = newArr.map((v: any) => v.id).filter(Boolean) as string[];
+      if (allVarIds.length > 0) {
+        const allImpactRes = await AsyncMessageChannel.ReactInstance.message({
+          type: AsyncMessageTypes.CALCULATE_VARIABLES_IMPACT,
+          variableIds: allVarIds,
+        });
+        if (allImpactRes && (allImpactRes as any).variables) {
+          setAllVariablesImpact((allImpactRes as any).variables);
+        }
+      }
+
       if (pat && owner && repo) {
         const baseJsonStr = await withRetry(() => getGitHubFileContent({
           pat, owner, repo, branch: baseBranch, path: filePath,
@@ -609,20 +626,19 @@ export default function ExtractTab() {
           return;
         }
         const oldArr = Array.isArray(oldVars) ? oldVars : [];
-        const newArr = Array.isArray(newVars) ? newVars : [];
         const diffResult = compareVariables(oldArr, newArr);
         setDiff(diffResult);
         setVariableIdToName(buildVariableIdToNameMap(oldArr, newArr));
 
-        const variableIds = [
+        const changedVarIds = [
           ...diffResult.removed.map((v) => v.id),
           ...diffResult.changed.map((v) => v.old.id),
         ].filter(Boolean) as string[];
 
-        if (variableIds.length > 0) {
+        if (changedVarIds.length > 0) {
           const impactRes = await AsyncMessageChannel.ReactInstance.message({
             type: AsyncMessageTypes.CALCULATE_VARIABLES_IMPACT,
-            variableIds,
+            variableIds: changedVarIds,
           });
           if (impactRes && (impactRes as any).variables) {
             setImpactData((impactRes as any).variables);
@@ -679,6 +695,11 @@ export default function ExtractTab() {
       setError('Please fill all required fields and extract JSON first.');
       return;
     }
+    if (targetBranch === baseBranch) {
+      setError(`Target branch (${targetBranch}) cannot be the same as the base branch (${baseBranch}). Please select or create a different branch.`);
+      return;
+    }
+
     setError(null);
     setIsCreatingPr(true);
     setPrUrl(null);
@@ -1099,33 +1120,215 @@ export default function ExtractTab() {
                   </Text>
                   <Stack direction="row" gap={2} css={{ fontSize: FONT_SIZE.xxs, color: '$fgSubtle' }}>
                     {m.added > 0 && (
-                    <span style={{ color: '#81C784' }}>
-                      +
-                      {m.added}
-                      {' '}
-                      added
-                    </span>
+                      <span style={{ color: '#81C784' }}>
+                        +
+                        {m.added}
+                        {' '}
+                        added
+                      </span>
                     )}
                     {m.removed > 0 && (
-                    <span style={{ color: '#EF9A9A' }}>
-                      -
-                      {m.removed}
-                      {' '}
-                      removed
-                    </span>
+                      <span style={{ color: '#EF9A9A' }}>
+                        -
+                        {m.removed}
+                        {' '}
+                        removed
+                      </span>
                     )}
                     {m.modified > 0 && (
-                    <span style={{ color: '#90CAF9' }}>
-                      ~
-                      {m.modified}
-                      {' '}
-                      modified
-                    </span>
+                      <span style={{ color: '#90CAF9' }}>
+                        ~
+                        {m.modified}
+                        {' '}
+                        modified
+                      </span>
                     )}
                   </Stack>
                 </Box>
               ))}
             </Stack>
+          </Box>
+        )}
+
+        {/* ── Variables & Components Analysis ── */}
+        {allVariablesImpact.length > 0 && (
+          <Box css={{ border: '1px solid $borderMuted', borderRadius: '6px', overflow: 'hidden', marginBottom: '$3' }}>
+            {/* Header */}
+            <Box css={{
+              padding: '$2 $4', backgroundColor: '$bgSubtle', borderBottom: '1px solid $borderMuted',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <Stack direction="row" align="center" gap={2}>
+                <Component width={13} height={13} style={{ color: 'var(--colors-accentDefault)' }} />
+                <Text css={{ color: '$fgDefault', fontSize: FONT_SIZE.sm, fontWeight: '$bold' }}>
+                  Variables &amp; Components
+                </Text>
+                <Box css={{
+                  padding: '1px 6px', borderRadius: '10px', backgroundColor: 'rgba(139,92,246,0.2)',
+                  border: '1px solid #8b5cf6', fontSize: FONT_SIZE.xs, color: '#c4b5fd',
+                }}>
+                  {allVariablesImpact.length}
+                </Box>
+              </Stack>
+              <Stack direction="row" align="center" gap={2}>
+                <Box
+                  as="input"
+                  placeholder="Search variables..."
+                  value={varsAnalysisSearch}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVarsAnalysisSearch(e.target.value)}
+                  css={{
+                    backgroundColor: '$bgDefault', border: '1px solid $borderMuted', borderRadius: '4px',
+                    color: '$fgDefault', fontSize: FONT_SIZE.xs, padding: '2px 8px', width: '150px', outline: 'none',
+                    '&:focus': { borderColor: '$accentDefault' },
+                  }}
+                />
+                <Button
+                  variant="invisible"
+                  size="small"
+                  onClick={() => setShowVarsAnalysis((p) => !p)}
+                  css={{ color: '$accentDefault', fontSize: FONT_SIZE.sm }}
+                >
+                  {showVarsAnalysis ? 'Hide' : 'Show'}
+                </Button>
+              </Stack>
+            </Box>
+
+            {showVarsAnalysis && (
+              <Box css={{ maxHeight: '400px', overflowY: 'auto' }}>
+                {allVariablesImpact
+                  .filter((v) => !varsAnalysisSearch || v.variableName.toLowerCase().includes(varsAnalysisSearch.toLowerCase()))
+                  .map((v) => (
+                    <Box
+                      key={v.variableId}
+                      css={{
+                        borderBottom: '1px solid $borderMuted',
+                        '&:last-child': { borderBottom: 'none' },
+                      }}
+                    >
+                      {/* Variable header row */}
+                      <Box css={{
+                        padding: '$2 $4', backgroundColor: '$bgDefault',
+                        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '$3',
+                      }}>
+                        <Box css={{ flex: 1, minWidth: 0 }}>
+                          <Text css={{ color: '$fgDefault', fontSize: FONT_SIZE.sm, fontWeight: '$medium', display: 'block' }}>
+                            {v.variableName}
+                          </Text>
+                          <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xs }}>{v.collectionName}</Text>
+                        </Box>
+
+                        {/* Type chip */}
+                        <Box css={{
+                          padding: '1px 6px', borderRadius: '8px', fontSize: FONT_SIZE.xs, fontWeight: '$bold',
+                          backgroundColor: v.resolvedType === 'COLOR' ? 'rgba(236,64,122,0.15)' : v.resolvedType === 'FLOAT' ? 'rgba(33,150,243,0.15)' : 'rgba(100,100,100,0.15)',
+                          color: v.resolvedType === 'COLOR' ? '#f48fb1' : v.resolvedType === 'FLOAT' ? '#90caf9' : '#ccc',
+                          border: `1px solid ${v.resolvedType === 'COLOR' ? 'rgba(236,64,122,0.4)' : v.resolvedType === 'FLOAT' ? 'rgba(33,150,243,0.4)' : 'rgba(100,100,100,0.4)'}`,
+                          flexShrink: 0,
+                        }}>
+                          {v.resolvedType || 'UNKNOWN'}
+                        </Box>
+
+                        {/* Usage count */}
+                        {v.totalCount > 0 && (
+                          <Box css={{
+                            padding: '1px 6px', borderRadius: '8px', fontSize: FONT_SIZE.xs,
+                            backgroundColor: 'rgba(139,92,246,0.15)', color: '#c4b5fd', border: '1px solid rgba(139,92,246,0.4)', flexShrink: 0,
+                          }}>
+                            {v.totalCount} use{v.totalCount !== 1 ? 's' : ''}
+                          </Box>
+                        )}
+                      </Box>
+
+                      {/* Mode value chips */}
+                      {v.modes && v.modes.length > 0 && (
+                        <Box css={{
+                          padding: '$1 $4 $2 $4',
+                          display: 'flex', flexWrap: 'wrap', gap: '$2',
+                        }}>
+                          {v.modes.map((m) => {
+                            const val = m.value;
+                            const isColor = val && typeof val === 'object' && 'r' in val;
+                            const isAlias = val && typeof val === 'object' && 'id' in val;
+                            const colorHex = isColor
+                              ? `#${[val.r, val.g, val.b].map((c: number) => Math.round((c ?? 0) * 255).toString(16).padStart(2, '0')).join('')}`
+                              : null;
+                            const displayVal = isColor
+                              ? colorHex!
+                              : isAlias
+                                ? `{alias}`
+                                : typeof val === 'number'
+                                  ? String(val)
+                                  : typeof val === 'string'
+                                    ? val
+                                    : '—';
+
+                            return (
+                              <Box
+                                key={m.modeId}
+                                css={{
+                                  display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                  padding: '2px 8px', borderRadius: '10px',
+                                  backgroundColor: '$bgSubtle', border: '1px solid $borderMuted',
+                                  fontSize: FONT_SIZE.xs, color: '$fgMuted',
+                                }}
+                              >
+                                {isColor && colorHex && (
+                                  <Box css={{
+                                    width: '10px', height: '10px', borderRadius: '50%',
+                                    backgroundColor: colorHex, border: '1px solid rgba(255,255,255,0.2)', flexShrink: 0,
+                                  }} />
+                                )}
+                                <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold' }}>
+                                  {m.modeName}
+                                </Text>
+                                <Text css={{ color: '$fgDefault', fontSize: FONT_SIZE.xs }}>
+                                  {displayVal}
+                                </Text>
+                              </Box>
+                            );
+                          })}
+                        </Box>
+                      )}
+
+                      {/* Component usage list */}
+                      {v.components && v.components.length > 0 && (
+                        <Box css={{ padding: '$0 $4 $2 $4', display: 'flex', flexWrap: 'wrap', gap: '$1' }}>
+                          {v.components.map((comp) => (
+                            <Box
+                              key={comp.componentName}
+                              as="button"
+                              onClick={() => handleSelectInFigma(comp.nodeIds)}
+                              css={{
+                                display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                padding: '2px 8px', borderRadius: '4px', fontSize: FONT_SIZE.xs,
+                                backgroundColor: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.3)',
+                                color: '#c4b5fd', cursor: 'pointer',
+                                '&:hover': { backgroundColor: 'rgba(139,92,246,0.2)' },
+                              }}
+                              title={`Click to select ${comp.nodeIds.length} node${comp.nodeIds.length !== 1 ? 's' : ''} in Figma`}
+                            >
+                              <Component width={9} height={9} />
+                              {comp.componentName}
+                              <Box css={{
+                                backgroundColor: 'rgba(139,92,246,0.3)', borderRadius: '8px',
+                                padding: '0 4px', fontSize: '9px', color: '#e9d5ff',
+                              }}>
+                                {comp.nodeIds.length}
+                              </Box>
+                            </Box>
+                          ))}
+                        </Box>
+                      )}
+
+                      {v.totalCount === 0 && (
+                        <Box css={{ padding: '$0 $4 $2 $4' }}>
+                          <Text css={{ color: '$fgSubtle', fontSize: FONT_SIZE.xs }}>Not used in any components</Text>
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
+              </Box>
+            )}
           </Box>
         )}
 
@@ -1252,8 +1455,8 @@ export default function ExtractTab() {
           {/* Components Affected — detailed list for UX designers */}
           {rawComponentImpacts.length > 0 && (
             <>
-              <Box
-                as="button"
+              <Button
+                variant="invisible"
                 onClick={() => setShowComponentImpacts((p) => !p)}
                 css={{
                   width: '100%',
@@ -1282,7 +1485,7 @@ export default function ExtractTab() {
                   )
                 </Stack>
                 {showComponentImpacts ? <NavArrowUp width={10} height={10} /> : <NavArrowDown width={10} height={10} />}
-              </Box>
+              </Button>
               {showComponentImpacts && (
                 <>
                   {/* Search, filter, export bar */}
@@ -1306,15 +1509,15 @@ export default function ExtractTab() {
                           css={{ paddingLeft: '24px', height: `${CONTROL_HEIGHT.md}px`, fontSize: FONT_SIZE.sm }}
                         />
                         {componentSearchFilter && (
-                          <Box
-                            as="button"
+                          <Button
+                            variant="invisible"
                             onClick={() => setComponentSearchFilter('')}
                             css={{
                               position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px',
                             }}
                           >
                             <Xmark width={10} height={10} style={{ color: 'var(--colors-fgSubtle)' }} />
-                          </Box>
+                          </Button>
                         )}
                       </Box>
                       <DropdownMenu>
@@ -1375,8 +1578,8 @@ export default function ExtractTab() {
                             backgroundColor: '$bgDefault',
                           }}
                         >
-                          <Box
-                            as="button"
+                          <Button
+                            variant="invisible"
                             onClick={() => toggleComponentExpand(comp.componentName)}
                             css={{
                               width: '100%',
@@ -1431,7 +1634,7 @@ export default function ExtractTab() {
                                 title="Copy summary"
                               />
                             </Stack>
-                          </Box>
+                          </Button>
                           {isExpanded && (
                             <Box css={{ padding: '$2 $4 $3', paddingLeft: '28px' }}>
                               {(['color', 'typography', 'spacing', 'other'] as ChangeCategory[]).map((cat) => {

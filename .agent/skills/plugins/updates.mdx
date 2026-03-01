@@ -1,0 +1,138 @@
+---
+title: Updates | Developer Docs
+slug: /figma/plugins/updates
+---
+
+## Expanded support for Figma Draw features[​](#expanded-support-for-figma-draw-features "Direct link to Expanded support for Figma Draw features")
+
+You can now use the Plugin API to view and manipulate [Figma Draw](https://www.figma.com/draw/) features, including:
+
+*   Creating and editing text on a path nodes
+*   Viewing and adding transforms in transform groups
+*   Viewing and adding stretch brush, scatter brush, and dynamic strokes
+*   Modifying stroke width profiles to create custom variable width strokes or using preset stroke width profiles
+
+We've also updated the documentation around setting [pattern fills and strokes](/docs/plugins/adding-pattern-fills-and-strokes/).
+
+### New types[​](#new-types "Direct link to New types")
+
+*   [`TextPathStartData`](/docs/plugins/api/TextPathStartData/): Data defining the starting position of text on a path
+*   [`TransformModifier`](/docs/plugins/api/TransformModifier/): A modifier that can be applied to a transform group
+*   [`ComplexStrokeProperties`](/docs/plugins/api/ComplexStrokeProperties/): Stroke properties describing stretch brushes, scatter brushes, and dynamic strokes
+*   [`VariableWidthStrokeProperties`](/docs/plugins/api/VariableWidthStrokeProperties/): Points that define the width profile of variable width strokes
+
+### New methods[​](#new-methods "Direct link to New methods")
+
+*   [`figma.createTextPath(node, startSegment, startPosition)`](/docs/plugins/api/properties/figma-createtextpath/): Create a text on a path node from a vector node.
+*   [`figma.transformGroup(nodes, parent, index, transformModifiers)`](/docs/plugins/api/properties/figma-transformgroup/): Wrap nodes in a transform group with specified transform modifiers.
+*   [`figma.loadBrushesAsync(brushType)`](/docs/plugins/api/properties/figma-loadbrushesasync/): Load the first-party brushes of the specified type (stretch or scatter).
+*   [`node.setFillsAsync(fills)`](/docs/plugins/api/node-properties/#setfillsasync): Supports setting pattern fills.
+*   [`node.setStrokesAsync(strokes)`](/docs/plugins/api/node-properties/#setstrokesasync): Supports setting pattern strokes.
+
+### New properties[​](#new-properties "Direct link to New properties")
+
+*   [`textOnPathNode.textPathStartData`](/docs/plugins/api/TextPathNode/#text-path-node-properties): Gets and sets the starting position data for text on a path node.
+*   [`transformGroupNode.transformModifiers`](/docs/plugins/api/TransformGroupNode/#transform-group-properties): Gets and sets the transform modifiers applied to a transform group.
+*   [`node.complexStrokeProperties`](/docs/plugins/api/node-properties/#complexstrokeproperties): Gets and sets the complex stroke properties (brush or dynamic stroke properties) of a node, if any.
+*   [`node.variableWidthStrokeProperties`](/docs/plugins/api/node-properties/#variablewidthstrokeproperties): Gets and sets the variable width stroke properties of a node, if any.
+
+*   Added a [rootVariableCollectionId](/docs/plugins/api/ExtendedVariableCollection/#rootvariablecollectionid) property to extended collections that return the node ID of the top-most ancestor
+*   Fixed [plugin manifest](/docs/plugins/manifest/#editortype) documentation to list `slides` and `buzz` as valid `editorType` values
+
+## Extended variable collections (Enterprise only)[​](#extended-variable-collections-enterprise-only "Direct link to Extended variable collections (Enterprise only)")
+
+**Extended variable collections** enable theming for variables. When you extend a collection, the extension inherits all modes and variables from its parent collection. You can then override variable values in the extended collection to create theme-specific variations while maintaining a single source of truth.
+
+### New type[​](#new-type "Direct link to New type")
+
+*   [`ExtendedVariableCollection`](/docs/plugins/api/ExtendedVariableCollection/): A variable collection that extends another collection
+
+### New methods[​](#new-methods "Direct link to New methods")
+
+*   [`figma.variables.extendLibraryCollectionByKeyAsync(collectionKey, name)`](/docs/plugins/api/figma-variables/#extendlibrarycollectionbykeyasync): Create an extended collection from a library or local variable collection
+*   [`variableCollection.extend(name)`](/docs/plugins/api/VariableCollection/#extend): Create an extended collection from a local variable collection
+*   [`variable.valuesByModeForCollectionAsync(collection)`](/docs/plugins/api/Variable/#valuesbymodeforcollectionasync): Get variable values for a specific collection, including overrides in extended collections
+*   [`variable.removeOverrideForMode(extendedModeId)`](/docs/plugins/api/Variable/#removeoverrideformode): Remove an override for a specific mode
+*   [`extendedVariableCollection.removeOverridesForVariable(variableId)`](/docs/plugins/api/ExtendedVariableCollection/#removeoverridesforvariable): Remove all overrides for a variable
+
+### New properties[​](#new-properties "Direct link to New properties")
+
+*   [`extendedVariableCollection.variableOverrides`](/docs/plugins/api/ExtendedVariableCollection/#variableoverrides): A map of all overridden variable values in the extended collection
+*   `mode.parentModeId`: For modes in extended collections, references the corresponding mode in the parent collection
+
+### Updated behavior[​](#updated-behavior "Direct link to Updated behavior")
+
+*   [`variable.setValueForMode(modeId, value)`](/docs/plugins/api/Variable/#setvalueformode): When the `modeId` belongs to an extended collection, the value will be set as an override on the extension
+
+For examples and more details, see [Working with Variables](/docs/plugins/working-with-variables/#extended-variable-collections).
+
+## New layout options for grid[​](#new-layout-options-for-grid "Direct link to New layout options for grid")
+
+*   Frames with [`layoutMode` `'GRID'`](/docs/plugins/api/properties/nodes-layoutmode/) now support `'HUG'` for `layoutSizingHorizontal` and `layoutSizingVertical`.
+*   Frames with [`layoutMode` `'GRID'`](/docs/plugins/api/properties/nodes-layoutmode/) also support `'HUG'` as a [`GridTrackSize`](/docs/plugins/api/GridTrackSize/) `type` in the row and column sizes
+*   Frames with [`layoutMode` `'GRID'`](/docs/plugins/api/properties/nodes-layoutmode/) now support values other than 1 for `'FLEX'` sized tracks in [`gridRowsSizes`](/docs/plugins/api/properties/nodes-gridrowsizes/) and [`gridColumnsSizes`](/docs/plugins/api/properties/nodes-gridcolumnsizes/). This corresponds to the [`fr` unit in CSS Grid](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Basic_concepts_of_grid_layout#the_fr_unit)
+*   **Note:** in Figma Design, when creating a new grid, the container and all rows and columns are automatically set to `HUG`, but in the Plugin API, new grids are `FIXED` and their tracks are `FLEX`.
+*   **Breaking change:** previously, calling the [`GridTrackSize`](/docs/plugins/api/GridTrackSize/) setters with a value would set the track to `'FIXED'` if it was previously set as `'FLEX'`. Now, the `type` will only be automatically set to `'FIXED'` if the track was previously set to `'HUG'`
+
+## Instance method deprecation[​](#instance-method-deprecation "Direct link to Instance method deprecation")
+
+*   The `resetOverrides` method on [InstanceNode](/docs/plugins/api/InstanceNode/) is deprecated in favor of `removeOverrides`. This is a change in method name only.
+
+## Plugins in Buzz[​](#plugins-in-buzz "Direct link to Plugins in Buzz")
+
+Figma Buzz now supports plugins! With the new API features, you can enable users to create, customize, and manage marketing assets like social posts, digital ads, and more at scale.
+
+New:
+
+*   Figma's Plugin API typings now support Figma Buzz.
+*   `figma.editorType` can now return `buzz` when a plugin is running in Figma Buzz.
+*   `figma.buzz` provides access to the Buzz API with methods for creating and managing media assets.
+*   `figma.buzz.createFrame()` creates frames optimized for the canvas grid layout.
+*   `figma.buzz.getBuzzAssetTypeForNode()` and `figma.buzz.setBuzzAssetTypeForNode()` allow you to work with 42+ predefined asset types for platforms like Instagram, LinkedIn, Twitter, and Facebook.
+*   `figma.buzz.getTextContent()` and `figma.buzz.getMediaContent()` extract dynamic content fields from templates for easy customization.
+*   `figma.buzz.smartResize()` intelligently resizes assets for different platform requirements while preserving design integrity.
+*   `figma.viewport.canvasView` can be used to toggle between `grid` view or `single-asset` view.
+*   `figma.currentPage.focusedNode` identifies the asset currently focused on in the interface.
+*   `figma.getCanvasGrid()` returns the canvas grid, a 2D representation of assets within the canvas.
+*   `figma.setCanvasGrid()` is used to reorder assets in the grid.
+*   `figma.createCanvasRow()` creates a new row in the canvas grid.
+*   `figma.moveNodesToCoord()` moves nodes to specific positions in the canvas grid.
+
+For more information, see the [Working in Buzz](/docs/plugins/working-in-buzz/) guide.
+
+*   Added support for `fontStyle` in [getStyledTextSegments()](/docs/plugins/api/properties/TextNode-getstyledtextsegments/)
+
+*   Added grid gap types to [VariableBindableNodeField](/docs/plugins/api/VariableBindableNodeField/)
+*   Added grid types to [AnnotationProperty](/docs/plugins/api/AnnotationProperty/)
+
+*   Added the `visible` property to the [Noise](/docs/plugins/api/Effect/#noiseeffect) and [Texture](/docs/plugins/api/Effect/#textureeffect) effect types.
+*   Added the `boundVariables` property to [Noise](/docs/plugins/api/Effect/#noiseeffect) and [Texture](/docs/plugins/api/Effect/#textureeffect) effect types to prevent validation errors on write. Note that binding variables for Noise and Texture effects is not yet supported.
+*   Added a new [Glass](/docs/plugins/api/Effect/#glasseffect) effect type in beta. Note that the effect is only supported on Frames at this time, and binding variables is not yet supported.
+*   Fixed [`GridTrackSize`](/docs/plugins/api/GridTrackSize/) to properly handle `value` as optional.
+
+Added documentation for figma.ui.getPosition().
+
+Added support for Grid layout properties on grid containers and children.
+
+## Grid Containers[​](#grid-containers "Direct link to Grid Containers")
+
+*   [`gridRowCount`](/docs/plugins/api/properties/nodes-gridrowcount/)
+*   [`gridColumnCount`](/docs/plugins/api/properties/nodes-gridcolumncount/)
+*   [`gridRowGap`](/docs/plugins/api/properties/nodes-gridrowgap/)
+*   [`gridColumnGap`](/docs/plugins/api/properties/nodes-gridcolumngap/)
+*   [`gridRowSizes`](/docs/plugins/api/properties/nodes-gridrowsizes/)
+*   [`gridColumnSizes`](/docs/plugins/api/properties/nodes-gridcolumnsizes/)
+*   [`appendChildAt`](/docs/plugins/api/properties/nodes-appendchildat/)
+
+## Grid Children[​](#grid-children "Direct link to Grid Children")
+
+*   [`gridRowSpan`](/docs/plugins/api/properties/nodes-gridrowspan/)
+*   [`gridColumnSpan`](/docs/plugins/api/properties/nodes-gridcolumnspan/)
+*   [`gridRowAnchorIndex`](/docs/plugins/api/properties/nodes-gridrowanchorindex/)
+*   [`gridColumnAnchorIndex`](/docs/plugins/api/properties/nodes-gridcolumnanchorindex/)
+*   [`gridChildHorizontalAlign`](/docs/plugins/api/properties/nodes-gridchildhorizontalalign/)
+*   [`gridChildVerticalAlign`](/docs/plugins/api/properties/nodes-gridchildverticalalign/)
+*   [`setGridChildPosition`](/docs/plugins/api/properties/nodes-setgridchildposition/)
+
+*   Added missing stroke cap types to [StrokeCap](/docs/plugins/api/StrokeCap/) including `"DIAMOND_FILLED"`, `"TRIANGLE_FILLED"`, and `"CIRCLE_FILLED"`
+*   Added the `color` property to the [Noise](/docs/plugins/api/Effect/#noiseeffect) effect type

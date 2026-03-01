@@ -1,0 +1,40 @@
+---
+title: complexStrokeProperties | Developer Docs
+slug: /figma/plugins/nodes-complexstrokeproperties
+---
+
+On this page
+
+The complex stroke properties for nodes using brush or dynamic strokes.
+
+Supported on:
+
+*   [BooleanOperationNode](/docs/plugins/api/BooleanOperationNode/)
+*   [ComponentNode](/docs/plugins/api/ComponentNode/)
+*   [ComponentSetNode](/docs/plugins/api/ComponentSetNode/)
+*   [EllipseNode](/docs/plugins/api/EllipseNode/)
+*   [FrameNode](/docs/plugins/api/FrameNode/)
+*   [InstanceNode](/docs/plugins/api/InstanceNode/)
+*   [LineNode](/docs/plugins/api/LineNode/)
+*   [PolygonNode](/docs/plugins/api/PolygonNode/)
+*   [RectangleNode](/docs/plugins/api/RectangleNode/)
+*   [SlideNode](/docs/plugins/api/SlideNode/)
+*   [StarNode](/docs/plugins/api/StarNode/)
+*   [TextNode](/docs/plugins/api/TextNode/)
+*   [TextPathNode](/docs/plugins/api/TextPathNode/)
+*   [VectorNode](/docs/plugins/api/VectorNode/)
+
+## Signature[​](#signature "Direct link to Signature")
+
+### [complexStrokeProperties](/docs/plugins/api/properties/nodes-complexstrokeproperties/): [ComplexStrokeProperties](/docs/plugins/api/ComplexStrokeProperties/)
+
+## Remarks[​](#remarks "Direct link to Remarks")
+
+We do not yet support setting custom brushes via the plugin API, but the API will return the brush properties for nodes that use custom brushes.
+
+Setting a dynamic stroke on a stroke with variable width points will remove the variable width points.
+
+When setting a brush on a stroke, you must first ensure that the desired brushes are loaded with [`figma.loadBrushesAsync`](/docs/plugins/api/properties/figma-loadbrushesasync/).
+
+*   [Signature](#signature)
+*   [Remarks](#remarks)

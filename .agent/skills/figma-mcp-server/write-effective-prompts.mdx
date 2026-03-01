@@ -1,0 +1,23 @@
+---
+title: Write effective prompts to guide the AI | Developer Docs
+slug: /figma/figma-mcp-server/write-effective-prompts
+---
+
+1.  The MCP gives your AI assistant structured Figma data - but what it does with that depends entirely on what you ask for.
+    
+2.  **What a good prompt can do:**
+    
+    *   Align the result with the right **framework or styling system**
+    *   Align with **your codebase conventions** (file structure, naming, layout)
+    *   Generate code in the correct **file path** (like `src/pages`, `components/ui`)
+    *   Add or modify code **inside existing files** instead of creating new ones
+    *   Follow specific **layout systems** (flexbox, grid, absolute)
+3.  **Prompt examples**
+    
+    *   `Generate iOS SwiftUI code from the selected Figma frame`
+    *   `Implement the selected frame using Chakra UI components`
+    *   `Generate this using components from src/components/ui`
+    *   `Add this component to src/components/marketing/PricingCard.tsx`
+    *   `Implement this using our Stack layout component`
+
+The more specific your prompt, the better the output. Treat it like briefing a teammate. The clearer your intent, the more likely you'll get exactly what you need.

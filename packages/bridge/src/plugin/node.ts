@@ -219,7 +219,7 @@ export async function selectNodes(ids: string[]) {
 
   // In dynamic-page access, we are not allowed to change the current page.
   // So we only select nodes that live on the *current* page and ignore others.
-  const currentPage = figma.currentPage;
+  const { currentPage } = figma;
   const nodesToSelect = nodes.filter((node) => {
     let parent: BaseNode | null = node;
     while (parent && parent.type !== 'PAGE' && parent.type !== 'DOCUMENT') {

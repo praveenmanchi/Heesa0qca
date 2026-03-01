@@ -1,0 +1,74 @@
+---
+title: Types | Developer Docs
+slug: /figma/rest-api/dev-resources-types
+---
+
+On this page
+
+Name
+
+Properties
+
+### DevResource[​](#devresource-type "Direct link to DevResource")
+
+A dev resource in a file.
+
+`id`String
+
+Unique identifier of the dev resource
+
+`name`String
+
+The name of the dev resource.
+
+`url`String
+
+The URL of the dev resource.
+
+`file_key`String
+
+The file key where the dev resource belongs.
+
+`node_id`String
+
+The target node to attach the dev resource to.
+
+### DevResourceCreate[​](#devresourcecreate-type "Direct link to DevResourceCreate")
+
+Payload to create a dev resource in a file.
+
+`name`String
+
+The name of the dev resource.
+
+`url`String
+
+The URL of the dev resource.
+
+`file_key`String
+
+The file key where the dev resource belongs. This must be a main file key, not a branch key.
+
+`node_id`String
+
+The target node to attach the dev resource to.
+
+### DevResourceUpdate[​](#devresourceupdate-type "Direct link to DevResourceUpdate")
+
+Payload to update a dev resource in a file.
+
+`id`String
+
+Unique identifier of the dev resource
+
+`name`String
+
+The name of the dev resource.
+
+`url`String
+
+The URL of the dev resource.
+
+*   [DevResource](#devresource-type)
+*   [DevResourceCreate](#devresourcecreate-type)
+*   [DevResourceUpdate](#devresourceupdate-type)

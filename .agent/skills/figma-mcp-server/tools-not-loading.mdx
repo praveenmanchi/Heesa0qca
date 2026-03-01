@@ -1,0 +1,23 @@
+---
+title: Tools aren't loading or connection lost | Developer Docs
+slug: /figma/figma-mcp-server/tools-not-loading
+---
+
+If you enabled the MCP server in your IDE but the tools aren't loading:
+
+1.  **Make sure the Figma Dev Mode server is actually enabled in the Figma desktop app.**
+    
+    Open the file in Figma → Switch to Dev Mode → Locate the MCP section → Enable.
+    
+2.  **Check that the Figma app is running and the file is open.**
+    
+    The server only runs when the file is active in the desktop app.
+    
+3.  **Try restarting**
+    
+    If everything looks set up but the tools still don't load:
+    
+    *   Restart the Figma app
+    *   Restart your IDE
+
+If you see an error like _"We're having trouble connecting to the model provider"_, that usually means your AI assistant (like Cursor, Copilot or Claude Code) can't reach the model, or the connection timed out. Try again or wait for the connection to be restored.

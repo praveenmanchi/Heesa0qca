@@ -1,0 +1,38 @@
+---
+title: Structure your Figma file for better code | Developer Docs
+slug: /figma/figma-mcp-server/structure-figma-file
+---
+
+Here's how you can help provide the best context for your design intent, so the MCP and your AI assistant can generate code that's clear, consistent, and aligned with your system:
+
+1.  **Use components**
+    
+    Buttons, cards, inputs, nav items - anything repeated should be a component. This makes reuse possible (especially when paired with Code Connect) and keeps the file cleaner.
+    
+2.  **Link components to real code using Code Connect**
+    
+    This is the #1 way to get consistent component reuse in code. Without it, the model is guessing.
+    
+3.  **Use Figma variables for tokens**
+    
+    Apply variables for spacing, color, radius, and typography.
+    
+4.  **Use clear, semantic names for layers and components**
+    
+    Replace default names (`Frame1268`, `Group5`) with intent-driven ones like `CardContainer`, `ProductImage`, or `CTA_Button`. This helps the model understand what it's working with, and what functionality it should have.
+    
+5.  **Use Auto Layout**
+    
+    Make your design more responsive and communicate layout intent clearly by using Auto layout. It helps avoid absolute positioning and usually results in cleaner, more predictable code.
+    
+    note
+    
+    **Tip:** Resize the frame in Figma to check that it behaves as expected before generating code.
+    
+6.  **Use annotations**
+    
+    This helps convey design intent that's hard to capture from visuals alone, like how something should behave, align, or respond.
+    
+7.  **Use dev resources (coming soon)**
+    
+    Get links to developer resources that are applied to layers in Dev Mode.

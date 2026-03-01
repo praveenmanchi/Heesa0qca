@@ -1,0 +1,208 @@
+---
+title: Entity types | Developer Docs
+slug: /figma/rest-api/activity-logs-entity-types
+---
+
+On this page
+
+Below are the common types you can find under the `entity` field in the API response:
+
+Name
+
+Properties
+
+### file[​](#file "Direct link to file")
+
+A Figma Design or FigJam file.
+
+`key`String
+
+Unique identifier of the file.
+
+`name`String
+
+Name of the file.
+
+`editor_type`String
+
+Indicates if the object is a file on Figma Design or FigJam. Can be `figma` or `figjam`.
+
+`link_access`String
+
+Access policy for users who have the link to the file. Can be `view`, `edit`, `org_view`, `org_edit` or `inherit`.
+
+`proto_link_access`String
+
+Access policy for users who have the link to the file's prototype. Can be `view`, `org_view` or `inherit`.
+
+### file\_repo[​](#file_repo "Direct link to file_repo")
+
+A file branch that diverges from and can be merged back into the main file.
+
+`id`String
+
+Unique identifier of the file branch.
+
+`name`String
+
+Name of the file.
+
+`main_file_key`String
+
+Key of the main file.
+
+### idp\_user[​](#idp_user "Direct link to idp_user")
+
+SCIM metadata of a user if managed by an identity provider.
+
+`id`String
+
+Unique stable id of the user.
+
+`user_name`String
+
+Email address of the user.
+
+`org_saml_id`String
+
+The SAML id of the org the user belongs to.
+
+`external_id`String
+
+The identity provider's external id for the user.
+
+### policy\_acknowledgement\_config[​](#policy_acknowledgement_config "Direct link to policy_acknowledgement_config")
+
+An Enterprise internal policy acknowledgement config.
+
+`id`String
+
+Unique identifier of the policy.
+
+`title`String
+
+Title of the policy.
+
+`audience`String
+
+Audience of the policy.
+
+`cadence`String
+
+Cadence of the policy.
+
+`enabled_at`String
+
+Date and time the policy was enabled.
+
+`enabled_status`String
+
+Enabled status of the policy.
+
+### org[​](#org "Direct link to org")
+
+A Figma organization.
+
+`id`String
+
+Unique identifier of the org.
+
+`name`String
+
+Name of the org.
+
+### plugin[​](#plugin "Direct link to plugin")
+
+A Figma plugin.
+
+`id`String
+
+Unique identifier of the plugin.
+
+`name`String
+
+Name of the plugin.
+
+`editor_type`String
+
+Indicates if the object is a plugin is available on Figma Design or FigJam. Can be `figma` or `figjam`.
+
+### project[​](#project "Direct link to project")
+
+A project that a collection of Figma files are grouped under.
+
+`id`String
+
+Unique identifier of the project.
+
+`name`String
+
+Name of the project.
+
+### team[​](#team "Direct link to team")
+
+A Figma team that contains multiple users and projects.
+
+`id`String
+
+Unique identifier of the team.
+
+`name`String
+
+Name of the team.
+
+### user[​](#user "Direct link to user")
+
+A Figma user.
+
+`id`String
+
+Unique stable id of the user.
+
+`name`String
+
+Name of the user.
+
+`email`String
+
+Email associated with the user's account.
+
+### widget[​](#widget "Direct link to widget")
+
+A Figma widget.
+
+`id`String
+
+Unique identifier of the widget.
+
+`name`String
+
+Name of the widget.
+
+`editor_type`String
+
+Indicates if the widget is available on Figma Design or FigJam. Can be `figma` or `figjam`.
+
+### workspace[​](#workspace "Direct link to workspace")
+
+Part of the organizational hierarchy of managing files and users within Figma, only available on the Enterprise Plan.
+
+`id`String
+
+Unique identifier of the workspace.
+
+`name`String
+
+Name of the workspace.
+
+*   [file](#file)
+*   [file\_repo](#file_repo)
+*   [idp\_user](#idp_user)
+*   [policy\_acknowledgement\_config](#policy_acknowledgement_config)
+*   [org](#org)
+*   [plugin](#plugin)
+*   [project](#project)
+*   [team](#team)
+*   [user](#user)
+*   [widget](#widget)
+*   [workspace](#workspace)

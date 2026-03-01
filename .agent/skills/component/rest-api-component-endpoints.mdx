@@ -1,0 +1,113 @@
+---
+title: Components and styles – Endpoints
+slug: /figma/rest-api/component-endpoints
+---
+
+# Components and styles – Endpoints
+
+These endpoints expose published components, component sets, and styles in team libraries and file libraries.[page:2] You can list assets by team or file, and fetch detailed metadata by asset key.[page:2]
+
+All component/style endpoints are Tier 3 and require appropriate library scopes such as `team_library_content:read`, `library_content:read`, or `library_assets:read`.[page:2]
+
+## GET team components
+
+Paginated list of published components in a team library.[page:2]
+
+- Endpoint: `GET /v1/teams/:team_id/components`  
+- Scope: `team_library_content:read`  
+- Tier: 3[page:2]
+
+Path parameters:[page:2]
+
+- `team_id`: ID of the team whose components you want to list.[page:2]
+
+Query parameters:[page:2]
+
+- `page_size`: number of items per page (default 30, max 1000).  
+- `after` / `before`: pagination cursors (internally managed integers, mutually exclusive).[page:2]
+
+Response includes a `components` array of Component objects plus a `cursor` object with `before` and `after` values.[page:2]
+
+## GET file components
+
+Published components within a specific file library.[page:2]
+
+- Endpoint: `GET /v1/files/:file_key/components`  
+- Scope: `library_content:read`  
+- Tier: 3[page:2]
+
+`file_key` must be a main file key; publishing from branches is not supported.[page:2] Response returns a `components` array with the same shape as team components.[page:2]
+
+## GET component
+
+Fetch metadata for a single component by key.[page:2]
+
+- Endpoint: `GET /v1/components/:key`  
+- Scope: `library_assets:read`  
+- Tier: 3[page:2]
+
+`key` is the component’s unique identifier.[page:2] Response `meta` contains the component’s fields such as `key`, `file_key`, `node_id`, `thumbnail_url`, `name`, `description`, timestamps, `user`, and `containing_frame`.[page:2]
+
+## GET team component sets
+
+Paginated list of published component sets in a team library.[page:2]
+
+- Endpoint: `GET /v1/teams/:team_id/component_sets`  
+- Scope: `team_library_content:read`  
+- Tier: 3[page:2]
+
+Supports `page_size`, `after`, and `before` query parameters similar to team components.[page:2] Response `meta.component_sets` is an array of ComponentSet objects plus a `cursor`.[page:2]
+
+## GET file component sets
+
+Published component sets from a specific file library.[page:2]
+
+- Endpoint: `GET /v1/files/:file_key/component_sets`  
+- Scope: `library_content:read`  
+- Tier: 3[page:2]
+
+`file_key` must be a main file key.[page:2] Response `meta.component_sets` lists component sets with their metadata.[page:2]
+
+## GET component set
+
+Metadata for a single component set by key.[page:2]
+
+- Endpoint: `GET /v1/component_sets/:key`  
+- Scope: `library_assets:read`  
+- Tier: 3[page:2]
+
+`meta` mirrors the component set type, including file and node IDs, thumbnail, name, description, timestamps, user, and `containing_frame`.[page:2]
+
+## GET team styles
+
+Paginated list of published styles in a team library.[page:2]
+
+- Endpoint: `GET /v1/teams/:team_id/styles`  
+- Scope: `team_library_content:read`  
+- Tier: 3[page:2]
+
+Query parameters:[page:2]
+
+- `page_size`, `after`, `before` as for other team‑level list endpoints.[page:2]
+
+Response `meta.styles` includes style metadata such as `key`, `file_key`, `node_id`, `style_type`, `thumbnail_url`, `name`, `description`, timestamps, `sort_position`, and `user`, plus a `cursor` for pagination.[page:2]
+
+## GET file styles
+
+Published styles within a single file library.[page:2]
+
+- Endpoint: `GET /v1/files/:file_key/styles`  
+- Scope: `library_content:read`  
+- Tier: 3[page:2]
+
+Response `meta.styles` has the same shape as team styles but scoped to one file.[page:2]
+
+## GET style
+
+Fetch metadata for a single style by key.[page:2]
+
+- Endpoint: `GET /v1/styles/:key`  
+- Scope: `library_assets:read`  
+- Tier: 3[page:2]
+
+Response `meta` includes style identifiers, type, thumbnail URL, name, description, timestamps, `sort_position`, and `user` information.[page:2]

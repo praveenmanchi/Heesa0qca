@@ -70,6 +70,8 @@ export enum AsyncMessageTypes {
   SEARCH_VARIABLE_USAGE = 'async/search-variable-usage',
   CREATE_CHANGE_LOG_FRAME = 'async/create-change-log-frame',
   GET_SELECTION_VISUALIZATION = 'async/get-selection-visualization',
+  GET_NODE_VARIABLES = 'async/get-node-variables',
+  GET_PAGES = 'async/get-pages',
   // the below messages are going from plugin to UI
   STARTUP = 'async/startup',
   GET_THEME_INFO = 'async/get-theme-info',
@@ -453,10 +455,10 @@ export type UpdateVariablesAsyncMessageResult = AsyncMessage<AsyncMessageTypes.U
 }>;
 
 export type RemoveRelaunchDataMessage = AsyncMessage<
-AsyncMessageTypes.REMOVE_RELAUNCH_DATA,
-{
-  area: UpdateMode;
-}
+  AsyncMessageTypes.REMOVE_RELAUNCH_DATA,
+  {
+    area: UpdateMode;
+  }
 >;
 export type RemoveRelaunchDataMessageResult = AsyncMessage<AsyncMessageTypes.REMOVE_RELAUNCH_DATA>;
 
@@ -490,6 +492,10 @@ export interface VariableUsageResult {
   modeCount?: number;
   /** Mode names for display (e.g. ["Gap 1.0", "Old Navy 2.0"]) */
   modeNames?: string[];
+  /** Resolved type of the variable (COLOR, FLOAT, STRING, BOOLEAN) */
+  resolvedType?: string;
+  /** Mode values with their names */
+  modes?: { modeId: string; modeName: string; value: any }[];
 }
 
 export interface TextStyleUsageResult {
@@ -505,6 +511,7 @@ export interface SelectionVisualizationVariable {
   variableId: string;
   variableName: string;
   collectionName: string;
+  resolvedType?: string;
   totalCount: number;
   componentCount: number;
 }
@@ -520,11 +527,17 @@ export interface SelectionVisualizationNode {
 export type SearchVariableUsageAsyncMessage = AsyncMessage<AsyncMessageTypes.SEARCH_VARIABLE_USAGE, {
   query: string;
   allPages?: boolean;
+  pageIds?: string[];
   /**
-   * When true, also search Team Libraries for published variables that match the query.
-   * This can be significantly slower on large teams, so the UI exposes it as a toggle.
+   * When true, only check nodes that are part of a Component or Instance.
+   * This drastically increases search speed by skipping deep variable/style checks on raw frames.
    */
-  includeLibraries?: boolean;
+  onlyComponents?: boolean;
+  /**
+   * When true, only fetches and returns matching variables and styles without traversing the document.
+   * Useful for populating autocomplete suggestions efficiently.
+   */
+  suggestionsOnly?: boolean;
 }>;
 export type SearchVariableUsageAsyncMessageResult = AsyncMessage<AsyncMessageTypes.SEARCH_VARIABLE_USAGE, {
   variables: VariableUsageResult[];
@@ -557,17 +570,20 @@ export type ExtractVariablesToCanvasAsyncMessageResult = AsyncMessage<AsyncMessa
 }>;
 
 export type GetSelectionVisualizationAsyncMessage = AsyncMessage<
-AsyncMessageTypes.GET_SELECTION_VISUALIZATION,
-{}
+  AsyncMessageTypes.GET_SELECTION_VISUALIZATION,
+  {}
 >;
 
 export type GetSelectionVisualizationAsyncMessageResult = AsyncMessage<
-AsyncMessageTypes.GET_SELECTION_VISUALIZATION,
-{
-  root?: SelectionVisualizationNode;
-  selectionName?: string;
-}
+  AsyncMessageTypes.GET_SELECTION_VISUALIZATION,
+  {
+    root?: SelectionVisualizationNode;
+    selectionName?: string;
+  }
 >;
+
+export type GetNodeVariablesAsyncMessage = AsyncMessage<AsyncMessageTypes.GET_NODE_VARIABLES, { nodeId: string }>;
+export type GetNodeVariablesAsyncMessageResult = AsyncMessage<AsyncMessageTypes.GET_NODE_VARIABLES, { root?: SelectionVisualizationNode }>;
 
 export interface UxaiHistoryEntry {
   id: string;
@@ -578,6 +594,9 @@ export interface UxaiHistoryEntry {
 
 export type GetUxaiHistoryAsyncMessage = AsyncMessage<AsyncMessageTypes.GET_UXAI_HISTORY>;
 export type GetUxaiHistoryAsyncMessageResult = AsyncMessage<AsyncMessageTypes.GET_UXAI_HISTORY, { history: UxaiHistoryEntry[] }>;
+
+export type GetPagesAsyncMessage = AsyncMessage<AsyncMessageTypes.GET_PAGES>;
+export type GetPagesAsyncMessageResult = AsyncMessage<AsyncMessageTypes.GET_PAGES, { pages: { id: string, name: string }[] }>;
 
 export type SetUxaiHistoryAsyncMessage = AsyncMessage<AsyncMessageTypes.SET_UXAI_HISTORY, { history: UxaiHistoryEntry[] }>;
 export type SetUxaiHistoryAsyncMessageResult = AsyncMessage<AsyncMessageTypes.SET_UXAI_HISTORY>;
@@ -655,7 +674,9 @@ export type AsyncMessages =
   | GenerateStyleGuideAsyncMessage
   | UpdateStyleGuideAsyncMessage
   | GenerateStyleGuideFromVariablesAsyncMessage
-  | GetSelectionVisualizationAsyncMessage;
+  | GetSelectionVisualizationAsyncMessage
+  | GetNodeVariablesAsyncMessage
+  | GetPagesAsyncMessage;
 
 export type AsyncMessageResults =
   CreateStylesAsyncMessageResult
@@ -721,7 +742,9 @@ export type AsyncMessageResults =
   | GenerateStyleGuideAsyncMessageResult
   | UpdateStyleGuideAsyncMessageResult
   | GenerateStyleGuideFromVariablesAsyncMessageResult
-  | GetSelectionVisualizationAsyncMessageResult;
+  | GetSelectionVisualizationAsyncMessageResult
+  | GetNodeVariablesAsyncMessageResult
+  | GetPagesAsyncMessageResult;
 
 export type AsyncMessagesMap = {
   [K in AsyncMessageTypes]: Extract<AsyncMessages, { type: K }>

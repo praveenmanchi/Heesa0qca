@@ -1,0 +1,27 @@
+---
+title: The server keeps returning web/react code | Developer Docs
+slug: /figma/figma-mcp-server/server-returning-web-code
+---
+
+On this page
+
+The MCP server is designed to provide Figma context and is language and framework agnostic.
+
+Every codebase uses different languages, frameworks, and patterns, so the server isn’t designed to return production-ready code to you. Instead, it provides design _context_ in a format that can be most effectively interpreted by the AI agent in your MCP client.
+
+Because of this, the MCP server:
+
+*   Optimizes its responses so they’re easy for an AI agent to understand
+*   Leaves the task of generating code in your preferred language and framework to the AI agent
+
+## About the `get_design_context` tool[​](#about-the-get_design_context-tool "Direct link to about-the-get_design_context-tool")
+
+When you use the `get_design_context` tool, the MCP server encodes a Figma design into a format that preserves visual fidelity and is structured in a way that large language models (LLMs) can readily interpret.
+
+This format resembles react-like code because AI agents are commonly trained on large amounts of web-based data. By using this familiar structure, your AI agent is better equipped to translate the returned context into code that matches your existing language, framework, and patterns.
+
+If you have Code Connect set up, the `get_design_context` tool will use it to include information about your codebase which you provided. If you have multiple Code Connect mappings, mapping your Figma design components to say, both your React and SwiftUI implementations, you can control which mappings are used by the MCP Server. The Desktop MCP will use the Code Connect mapping you have selected in Dev Mode. For the Remote MCP, instruct the agent to set the `clientFrameworks` tool call paramater to the exact Code Connect label set up for your mappings, e.g.. `React`, `SwiftUI`.
+
+You should take this response and guide your AI agent to translate the returned context to match your codebase. For help doing this take a look at our [best practices](/docs/figma-mcp-server/write-effective-prompts/) page.
+
+*   [About the `get_design_context` tool](#about-the-get_design_context-tool)

@@ -1,0 +1,37 @@
+---
+title: Figma REST API – Scopes
+slug: /figma/rest-api/scopes
+---
+
+# Scopes
+
+Scopes define which REST API endpoints an OAuth access token or personal access token can use.[page:3] They do not override Figma sharing permissions; you can only access files, projects, teams, and org data you already have access to in the product.[page:3]
+
+## Scope categories
+
+Scopes cover areas such as:[page:3]
+
+- User identity (`current_user:read`).  
+- File content, comments, dev resources, metadata, variables, and versions.  
+- Projects and selections.  
+- Libraries and library analytics.  
+- Organization‑level analytics and discovery.  
+- Webhooks.[page:3]
+
+Several scopes are enterprise‑only, including variables and some org‑level analytics.[page:3]
+
+## Examples
+
+- `file_content:read` – read file content including nodes and editor type.[page:3]
+- `file_comments:read` / `file_comments:write` – read and post/delete comments and reactions.[page:3]
+- `file_dev_resources:read` / `file_dev_resources:write` – read and manage dev resources on files.[page:3]
+- `file_variables:read` / `file_variables:write` – read and write variables and collections (Enterprise only).[page:3]
+- `library_content:read` / `team_library_content:read` – read published components and styles in files or teams.[page:3]
+- `library_assets:read` – read data for individual published components and styles.[page:3]
+- `library_analytics:read` – design‑system analytics (Enterprise only).[page:3]
+- `org:activity_log_read` – read organization activity logs (Enterprise, admin only).[page:3]
+- `org:discovery_read` – read org‑wide text event data (Governance+ orgs, admin only).[page:3]
+- `projects:read` – list projects and files in them.[page:3]
+- `webhooks:read` / `webhooks:write` – read, create, and manage webhooks.[page:3]
+
+The legacy `files:read` scope is deprecated and you should move to granular scopes such as `file_content:read` and `file_comments:read`.[page:3]

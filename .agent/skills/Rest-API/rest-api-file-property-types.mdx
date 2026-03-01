@@ -1,0 +1,46 @@
+---
+title: Figma files – Property types
+slug: /figma/rest-api/file-property-types
+---
+
+# Property types
+
+Many node fields use Figma‑specific property types such as colors, transforms, paints, text styles, and effects.[page:7] This page documents those reusable types referenced from the node‑types tables.[page:7]
+
+## Core geometry and color
+
+- `Color` and `RGBColor`: RGBA or RGB color channels with values between 0 and 1.[page:7]
+- `Rectangle`, `Vector`, `Size`: basic geometric types (positions, sizes, bounding boxes).[page:7]
+- `Transform`: 2×3 affine transformation matrix representing scale, rotation, shear, and translation.[page:7]
+- `ArcData`: ellipse arc details (start angle, end angle, inner radius).[page:7]
+
+## Rendering and layout
+
+- `BlendMode`: enum of blending operations (normal, darken, multiply, screen, overlay, etc.).[page:7]
+- `MaskType`: mask behavior (alpha, vector, luminance).[page:7]
+- `LayoutConstraint`: constraints relative to containing frame (top, bottom, center, scale, etc.).[page:7]
+- `LayoutGrid`: layout grid definition with pattern, section size, alignment, gutters, offset, and count.[page:7]
+- `Effect`: blur, shadow, texture, and noise effect descriptions including color, radius, offsets, and optional bound variables.[page:7]
+
+## Paints and images
+
+- `Paint`: describes solid colors, gradients, images, emojis, videos, or patterns, including opacity, blend mode, gradient handles and stops, image references, filters, and bound variables.[page:7]
+- `ColorStop`, `ImageFilters`, `PaintOverride`: support gradient and per‑region paint overrides with optional variable bindings.[page:7]
+
+## Text and typography
+
+- `TypeStyle`: font family, size, weight, line height, letter spacing, text case, truncation, fills, hyperlinks, and open‑type flags, plus variable bindings for certain fields.[page:7]
+- `TextPathTypeStyle`: variant type style for text along a path.[page:7]
+
+## Components, styles, and variables
+
+- `Component`, `ComponentSet`, and `Style`: metadata for reusable assets (keys, names, descriptions, remote flags, documentation links, style type).[page:7]
+- `ComponentPropertyDefinition`, `ComponentProperty`, `ComponentPropertyType`: describe component props, default values, property types (boolean, text, variant, instance swap).[page:7]
+- `VariableAlias`: references another variable via an ID.[page:7]
+
+## Prototyping and dev mode
+
+- `PrototypeDevice`, `FlowStartingPoint`: prototype device configuration and flow starting frames.[page:7]
+- `Interaction`, `Trigger`, `Action` (and subtypes like `NodeAction`, `OpenURLAction`): prototype interactions and behaviors.[page:7]
+- `DevStatus`: handoff status (`READY_FOR_DEV`, `COMPLETED`) plus an optional description.[page:7]
+- `Annotation`, `Measurement` and related types: pinned notes and distances in Dev Mode.[page:7]

@@ -1,0 +1,43 @@
+---
+title: Library Analytics | Developer Docs
+slug: /figma/rest-api/library-analytics-intro
+---
+
+On this page
+
+## Getting started[​](#getting-started "Direct link to Getting started")
+
+### Who can use the Library Analytics API[​](#who-can-use-the-library-analytics-api "Direct link to Who can use the Library Analytics API")
+
+*   The Library Analytics API is only available to organizations on the Enterprise plan.
+*   Any user with a seat in an Enterprise plan is able to query the Library Analytics API. The response includes only the data that the user making the request is permitted to access.
+
+Figma's Library Analytics API lets you fetch analytics data about how your organization's design system libraries are being used. The API provides similar information to the in-product library analytics feature, but in a format that you can use to do more fine-grained, custom analysis.
+
+To make requests to the Library Analytics API, your access token must include the `library_analytics:read` scope.
+
+### Types of data provided[​](#types-of-data-provided "Direct link to Types of data provided")
+
+Analytics data is provided at the library level. For each library, you can get access to action data and usage data. The information is further broken down by different dimensions based on the type of analysis you wish to do.
+
+*   **Actions data** contains time series data about what actions your users have performed with your library on a week-by-week basis. You can use this to identify trends. Action data can be broken down by used component, style, or variable, or using team.
+*   **Usages data** contains summary information about how many instances of a library's components exist across all files. You can think of this as a snapshot, or census, of where your library and its components are being used. Usage data can be broken down by used component, style, or variable, or using file/team.
+
+### Permissions and obfuscation[​](#permissions-and-obfuscation "Direct link to Permissions and obfuscation")
+
+The Library Analytics API honors the permissions of the user requesting analytics data. Analytics data for files and teams that the user does not have access to will still be included in responses, but their names will be obfuscated. These will appear as rows with names like `Team not visible` and `File not visible`. We also exclude all information of component usages, insertions, or detachments outside of your org.
+
+### Data freshness[​](#data-freshness "Direct link to Data freshness")
+
+Data is recalculated daily at 00:00 UTC time.
+
+### Paging[​](#paging "Direct link to Paging")
+
+API responses are paged with a maximum number of 1,000 rows per page. If the total number of rows is greater than this limit, the response will contain a cursor and `"next_page": true` in the response. This `cursor` may be used as a query parameter in subsequent requests to fetch the next page of data.
+
+*   [Getting started](#getting-started)
+    *   [Who can use the Library Analytics API](#who-can-use-the-library-analytics-api)
+    *   [Types of data provided](#types-of-data-provided)
+    *   [Permissions and obfuscation](#permissions-and-obfuscation)
+    *   [Data freshness](#data-freshness)
+    *   [Paging](#paging)

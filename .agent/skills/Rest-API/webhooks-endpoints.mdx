@@ -1,0 +1,368 @@
+---
+title: Endpoints | Developer Docs
+slug: /figma/rest-api/webhooks-endpoints
+---
+
+On this page
+
+You can use the following Webhooks via the Figma API:
+
+## POST webhook[​](#webhooks-v2-post-endpoint "Direct link to POST webhook")
+
+Create a new webhook which will call the specified endpoint when the event triggers. By default, this webhook will automatically send a `PING` event to the endpoint when it is created. If this behavior is not desired, you can create the webhook and set the status to `PAUSED` and reactivate it later.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`webhooks:write` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint "Direct link to HTTP Endpoint")
+
+`POST /v2/webhooks`
+
+**Return value**
+
+The [WebhookV2](/docs/rest-api/webhooks-types/#webhookv2-type) that was successfully posted
+
+Body parameters
+
+Description
+
+event\_type
+
+[WebhookV2Event](#webhookv2event-type)
+
+The type of event that will trigger this webhook to fire.
+
+context
+
+String
+
+Context to create the webhook for, as a string enum.
+
+*   `team`
+*   `project`
+*   `file`
+
+context\_id
+
+String
+
+The id of the context you want to receive updates about.
+
+endpoint
+
+String
+
+The HTTP endpoint that will receive a `POST` request when the event triggers. Max length 2048 characters.
+
+passcode
+
+String
+
+String that will be passed back to your webhook endpoint to verify that it is being called by Figma. Max length 100 characters.
+
+status
+
+[WebhookV2Status](/docs/rest-api/webhooks-types/#webhookv2status-type)optional
+
+State of the webhook, including any error state it may be in.
+
+description
+
+Stringoptional
+
+User provided description or name for the webhook. Max length 150 characters.
+
+Error codes
+
+Description
+
+400
+
+Required parameter missing or invalid
+
+403
+
+The developer / OAuth token is invalid or expired
+
+## GET webhook by id[​](#webhooks-v2-get-by-id-endpoint "Direct link to GET webhook by id")
+
+Returns the [WebhookV2](/docs/rest-api/webhooks-types/#webhookv2-type) corresponding to the ID provided, if it exists.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`webhooks:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-1 "Direct link to HTTP Endpoint")
+
+`GET /v2/webhooks/:webhook_id`
+
+**Return value**
+
+The [WebhookV2](/docs/rest-api/webhooks-types/#webhookv2-type) requested
+
+Path parameters
+
+Description
+
+webhook\_id
+
+String
+
+The id of the webhook you want to query for
+
+Error codes
+
+Description
+
+403
+
+The developer / OAuth token is invalid or expired
+
+404
+
+Webhook does not exist or you do not have permissions to access this webhook
+
+## Get webhooks[​](#webhooks-v2-get-endpoint "Direct link to Get webhooks")
+
+Returns a list of webhooks corresponding to the context or plan provided, if they exist. For plan, the webhooks for all contexts that you have access to will be returned, and the response is paginated.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`webhooks:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-2 "Direct link to HTTP Endpoint")
+
+`GET /v2/webhooks`
+
+**Return value**
+
+```
+{  "webhooks": WebhookV2[]  "pagination": {    "next_page": String (optional)    "prev_page": String (optional)  }}
+```
+
+Query parameters
+
+Description
+
+context
+
+String
+
+Context to get webhooks for, as a string enum.
+
+*   `team`
+*   `project`
+*   `file`
+
+context\_id
+
+String
+
+The id of the context that you want to get attached webhooks for. If you're using `context_id`, you cannot use `plan_api_id`.
+
+plan\_api\_id
+
+String
+
+The id of your plan. Use this to get all webhooks for all contexts you have access to. If you're using `plan_api_id`, you cannot use `context` or `context_id`. When you use `plan_api_id`, the response is paginated.
+
+cursor
+
+String
+
+If you're using `plan_api_id`, this is the cursor to use for pagination. If you're using `context` or `context_id`, this parameter is ignored. Provide the `next_page` or `prev_page` value from the previous response to get the next or previous page of results.
+
+Error codes
+
+Description
+
+403
+
+The developer / OAuth token is invalid or expired
+
+404
+
+Webhook does not exist or you do not have permissions to access this webhook
+
+## PUT webhook[​](#webhooks-v2-put-endpoint "Direct link to PUT webhook")
+
+Updates the webhook with the specified properties.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`webhooks:write` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-3 "Direct link to HTTP Endpoint")
+
+`PUT /v2/webhooks/:webhook_id`
+
+**Return value**
+
+The [WebhookV2](/docs/rest-api/webhooks-types/#webhookv2-type) that was successfully updated
+
+Path parameters
+
+Description
+
+webhook\_id
+
+String
+
+The id of the webhook you want to update.
+
+Body parameters
+
+Description
+
+event\_type
+
+[WebhookV2Event](#webhookv2event-type)optional
+
+The type of event that will trigger this webhook to fire.
+
+endpoint
+
+Stringoptional
+
+The HTTP endpoint that will receive a POST request when the event triggers.
+
+passcode
+
+Stringoptional
+
+String that will be passed back to your webhook endpoint to verify that it is being called by Figma.
+
+status
+
+[WebhookV2Status](/docs/rest-api/webhooks-types/#webhookv2status-type)optional
+
+State to put the webhook in, as a string enum. The webhook cannot be put into an error state this way.
+
+description
+
+Stringoptional
+
+User provided description or name for the webhook. Max length 140 characters. Providing a description '' (empty string) will delete the description.
+
+Error codes
+
+Description
+
+400
+
+Required parameter missing or invalid
+
+403
+
+The developer / OAuth token is invalid or expired
+
+404
+
+Webhook does not exist or you do not have permissions to access this webhook
+
+## DELETE webhook[​](#webhooks-v2-delete-endpoint "Direct link to DELETE webhook")
+
+Deletes the specified webhook. This operation cannot be reversed.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`webhooks:write` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-4 "Direct link to HTTP Endpoint")
+
+`DELETE /v2/webhooks/:webhook_id`
+
+**Return value**
+
+The [WebhookV2](/docs/rest-api/webhooks-types/#webhookv2-type) that was successfully deleted
+
+Path parameters
+
+Description
+
+webhook\_id
+
+String
+
+The id of the webhook you want to delete.
+
+Error codes
+
+Description
+
+400
+
+Required parameter missing or invalid
+
+403
+
+The developer / OAuth token is invalid or expired
+
+404
+
+Webhook does not exist or you do not have permissions to access this webhook
+
+## GET team webhooks[​](#webhooks-v2-teams-endpoint "Direct link to GET team webhooks")
+
+\[DEPRECATED\] Returns all webhooks registered under the specified team. This endpoing is being deprecated. Instead, use the [GET /v2/webhooks](#webhooks-v2-get-endpoint) endpoint with context set to `team` and `context_id` set to the team id you want to query for. For example, requests to `GET v2/webhooks/:team_id/webhook` should be replaced with `GET v2/webhooks?context=team&context_id=:team_id`.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`webhooks:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-5 "Direct link to HTTP Endpoint")
+
+`GET /v2/teams/:team_id/webhooks`
+
+**Return value**
+
+```
+{  "webhooks": WebhookV2[]}
+```
+
+Path parameters
+
+Description
+
+team\_id
+
+String
+
+The team id you wish to query for.
+
+## GET webhook requests[​](#webhooks-v2-requests-endpoint "Direct link to GET webhook requests")
+
+Returns all webhook requests sent within the last week. Useful for debugging.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`webhooks:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint-6 "Direct link to HTTP Endpoint")
+
+`GET /v2/webhooks/:webhook_id/requests`
+
+**Return value**
+
+```
+{  "requests": WebhookV2Request[]}
+```
+
+Path parameters
+
+Description
+
+webhook\_id
+
+String
+
+The id of the webhook subscription you want to see events from.
+
+*   [POST webhook](#webhooks-v2-post-endpoint)
+*   [GET webhook by id](#webhooks-v2-get-by-id-endpoint)
+*   [Get webhooks](#webhooks-v2-get-endpoint)
+*   [PUT webhook](#webhooks-v2-put-endpoint)
+*   [DELETE webhook](#webhooks-v2-delete-endpoint)
+*   [GET team webhooks](#webhooks-v2-teams-endpoint)
+*   [GET webhook requests](#webhooks-v2-requests-endpoint)

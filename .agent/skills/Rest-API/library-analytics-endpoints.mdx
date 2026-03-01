@@ -1,0 +1,531 @@
+---
+title: Endpoints | Developer Docs
+slug: /figma/rest-api/library-analytics-endpoints
+---
+
+On this page
+
+There are six methods provided by the Library Analytics REST API. Components, styles, and variables each have an actions endpoint and a usages endpoint.
+
+[GET component actions](#get-component-actions-endpoint): Get time series data about what actions your users have performed with your library's components on a week-by-week basis.
+
+[GET component usages](#get-component-usages-endpoint): Get summary information about how many instances of a library's components exist across all files.
+
+[GET styles actions](#get-styles-actions-endpoint): Get time series data about what actions your users have performed with your library's styles on a week-by-week basis.
+
+[GET styles usages](#get-styles-usages-endpoint): Get summary information about how many instances of a library's styles exist across all files.
+
+[GET variables actions](#get-variables-actions-endpoint): Get time series data about what actions your users have performed with your library's variables on a week-by-week basis.
+
+[GET variables usages](#get-variables-usages-endpoint): Get summary information about how many instances of a library's variables exist across all files.
+
+## GET component actions[​](#get-component-actions-endpoint "Direct link to GET component actions")
+
+The `/v1/analytics/libraries/:library_file_key/component/actions` endpoint provides historical time series data regarding how a design system library is used. The data is returned in descending order, from most recent to least recent. Action data can be returned broken down in different ways using the required `group_by` query parameter. Data is available for up to one year.
+
+### Types of events[​](#types-of-events "Direct link to Types of events")
+
+We track two types of events:
+
+*   `insertions`: Tracks how many times a component in the library was inserted into a document. This can happen in many ways, including: duplicating an existing instance, copy pasting the instance from another document, or inserting the component from the asset panel.
+*   `detachments`: Tracks how many times a component in the library was detached.
+
+### Data sparseness[​](#data-sparseness "Direct link to Data sparseness")
+
+Only weeks containing data are returned. Teams and components only appear when there are associated actions.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`library_analytics:read` scope](/docs/rest-api/scopes/).
+
+### HTTP endpoint[​](#http-endpoint "Direct link to HTTP endpoint")
+
+`GET /v1/analytics/libraries/:library_file_key/component/actions`
+
+**Return value**
+
+Actions grouped by component
+
+```
+{  "cursor": String,  "next_page": Boolean,  "rows": [    {      "component_key": String,      "week": String,      "detachments": Number,      "insertions": Number,      "component_name": String,      "component_set_key": String,      "component_set_name": String    },    ...  ]}
+```
+
+Actions grouped by team
+
+```
+{  "cursor": String,  "next_page": Boolean,  "rows": [    {      "week": String,      "detachments": Number,      "insertions": Number,      "team_name": String,      "workspace_name": String    },    ...  ]}
+```
+
+Path parameters
+
+Description
+
+library\_file\_key
+
+Stringrequired
+
+File key of the library to fetch analytics data for.
+
+Query parameters
+
+Description
+
+group\_by
+
+Stringrequired
+
+Controls how action data is organized in the response.
+
+*   `component` returns actions broken down by each component within the library.
+*   `team` returns actions broken down by the team using the library.
+
+start\_date
+
+String
+
+Filters the response to include time series data that occurs after the start date (inclusive). If unset, returns the prior year.
+
+Accepts an ISO 8601 date string (YYYY-MM-DD). For example: `2023-12-03`. Dates are rounded back to the previous start of a week. For example, if you supply a Wednesday, you will get data starting on the preceding Sunday 00:00 UTC time.
+
+end\_date
+
+String
+
+Filters the response to include time series data that that occurs before the end date (inclusive). If unset, returns up to the last full week.
+
+Accepts an ISO 8601 date string (YYYY-MM-DD). For example: `2023-12-03`. Dates are rounded forward in time to the nearest end of a week.
+
+cursor
+
+String
+
+Cursor for pagination. Used to retrieve the next page of data. Obtained from the response of the previous call.
+
+Error codes
+
+Description
+
+400
+
+Invalid parameter. The `message` parameter on the response will describe the error.
+
+401
+
+Issue with authentication. The `message` parameter on the response will describe the error.
+
+403
+
+API is not available. Possible error messages are `Limited by Figma plan`, `Incorrect account type`, or `Invalid scope`. This could also indicate the developer / OAuth token is invalid or expired.
+
+## GET component usages[​](#get-component-usages-endpoint "Direct link to GET component usages")
+
+The `/v1/analytics/libraries/:library_file_key/component/usages` endpoint provides data on how components are used across different files and teams. This data can be broken down by component or file.
+
+### Components and files[​](#components-and-files "Direct link to Components and files")
+
+The endpoint can group usage by:
+
+*   `component`: Returns a list of all the components with usage in the library (unused components are excluded). The response includes the name of the component, the number of files and teams using the component, and the total number of existing instances of the component.
+*   `file`: Returns a list of all the files that use the library. The response includes the team name, the file name, and the total number of times that resources from the library are used. Files that you don't have access to are returned as `File not visible`. A total count of instances used in those files is also included in the response.
+
+### Data sparseness[​](#data-sparseness-1 "Direct link to Data sparseness")
+
+Rows only include teams or components with data.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`library_analytics:read` scope](/docs/rest-api/scopes/).
+
+### HTTP endpoint[​](#http-endpoint-1 "Direct link to HTTP endpoint")
+
+`GET /v1/analytics/libraries/:library_file_key/component/usages`
+
+**Return value**
+
+Usage grouped by component
+
+```
+{  "cursor": String,  "next_page": Boolean,  "rows": [    {      "component_key": String,      "usages": Number      "teams_using": Number,      "files_using": Number,      "component_name": String,      "component_set_key": String,      "component_set_name": String    },    ...  ]}
+```
+
+Usage grouped by file
+
+```
+{  "cursor": String,  "next_page": Boolean,  "rows": [    {      "usages": Number,      "team_name": String,      "workspace_name": String,      "file_name": String    },    ...  ]}
+```
+
+Path parameters
+
+Description
+
+library\_file\_key
+
+Stringrequired
+
+File key of the library to fetch analytics data for.
+
+Query parameters
+
+Description
+
+group\_by
+
+Stringrequired
+
+Controls how usage data is organized in the response.
+
+*   `component` returns usages broken down by each component within the library.
+*   `file` returns usages broken down by each file and team that used the library.
+
+cursor
+
+String
+
+Cursor for pagination. Used to retrieve the next page of data. Obtained from the response of the previous call.
+
+Error codes
+
+Description
+
+400
+
+Invalid parameter. The `message` parameter on the response will describe the error.
+
+401
+
+Issue with authentication. The `message` parameter on the response will describe the error.
+
+403
+
+API is not available. Possible error messages are `Limited by Figma plan`, `Incorrect account type`, or `Invalid scope`. This could also indicate the developer / OAuth token is invalid or expired.
+
+## GET styles actions[​](#get-styles-actions-endpoint "Direct link to GET styles actions")
+
+The `/v1/analytics/libraries/:library_file_key/style/actions` endpoint provides historical time series data regarding how design system styles were used. The data is returned in descending order, from most recent to least recent. Actions data can be returned organized in different ways using the required `group_by` query parameter.
+
+### Data sparseness[​](#data-sparseness-2 "Direct link to Data sparseness")
+
+Only weeks containing data are returned. Teams and styles only appear when there are associated actions.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`library_analytics:read` scope](/docs/rest-api/scopes/).
+
+### HTTP endpoint[​](#http-endpoint-2 "Direct link to HTTP endpoint")
+
+`GET /v1/analytics/libraries/:library_file_key/style/actions`
+
+**Return value**
+
+Actions grouped by style
+
+```
+{  "cursor": String,  "next_page": Boolean,  "rows": [    {      "style_key": String,      "week": String,      "detachments": Number,      "insertions": Number,      "style_name": String,      "style_type": String    },    ...  ]}
+```
+
+Actions grouped by team
+
+```
+{  "cursor": String,  "next_page": Boolean,  "rows": [    {      "week": String,      "detachments": Number,      "insertions": Number,      "team_name": String,      "workspace_name": String    },    ...  ]}
+```
+
+Path parameters
+
+Description
+
+library\_file\_key
+
+Stringrequired
+
+File key of the library to fetch style usage analytics for.
+
+Query parameters
+
+Description
+
+group\_by
+
+Stringrequired
+
+Controls how action data is organized in the response.
+
+*   `style` returns actions broken down by each style.
+*   `team` returns actions broken down by the team using the library.
+
+start\_date
+
+String
+
+Filters the response to include data occurring after the start date (inclusive). Accepts an ISO 8601 date string (YYYY-MM-DD).
+
+end\_date
+
+String
+
+Filters the response to include data occurring before the end date (inclusive). Accepts an ISO 8601 date string (YYYY-MM-DD).
+
+cursor
+
+String
+
+Cursor for pagination. Used to retrieve the next page of data. Obtained from the response of the previous call.
+
+Error codes
+
+Description
+
+400
+
+Invalid parameter. The `message` parameter on the response will describe the error.
+
+401
+
+Issue with authentication. The `message` parameter on the response will describe the error.
+
+403
+
+API is not available. Possible error messages are `Limited by Figma plan`, `Incorrect account type`, or `Invalid scope`. This could also indicate the developer / OAuth token is invalid or expired.
+
+## GET styles usages[​](#get-styles-usages-endpoint "Direct link to GET styles usages")
+
+The `/v1/analytics/libraries/:library_file_key/style/usages` endpoint provides data on how styles are used across different files and teams. This data can be broken down by style or file.
+
+### Data sparseness[​](#data-sparseness-3 "Direct link to Data sparseness")
+
+Rows only include teams or styles with data.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`library_analytics:read` scope](/docs/rest-api/scopes/).
+
+### HTTP endpoint[​](#http-endpoint-3 "Direct link to HTTP endpoint")
+
+`GET /v1/analytics/libraries/:library_file_key/style/usages`
+
+**Return value**
+
+Usages grouped by style
+
+```
+{  "cursor": String,  "next_page": Boolean,  "rows": [    {      "files_using": Number,      "teams_using": Number,      "usages": Number,      "style_key": String,      "style_name": String,      "style_type": String    },    ...  ]}
+```
+
+Usages grouped by file
+
+```
+{  "cursor": String,  "next_page": Boolean,  "rows": [    {      "usages": Number,      "team_name": String,      "file_name": String,      "workspace_name": String    },    ...  ]}
+```
+
+Path parameters
+
+Description
+
+library\_file\_key
+
+Stringrequired
+
+File key of the library to fetch style usage data for.
+
+Query parameters
+
+Description
+
+group\_by
+
+Stringrequired
+
+Controls how usage data is organized in the response.
+
+*   `style` returns usages broken down by each style.
+*   `file` returns usages broken down by each file.
+
+cursor
+
+String
+
+Cursor for pagination. Used to retrieve the next page of data. Obtained from the response of the previous call.
+
+Error codes
+
+Description
+
+400
+
+Invalid parameter. The `message` parameter on the response will describe the error.
+
+401
+
+Issue with authentication. The `message` parameter on the response will describe the error.
+
+403
+
+API is not available. Possible error messages are `Limited by Figma plan`, `Incorrect account type`, or `Invalid scope`. This could also indicate the developer / OAuth token is invalid or expired.
+
+## GET variables actions[​](#get-variables-actions-endpoint "Direct link to GET variables actions")
+
+The `/v1/analytics/libraries/:library_file_key/variable/actions` endpoint provides historical time series data regarding how variables within a design system were used. The data is returned in descending order, from most recent to least recent. The data can be grouped by variable or by team.
+
+### Data sparseness[​](#data-sparseness-4 "Direct link to Data sparseness")
+
+Only weeks containing data are returned. Teams and variables only appear when there are associated actions.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`library_analytics:read` scope](/docs/rest-api/scopes/).
+
+### HTTP endpoint[​](#http-endpoint-4 "Direct link to HTTP endpoint")
+
+`GET /v1/analytics/libraries/:library_file_key/variable/actions`
+
+**Return value**
+
+Actions grouped by variable
+
+```
+{  "cursor": String,  "next_page": Boolean,  "rows": [    {      "variable_key": String,      "week": String,      "detachments": Number,      "insertions": Number,      "variable_name": String,      "variable_type": String,      "collection_key": String,      "collection_name": String    },    ...  ]}
+```
+
+Actions grouped by team
+
+```
+{  "cursor": String,  "next_page": Boolean,  "rows": [    {      "week": String,      "detachments": Number,      "insertions": Number,      "team_name": String,      "workspace_name": String    },    ...  ]}
+```
+
+Path parameters
+
+Description
+
+library\_file\_key
+
+Stringrequired
+
+File key of the library to fetch variable usage analytics for.
+
+Query parameters
+
+Description
+
+group\_by
+
+Stringrequired
+
+Controls how action data is organized in the response.
+
+*   `variable` returns actions broken down by each variable.
+*   `team` returns actions broken down by the team using the library.
+
+start\_date
+
+String
+
+Filters the response to include data occurring after the start date (inclusive). Accepts an ISO 8601 date string (YYYY-MM-DD).
+
+end\_date
+
+String
+
+Filters the response to include data occurring before the end date (inclusive). Accepts an ISO 8601 date string (YYYY-MM-DD).
+
+cursor
+
+String
+
+Cursor for pagination. Used to retrieve the next page of data. Obtained from the response of the previous call.
+
+Error codes
+
+Description
+
+400
+
+Invalid parameter. The `message` parameter on the response will describe the error.
+
+401
+
+Issue with authentication. The `message` parameter on the response will describe the error.
+
+403
+
+API is not available. Possible error messages are `Limited by Figma plan`, `Incorrect account type`, or `Invalid scope`. This could also indicate the developer / OAuth token is invalid or expired.
+
+## GET variables usages[​](#get-variables-usages-endpoint "Direct link to GET variables usages")
+
+The `/v1/analytics/libraries/:library_file_key/variable/usages` endpoint provides data on how variables are used across different files and teams. This data can be grouped by variable or file.
+
+### Data sparseness[​](#data-sparseness-5 "Direct link to Data sparseness")
+
+Rows only include teams or variables with data.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`library_analytics:read` scope](/docs/rest-api/scopes/).
+
+### HTTP endpoint[​](#http-endpoint-5 "Direct link to HTTP endpoint")
+
+`GET /v1/analytics/libraries/:library_file_key/variable/usages`
+
+**Return value**
+
+Usages grouped by variable
+
+```
+{  "cursor": String,  "next_page": Boolean,  "rows": [    {      "files_using": Number,      "teams_using": Number,      "usages": Number,      "variable_key": String,      "variable_name": String,      "variable_type": String,      "collection_key": String,      "collection_name": String    },    ...  ]}
+```
+
+Usages grouped by file
+
+```
+{  "cursor": String,  "next_page": Boolean,  "rows": [    {      "usages": Number,      "team_name": String,      "file_name": String,      "workspace_name": String    },    ...  ]}
+```
+
+Path parameters
+
+Description
+
+library\_file\_key
+
+Stringrequired
+
+File key of the library to fetch variable usage data for.
+
+Query parameters
+
+Description
+
+group\_by
+
+Stringrequired
+
+Controls how usage data is organized in the response.
+
+*   `variable` returns usages broken down by each variable.
+*   `file` returns usages broken down by each file.
+
+cursor
+
+String
+
+Cursor for pagination. Used to retrieve the next page of data. Obtained from the response of the previous call.
+
+Error codes
+
+Description
+
+400
+
+Invalid parameter. The `message` parameter on the response will describe the error.
+
+401
+
+Issue with authentication. The `message` parameter on the response will describe the error.
+
+403
+
+API is not available. Possible error messages are `Limited by Figma plan`, `Incorrect account type`, or `Invalid scope`. This could also indicate the developer / OAuth token is invalid or expired.
+
+*   [GET component actions](#get-component-actions-endpoint)
+*   [GET component usages](#get-component-usages-endpoint)
+*   [GET styles actions](#get-styles-actions-endpoint)
+*   [GET styles usages](#get-styles-usages-endpoint)
+*   [GET variables actions](#get-variables-actions-endpoint)
+*   [GET variables usages](#get-variables-usages-endpoint)

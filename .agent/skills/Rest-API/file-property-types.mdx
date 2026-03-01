@@ -1,0 +1,1909 @@
+---
+title: Property types | Developer Docs
+slug: /figma/rest-api/file-property-types
+---
+
+On this page
+
+Some of the properties mentioned in the [Node types](/docs/rest-api/file-node-types/) section are custom Figma types. We've outlined the specifics of each of these property types below.
+
+Property type
+
+Description
+
+### Color[​](#color-type "Direct link to Color")
+
+An RGBA color.
+
+An RGBA color.
+
+`r`Number
+
+Red channel value, between 0 and 1
+
+`g`Number
+
+Green channel value, between 0 and 1
+
+`b`Number
+
+Blue channel value, between 0 and 1
+
+`a`Number
+
+Alpha channel value, between 0 and 1
+
+### RGBColor[​](#rgbcolor-type "Direct link to RGBColor")
+
+An RGB color.
+
+An RGB color.
+
+`r`Number
+
+Red channel value, between 0 and 1
+
+`g`Number
+
+Green channel value, between 0 and 1
+
+`b`Number
+
+Blue channel value, between 0 and 1
+
+### ExportSetting[​](#exportsetting-type "Direct link to ExportSetting")
+
+Format and size to export an asset at.
+
+`suffix`String
+
+File suffix to append to all filenames
+
+`format`String
+
+Image type, as a string enum.
+
+*   `JPG`
+*   `PNG`
+*   `SVG`
+
+`constraint`[Constraint](#constraint-type)
+
+Constraint that determines sizing of exported asset
+
+### Constraint[​](#constraint-type "Direct link to Constraint")
+
+Sizing constraint for exports.
+
+`type`String
+
+Constraint type, as a string enum.
+
+*   `SCALE`: Scale by `value`.
+*   `WIDTH`: Scale proportionally and set width to `value`.
+*   `HEIGHT`: Scale proportionally and set height to `value`.
+
+`value`Number
+
+See `type` property for effect of this field.
+
+### Rectangle[​](#rectangle-type "Direct link to Rectangle")
+
+A rectangle that expresses a bounding box in absolute coordinates.
+
+`x`Number
+
+X coordinate of top left corner of the rectangle.
+
+`y`Number
+
+Y coordinate of top left corner of the rectangle.
+
+`width`Number
+
+Width of the rectangle.
+
+`height`Number
+
+Height of the rectangle.
+
+### ArcData[​](#arcdata-type "Direct link to ArcData")
+
+Information about the arc properties of an ellipse. 0° is the x axis and increasing angles rotate clockwise.
+
+`startingAngle`Number
+
+Start of the sweep in radians.
+
+`endingAngle`Number
+
+End of the sweep in radians.
+
+`innerRadius`Number
+
+Inner radius value between 0 and 1.
+
+### BlendMode[​](#blendmode-type "Direct link to BlendMode")
+
+Enum describing how layer blends with layers below.
+
+This type is a string enum with the following possible values.
+
+Normal blends:
+
+*   `PASS_THROUGH` (only applicable to objects with children)
+*   `NORMAL`
+
+Darken:
+
+*   `DARKEN`
+*   `MULTIPLY`
+*   `LINEAR_BURN` ("Plus darker" in Figma)
+*   `COLOR_BURN`
+
+Lighten:
+
+*   `LIGHTEN`
+*   `SCREEN`
+*   `LINEAR_DODGE` ("Plus lighter" in Figma)
+*   `COLOR_DODGE`
+
+Contrast:
+
+*   `OVERLAY`
+*   `SOFT_LIGHT`
+*   `HARD_LIGHT`
+
+Inversion:
+
+*   `DIFFERENCE`
+*   `EXCLUSION`
+
+Component:
+
+*   `HUE`
+*   `SATURATION`
+*   `COLOR`
+*   `LUMINOSITY`
+
+### MaskType[​](#masktype-type "Direct link to MaskType")
+
+Enum describing how mask layer operates on the pixels of the layers it masks.
+
+This type is a string enum with the following possible values:
+
+*   `ALPHA`: The mask node's alpha channel will be used to determine the opacity of each pixel in the masked result.
+*   `VECTOR`: If the mask node has visible fill paints, every pixel inside the node's fill regions will be fully visible in the masked result. If the mask has visible stroke paints, every pixel inside the node's stroke regions will be fully visible in the masked result.
+*   `LUMINANCE`: The luminance value of each pixel of the mask node will be used to determine the opacity of that pixel in the masked result.
+
+### EasingType[​](#easingtype-type "Direct link to EasingType")
+
+Enum describing animation easing curves.
+
+This type is a string enum with the following possible values:
+
+*   `EASE_IN`: Ease in with an animation curve similar to CSS ease-in.
+*   `EASE_OUT`: Ease out with an animation curve similar to CSS ease-out.
+*   `EASE_IN_AND_OUT`: Ease in and then out with an animation curve similar to CSS ease-in-out.
+*   `LINEAR`: No easing, similar to CSS linear.
+*   `GENTLE_SPRING`: Gentle spring animation similar to react-spring.
+
+### FlowStartingPoint[​](#flowstartingpoint-type "Direct link to FlowStartingPoint")
+
+A flow starting point used when launching a prototype to enter Presentation view.
+
+`nodeId`String
+
+Unique identifier specifying the frame.
+
+`name`String
+
+Name of flow.
+
+### LayoutConstraint[​](#layoutconstraint-type "Direct link to LayoutConstraint")
+
+Layout constraint relative to containing Frame.
+
+`vertical`String
+
+Vertical constraint, as a string enum.
+
+*   `TOP`: Node is laid out relative to top of the containing frame.
+*   `BOTTOM`: Node is laid out relative to bottom of the containing frame.
+*   `CENTER`: Node is vertically centered relative to containing frame.
+*   `TOP_BOTTOM`: Both top and bottom of node are constrained relative to containing frame (node stretches with frame).
+*   `SCALE`: Node scales vertically with containing frame.
+
+`horizontal`String
+
+Horizontal constraint, as a string enum.
+
+*   `LEFT`: Node is laid out relative to left of the containing frame.
+*   `RIGHT`: Node is laid out relative to right of the containing frame.
+*   `CENTER`: Node is horizontally centered relative to containing frame.
+*   `LEFT_RIGHT`: Both left and right of node are constrained relative to containing frame (node stretches with frame).
+*   `SCALE`: Node scales horizontally with containing frame.
+
+### LayoutGrid[​](#layoutgrid-type "Direct link to LayoutGrid")
+
+Guides to align and place objects within a frame.
+
+`pattern`String
+
+Orientation of the grid, as a string enum.
+
+*   `COLUMNS`: Vertical grid.
+*   `ROWS`: Horizontal grid.
+*   `GRID`: Square grid.
+
+`sectionSize`Number
+
+Width of column grid or height of row grid or square grid spacing.
+
+`visible`Boolean
+
+Is the grid currently visible?
+
+`color`[Color](#color-type)
+
+Color of the grid.
+
+* * *
+
+The following properties are only meaningful for directional grids (COLUMNS or ROWS)
+
+`alignment`String
+
+Positioning of grid, as a string enum.
+
+*   `MIN`: Grid starts at the left or top of the frame.
+*   `STRETCH`: Grid is stretched to fit the frame.
+*   `CENTER`: Grid is center aligned.
+
+`gutterSize`Number
+
+Spacing in between columns and rows.
+
+`offset`Number
+
+Spacing before the first column or row.
+
+`count`Number
+
+Number of columns or rows.
+
+`boundVariables`Map<String, [VariableAlias](#variablealias-type)\>
+
+A mapping of field to the [VariableAlias](#variablealias-type) of the bound variable.
+
+### Effect[​](#effect-type "Direct link to Effect")
+
+A visual effect such as a shadow, blur, texture, or noise
+
+`type`String
+
+Effect type, as a string enum.
+
+*   `INNER_SHADOW`
+*   `DROP_SHADOW`
+*   `LAYER_BLUR`
+*   `BACKGROUND_BLUR`
+*   `TEXTURE`
+*   `NOISE`
+
+`visible`Boolean
+
+Is the effect active?
+
+`radius`Number
+
+Radius of the blur, shadow, or texture effect. For progressive blurs, this is the end radius of the blur.
+
+`blendMode`[BlendMode](#blendmode-type)
+
+Blend mode of the shadow or noise effect.
+
+* * *
+
+The following properties are for blur effects only:
+
+`blurType`Stringbeta
+
+Blur type, as a string enum.
+
+*   `NORMAL`
+*   `PROGRESSIVE`
+
+* * *
+
+The following properties are for progressive blur effects only:
+
+`startRadius`Numberbeta
+
+Radius of the starting point of the progressive blur.
+
+`startOffset`[Vector](#vector-type)beta
+
+Position of the starting point of the progressive blur. The position is in normalized object space (top left corner of the bounding box of the object is (0, 0) and the bottom right is (1,1)).
+
+`endOffset`[Vector](#vector-type)beta
+
+Position of the ending point of the progressive blur. The position is in normalized object space (top left corner of the bounding box of the object is (0, 0) and the bottom right is (1,1)).
+
+* * *
+
+The following properties are for shadows only:
+
+`color`[Color](#color-type)
+
+The color of the shadow.
+
+`offset`[Vector](#vector-type)
+
+How far the shadow is projected in the x and y directions.
+
+`spread`Numberdefault: 0
+
+How far the shadow spreads.
+
+`showShadowBehindNode`Boolean
+
+Whether to show the shadow behind translucent or transparent pixels (applies only to drop shadows).
+
+`boundVariables`Map<String, [VariableAlias](#variablealias-type)\>
+
+A mapping of field to the [VariableAlias](#variablealias-type) of the bound variable.
+
+* * *
+
+The following properties are for texture and noise effects only:
+
+`noiseSize`Numberbeta
+
+Size of the noise effect.
+
+`noiseType`Stringbeta
+
+Type of noise effect, as a string enum.
+
+*   `MONOTONE`
+*   `DUOTONE`
+*   `MULTITONE`
+
+`density`Numberbeta
+
+Density of the noise effect.
+
+* * *
+
+For duotone noise effects:
+
+`secondaryColor`[Color](#color-type)beta
+
+Secondary color of the noise effect.
+
+* * *
+
+For multitone noise effects:
+
+`opacity`Numberbeta
+
+Opacity of the noise effect.
+
+* * *
+
+The following properties are for texture effects only:
+
+`clipToShape`Booleanbeta
+
+Whether the texture is clipped to the shape.
+
+### Hyperlink[​](#hyperlink-type "Direct link to Hyperlink")
+
+A link to either a URL or another frame (node) in the document.
+
+`type`String
+
+Type of hyperlink, as a string enum.
+
+*   `URL`
+*   `NODE`
+
+`url`String
+
+URL being linked to, if `type` is `URL`.
+
+`nodeID`String
+
+ID of frame hyperlink points to, if `type` is `NODE`.
+
+### DocumentationLink[​](#documentationlink-type "Direct link to DocumentationLink")
+
+A link to documentation for a component.
+
+`uri`String
+
+Should be a valid URI (e.g. `https://www.figma.com`).
+
+### Paint[​](#paint-type "Direct link to Paint")
+
+A solid color, gradient, image, or pattern that can be applied as fills or strokes.
+
+`type`String
+
+Type of paint, as a string enum.
+
+*   `SOLID`
+*   `GRADIENT_LINEAR`
+*   `GRADIENT_RADIAL`
+*   `GRADIENT_ANGULAR`
+*   `GRADIENT_DIAMOND`
+*   `IMAGE`
+*   `EMOJI`
+*   `VIDEO`
+*   `PATTERN`
+
+`visible`Booleandefault: true
+
+Is the paint enabled?
+
+`opacity`Numberdefault: 1
+
+Overall opacity of paint (colors within the paint can also have opacity values which would blend with this).
+
+`blendMode`[BlendMode](#blendmode-type)
+
+How this node blends with nodes behind it in the scene (see blend mode section for more details).
+
+* * *
+
+For solid paints:
+
+`color`[Color](#color-type)
+
+Solid color of the paint.
+
+`boundVariables`Map<String, [VariableAlias](#variablealias-type)\>
+
+A mapping of field to the [VariableAlias](#variablealias-type) of the bound variable.
+
+* * *
+
+For gradient paints:
+
+`gradientHandlePositions`[Vector](#vector-type)\[\]
+
+This field contains three vectors, each of which are a position in normalized object space (normalized object space is if the top left corner of the bounding box of the object is (0, 0) and the bottom right is (1,1)). The first position corresponds to the start of the gradient (value 0 for the purposes of calculating gradient stops), the second position is the end of the gradient (value 1), and the third handle position determines the width of the gradient. See image examples below:
+
+![Linear gradient in a square. Where the gradient is lightest at the top and becomes darker as it moves downwards. First position is at the top edge of the square, in the middle of the edge and the third position is at the top left corner of the square.](/img/rest-api/linear.png)![Angular gradient in a square. Where there is an anchor at the centre of the square and the gradient color changes as it circles around the anchor at the centre. The darkest and lightest parts of the gradient are adjacent. The first position is the anchor at the centre of the square, the second position is to the right of the first position, at the middle of the right edge of the square, the third position is below the first position, at the middle of the bottom edge of the square.](/img/rest-api/angular.png)![Diamond gradient in a square. Where the lightest parts of the gradient forms a diamond shape at the centre of the square. The positions are set exactly same as the angular gradient.](/img/rest-api/diamond.png)![Radial gradient in a square. Where the lightest parts of the gradient forms a flat oval in the square. The first position is at the centre of the square, the second position is to the right of the first position at the centre of the right edge of the square, the third position is between the first position and the bottom edge of the square.](/img/rest-api/radial.png)
+
+`gradientStops`[ColorStop](#colorstop-type)\[\]
+
+Positions of key points along the gradient axis with the colors anchored there. Colors along the gradient are interpolated smoothly between neighboring gradient stops.
+
+* * *
+
+For image paints:
+
+`scaleMode`String
+
+Image scaling mode, as a string enum.
+
+*   `FILL`
+*   `FIT`
+*   `TILE`
+*   `STRETCH`
+
+`imageTransform`[Transform](#transform-type)
+
+Affine transform applied to the image, only present if `scaleMode` is `STRETCH`.
+
+`scalingFactor`Number
+
+Amount image is scaled by in tiling, only present if `scaleMode` is `TILE`.
+
+`rotation`Number
+
+Image rotation, in degrees.
+
+`imageRef`String
+
+A reference to an image embedded in this node. To download the image using this reference, use the [GET file images](/docs/rest-api/file-endpoints/#get-images-endpoint) endpoint to retrieve the mapping from image references to image URLs.
+
+`filters`[ImageFilters](#imagefilters-type)default: {}
+
+Defines what image filters have been applied to this paint, if any. If this property is not defined, no filters have been applied.
+
+`gifRef`String
+
+A reference to an animated GIF embedded in this node. To download the image using this reference, use the [GET file images](/docs/rest-api/file-endpoints/#get-images-endpoint) endpoint to retrieve the mapping from image references to image URLs.
+
+* * *
+
+For pattern paints:
+
+`sourceNodeId`Stringbeta
+
+Node ID of the source node for the pattern.
+
+`tileType`Stringbeta
+
+The way the pattern is tiled, as a string enum.
+
+*   `RECTANGULAR`
+*   `HORIZONTAL_HEXAGONAL`
+*   `VERTICAL_HEXAGONAL`
+
+`scalingFactor`Numberbeta
+
+Scaling factor of the pattern.
+
+`spacing`[Vector](#vector-type)beta
+
+Spacing of the pattern.
+
+`horizontalAlignment`Stringbeta
+
+Horizontal alignment of the pattern, as a string enum.
+
+*   `START`
+*   `CENTER`
+*   `END`
+
+`verticalAlignment`Stringbeta
+
+Vertical alignment of the pattern, as a string enum.
+
+*   `START`
+*   `CENTER`
+*   `END`
+
+### Path[​](#path-type "Direct link to Path")
+
+Defines a single path.
+
+`path`String
+
+A series of path commands that encodes how to draw the path.
+
+`windingRule`String
+
+The winding rule for the path (same as in SVGs). This determines whether a given point in space is inside or outside the path.
+
+`overrideID`Number
+
+If there is a per-region fill, this refers to an ID in the `fillOverrideTable`.
+
+### Vector[​](#vector-type "Direct link to Vector")
+
+A 2d vector.
+
+`x`Number
+
+X coordinate of the vector.
+
+`y`Number
+
+Y coordinate of the vector.
+
+### Size[​](#size-type "Direct link to Size")
+
+A width and a height.
+
+`width`Number
+
+Width of the size.
+
+`height`Number
+
+Height of the size.
+
+### Transform[​](#transform-type "Direct link to Transform")
+
+A 2x3 affine transformation matrix.
+
+A 2D affine transformation matrix that can be used to calculate the affine transforms applied to a layer, including scaling, rotation, shearing, and translation.
+
+The form of the matrix is given as an array of 2 arrays of 3 numbers each. E.g. the identity matrix would be `[[1, 0, 0], [0, 1, 0]]`.
+
+### ImageFilters[​](#imagefilters-type "Direct link to ImageFilters")
+
+Defines the image filters applied to an image paint. All values are from -1 to 1.
+
+`exposure`Numberdefault: 0
+
+`contrast`Numberdefault: 0
+
+`saturation`Numberdefault: 0
+
+`temperature`Numberdefault: 0
+
+`tint`Numberdefault: 0
+
+`highlights`Numberdefault: 0
+
+`shadows`Numberdefault: 0
+
+### ColorStop[​](#colorstop-type "Direct link to ColorStop")
+
+A stop in a gradient paint that contains information about the stop position, color, and bound variables.
+
+`position`Number
+
+Value between 0 and 1 representing position along gradient axis.
+
+`color`[Color](#color-type)
+
+Color attached to corresponding position.
+
+`boundVariables`Map<String, [VariableAlias](#variablealias-type)\>
+
+Color variable that is attached to the stop, if any.
+
+### PaintOverride[​](#paintoverride-type "Direct link to PaintOverride")
+
+Paint metadata to override default paints.
+
+`fills`[Paint](#paint-type)\[\]
+
+Paints applied to characters.
+
+`inheritFillStyleId`String
+
+ID of style node, if any, that this inherits fill data from.
+
+### TypeStyle[​](#typestyle-type "Direct link to TypeStyle")
+
+Metadata for character formatting.
+
+`fontFamily`String
+
+Font family of text (standard name).
+
+`fontPostScriptName`String
+
+PostScript font name.
+
+`fontStyle`String
+
+Describes visual weight or emphasis, such as Bold or Italic.
+
+`paragraphSpacing`Numberdefault: 0
+
+Space between paragraphs in px.
+
+`paragraphIndent`Numberdefault: 0
+
+Paragraph indentation in px.
+
+`listSpacing`Numberdefault: 0
+
+Space between list items in px.
+
+`italic`Boolean
+
+Whether or not text is italicized.
+
+`fontWeight`Number
+
+Numeric font weight.
+
+`fontSize`Number
+
+Font size in px.
+
+`textCase`Stringdefault: ORIGINAL
+
+Text casing applied to the node, as a string enum.
+
+*   `ORIGINAL`
+*   `UPPER`
+*   `LOWER`
+*   `TITLE`
+*   `SMALL_CAPS`
+*   `SMALL_CAPS_FORCED`
+
+`textDecoration`Stringdefault: NONE
+
+Text decoration applied to the node, as a string enum.
+
+*   `NONE`
+*   `UNDERLINE`
+*   `STRIKETHROUGH`
+
+`textAutoResize`Stringdefault: NONE
+
+Dimensions along which text will auto resize, default is that the text does not auto-resize. `TRUNCATE` means that the text will be shortened and trailing text will be replaced with "…" if the text contents is larger than the bounds. `TRUNCATE` as a return value is deprecated and will be removed in a future version. Read from `textTruncation` instead.
+
+*   `NONE`
+*   `HEIGHT`
+*   `WIDTH_AND_HEIGHT`
+*   `TRUNCATE` (deprecated)
+
+`textTruncation`Stringdefault: DISABLED
+
+Whether this text node will truncate with an ellipsis when the text contents is larger than the text node.
+
+*   `DISABLED`
+*   `ENDING`
+
+`maxLines`Numberdefault: null
+
+The maximum number of lines a text node can reach before it truncates. Only applicable when `textTruncation` is `ENDING`.
+
+`textAlignHorizontal`String
+
+Horizontal text alignment, as string enum.
+
+*   `LEFT`
+*   `RIGHT`
+*   `CENTER`
+*   `JUSTIFIED`
+
+`textAlignVertical`String
+
+Vertical text alignment, as string enum.
+
+*   `TOP`
+*   `CENTER`
+*   `BOTTOM`
+
+`letterSpacing`Number
+
+Space between characters in px.
+
+`fills`[Paint](#paint-type)\[\]
+
+Paints applied to characters.
+
+`hyperlink`[Hyperlink](#hyperlink-type)
+
+Link to a URL or frame.
+
+`openTypeFlags`Map<String, Number>default: {}
+
+A map of OpenType feature flags to 1 or 0, 1 if it is enabled and 0 if it is disabled. Note that some flags aren't reflected here. For example, SMCP (small caps) is still represented by the textCase field.
+
+`lineHeightPx`Number
+
+Line height in px.
+
+`lineHeightPercent`Numberdeprecateddefault: 100
+
+Line height as a percentage of normal line height. This is deprecated; in a future version of the API only `lineHeightPx` and `lineHeightPercentFontSize` will be returned.
+
+`lineHeightPercentFontSize`Number
+
+Line height as a percentage of the font size. Only returned when lineHeightPercent is not 100.
+
+`lineHeightUnit`String
+
+The unit of the line height value specified by the user.
+
+*   `PIXELS`
+*   `FONT_SIZE_%`
+*   `INTRINSIC_%`
+
+`isOverrideOverTextStyle`Boolean
+
+Whether or not there are overrides over a text style. The possible fields to override are `semanticWeight`, `semanticItalic`, `hyperlink`, and `textDecoration`. If this is true, then those fields are overrides if present.
+
+`semanticWeight`String
+
+Indicates how the font weight was overridden when there is a text style override.
+
+*   `BOLD`
+*   `NORMAL`
+
+`semanticItalic`String
+
+Indicates how the font style was overridden when there is a text style override.
+
+*   `ITALIC`
+*   `NORMAL`
+
+`boundVariables`Map<String, [VariableAlias](#variablealias-type)\>
+
+A mapping of field to the [VariableAlias](#variablealias-type) of the bound variable.
+
+### TextPathTypeStyle[​](#textpathtypestyle-type "Direct link to TextPathTypeStyle")
+
+\[Available in beta, API is subject to change\] Metadata for character formatting for text on a path.
+
+Has all the properties of [TypeStyle](#typestyle-type) except: `paragraphSpacing`, `paragraphIndent`, `listSpacing`, `textDecoration`, `textAutoResize`, `textTruncation`, `maxLines`, `lineHeightPx`, `lineHeightPercent`, `lineHeightPercentFontSize`, and `lineHeightUnit`.
+
+### Component[​](#component-type "Direct link to Component")
+
+A description of a main component. Helps you identify which component instances are attached to.
+
+`key`String
+
+The key of the component.
+
+`name`String
+
+The name of the component.
+
+`description`String
+
+The description of the component as entered in the editor.
+
+`componentSetId?`String
+
+The ID of the component set if the component belongs to one.
+
+`documentationLinks`[DocumentationLink](#documentationlink-type)\[\]
+
+The documentation links for this component.
+
+`remote`Boolean
+
+Whether this component is a remote component that doesn't live in this file.
+
+### ComponentSet[​](#componentset-type "Direct link to ComponentSet")
+
+A description of a component set, which is a node containing a set of variants of a component.
+
+`key`String
+
+The key of the component set.
+
+`name`String
+
+The name of the component set.
+
+`description`String
+
+The description of the component set as entered in the editor.
+
+`documentationLinks`[DocumentationLink](#documentationlink-type)\[\]
+
+The documentation links for this component set.
+
+`remote`Boolean
+
+Whether this component set is a remote component set that doesn't live in this file.
+
+### Style[​](#style-type "Direct link to Style")
+
+A set of properties that can be applied to nodes and published. Styles for a property can be created in the corresponding properties panel while editing a file.
+
+`key`String
+
+The key of the style.
+
+`name`String
+
+The name of the style.
+
+`description`String
+
+The description of the style.
+
+`remote`Boolean
+
+Whether this style is a remote style that doesn't live in this file.
+
+`styleType`String
+
+The type of style, as a string enum.
+
+*   `FILL`
+*   `TEXT`
+*   `EFFECT`
+*   `GRID`
+
+### ShapeType[​](#shapetype-type "Direct link to ShapeType")
+
+Geometric shape type. Most shape types have the same name as their tooltip but there are a few exceptions:
+
+*   `ENG_DATABASE` is a Cylinder
+*   `ENG_QUEUE` is a Horizontal cylinder
+*   `ENG_FILE` is a File
+*   `ENG_FOLDER` is a Folder
+
+`SQUARE`String
+
+`ELLIPSE`String
+
+`ROUNDED_RECTANGLE`String
+
+`DIAMOND`String
+
+`TRIANGLE_DOWN`String
+
+`PARALLELOGRAM_RIGHT`String
+
+`PARALLELOGRAM_LEFT`String
+
+`ENG_DATABASE`String
+
+`ENG_QUEUE`String
+
+`ENG_FILE`String
+
+`ENG_FOLDER`String
+
+`TRAPEZOID`String
+
+`PREDEFINED_PROCESS`String
+
+`SHIELD`String
+
+`DOCUMENT_SINGLE`String
+
+`DOCUMENT_MULTIPLE`String
+
+`MANUAL_INPUT`String
+
+`HEXAGON`String
+
+`CHEVRON`String
+
+`PENTAGON`String
+
+`OCTAGON`String
+
+`STAR`String
+
+`PLUS`String
+
+`ARROW_LEFT`String
+
+`ARROW_RIGHT`String
+
+`SUMMING_JUNCTION`String
+
+`OR`String
+
+`SPEECH_BUBBLE`String
+
+`INTERNAL_STORAGE`String
+
+### ConnectorEndpoint[​](#connectorendpoint-type "Direct link to ConnectorEndpoint")
+
+Stores canvas location for a connector start/end point.
+
+ConnectorEndpoint with `endpointNodeId` and `position` only:
+
+`endpointNodeId`String
+
+Node ID that this endpoint attaches to.
+
+`position`[Vector](#vector-type)
+
+Canvas location as x & y coordinate.
+
+* * *
+
+ConnectorEndpoint with `endpointNodeId` and `magnet` only:
+
+`endpointNodeId`String
+
+Node ID that this endpoint attaches to.
+
+`magnet`[ConnectorMagnet](#connectormagnet-type)
+
+The magnet type, as a string enum.
+
+*   `AUTO`
+*   `TOP`
+*   `BOTTOM`
+*   `LEFT`
+*   `RIGHT`
+
+### ConnectorLineType[​](#connectorlinetype-type "Direct link to ConnectorLineType")
+
+`ELBOWED`String
+
+`CURVED`String
+
+`STRAIGHT`String
+
+### ConnectorTextBackground[​](#connectortextbackground-type "Direct link to ConnectorTextBackground")
+
+`cornerRadius`Number
+
+Radius of each corner of the rectangle if a single radius is set for all corners.
+
+`fills`[Paint](#paint-type)\[\]
+
+An array of fill paints applied to the node.
+
+### ComponentPropertyDefinition[​](#componentpropertydefinition-type "Direct link to ComponentPropertyDefinition")
+
+`type`[ComponentPropertyType](#componentpropertytype-type)
+
+Type of this component property.
+
+`defaultValue`Boolean | String
+
+Initial value of this property for instances.
+
+`variantOptions?`String\[\]
+
+All possible values for this property. Only exists on VARIANT properties.
+
+`preferredValues?`[InstanceSwapPreferredValue](#instanceswappreferredvalue-type)\[\]
+
+List of user-defined preferred values for this property. Only exists on INSTANCE\_SWAP properties.
+
+### ComponentProperty[​](#componentproperty-type "Direct link to ComponentProperty")
+
+`type`[ComponentPropertyType](#componentpropertytype-type)
+
+Type of this component property.
+
+`value`Boolean | String
+
+Value of this property set on this instance.
+
+`preferredValues?`[InstanceSwapPreferredValue](#instanceswappreferredvalue-type)\[\]
+
+List of user-defined preferred values for this property. Only exists on `INSTANCE_SWAP` properties.
+
+`boundVariables`Map<String, [VariableAlias](#variablealias-type)\>
+
+A mapping of field to the [VariableAlias](#variablealias-type) of the bound variable.
+
+### ComponentPropertyType[​](#componentpropertytype-type "Direct link to ComponentPropertyType")
+
+`BOOLEAN`String
+
+`INSTANCE_SWAP`String
+
+`TEXT`String
+
+`VARIANT`String
+
+### InstanceSwapPreferredValue[​](#instanceswappreferredvalue-type "Direct link to InstanceSwapPreferredValue")
+
+`type`String
+
+Type of node for this preferred value, as a string enum.
+
+*   `COMPONENT`
+*   `COMPONENT_SET`
+
+`key`String
+
+Key of this component or component set.
+
+### PrototypeDevice[​](#prototypedevice-type "Direct link to PrototypeDevice")
+
+`type`String
+
+The type of the device, as a string enum.
+
+*   `NONE`
+*   `PRESET`
+*   `CUSTOM`
+*   `PRESENTATION`
+
+`size`[Size](#size-type)
+
+`presetIdentifier`String
+
+`rotation`String
+
+Rotation of the device, as a string enum.
+
+*   `NONE`
+*   `CCW_90`
+
+### Annotation[​](#annotation-type "Direct link to Annotation")
+
+A note and pinned properties left on a node in Dev Mode.
+
+`label`String
+
+`properties`[AnnotationProperty](#annotationproperty-type)\[\]
+
+### AnnotationProperty[​](#annotationproperty-type "Direct link to AnnotationProperty")
+
+A pinned property in an Annotation.
+
+`type`String
+
+The type of the property, as a string enum.
+
+*   `width`
+*   `height`
+*   `maxWidth`
+*   `minWidth`
+*   `maxHeight`
+*   `minHeight`
+*   `fills`
+*   `strokes`
+*   `effects`
+*   `strokeWeight`
+*   `cornerRadius`
+*   `textStyleId`
+*   `textAlignHorizontal`
+*   `fontFamily`
+*   `fontStyle`
+*   `fontSize`
+*   `fontWeight`
+*   `lineHeight`
+*   `letterSpacing`
+*   `itemSpacing`
+*   `padding`
+*   `layoutMode`
+*   `alignItems`
+*   `opacity`
+*   `mainComponent`
+
+### Measurement[​](#measurement-type "Direct link to Measurement")
+
+A pinned distance between two nodes in Dev Mode.
+
+`id`String
+
+`start`[MeasurementStartEnd](#measurementstartend-type)
+
+`end`[MeasurementStartEnd](#measurementstartend-type)
+
+`offset`0
+
+`freeText`String
+
+When manually overridden, the displayed value of the measurement.
+
+### MeasurementStartEnd[​](#measurementstartend-type "Direct link to MeasurementStartEnd")
+
+The node and side a measurement is pinned to.
+
+`nodeId`String
+
+`side`String
+
+The side of the node the measurement is pinned to, as a string enum.
+
+*   `TOP`
+*   `RIGHT`
+*   `BOTTOM`
+*   `LEFT`
+
+### MeasurementOffsetInner[​](#measurementoffsetinner-type "Direct link to MeasurementOffsetInner")
+
+Measurement offset relative to the inside of the start node.
+
+`type`String
+
+The type of the offset, as a string enum.
+
+*   `INNER`
+
+`relative`Number
+
+### MeasurementOffsetOuter[​](#measurementoffsetouter-type "Direct link to MeasurementOffsetOuter")
+
+Measurement offset relative to the outside of the start node.
+
+`type`String
+
+The type of the offset, as a string enum.
+
+*   `OUTER`
+
+`fixed`Number
+
+### StrokeWeights[​](#strokeweights-type "Direct link to StrokeWeights")
+
+Individual stroke weights.
+
+`top`Number
+
+`right`Number
+
+`bottom`Number
+
+`left`Number
+
+### Overrides[​](#overrides-type "Direct link to Overrides")
+
+Fields directly overridden on an instance. Inherited overrides are not included.
+
+`id`String
+
+A unique ID for a node.
+
+`overriddenFields`String\[\]
+
+An array of properties.
+
+### VariableAlias[​](#variablealias-type "Direct link to VariableAlias")
+
+Contains a variable alias.
+
+`type`String
+
+The type of the alias, as a string enum.
+
+*   `VARIABLE_ALIAS`
+
+`id`String
+
+The id of the variable that the current variable is aliased to. This variable can be a local or remote variable, and both can be retrieved via the [Variables endpoints](/docs/rest-api/file-endpoints/#get-variables-local-endpoint).
+
+### DevStatus[​](#devstatus-type "Direct link to DevStatus")
+
+Represents a handoff (or dev) status applied to a node.
+
+`type`String
+
+The type of the status, as a string enum.
+
+*   `READY_FOR_DEV`
+*   `COMPLETED`
+
+`description`String
+
+An optional field where the designer can add more information about the design and what has changed.
+
+### Interaction[​](#interaction-type "Direct link to Interaction")
+
+An interaction in the Figma viewer, containing a trigger and one or more actions.
+
+`trigger`0
+
+The user event that initiates the interaction.
+
+`actions`[Action](#action-type)\[\]
+
+The actions that are performed when the trigger is activated.
+
+### Trigger[​](#trigger-type "Direct link to Trigger")
+
+A prototyping Trigger describes the user input needed to cause an interaction to happen.
+
+The `ON_HOVER` and `ON_PRESS` trigger types revert the navigation when the trigger is finished (the result is temporary).
+
+`MOUSE_ENTER`, `MOUSE_LEAVE`, `MOUSE_UP` and `MOUSE_DOWN` are permanent, one-way navigation. The delay parameter requires the trigger to be held for a certain duration of time before the action occurs. Both timeout and delay values are in milliseconds.
+
+The `ON_MEDIA_HIT` and `ON_MEDIA_END` trigger types can only trigger from a video. They fire when a video reaches a certain time or ends. The timestamp value is in seconds.
+
+`type`String
+
+The type of the trigger, as a string enum.
+
+*   `ON_CLICK`
+*   `ON_HOVER`
+*   `ON_PRESS`
+*   `ON_DRAG`
+*   `AFTER_TIMEOUT`
+*   `MOUSE_ENTER`
+*   `MOUSE_LEAVE`
+*   `MOUSE_UP`
+*   `MOUSE_DOWN`
+*   `ON_MEDIA_END`
+*   `ON_KEY_DOWN`
+*   `ON_KEY_UP`
+
+* * *
+
+For `AFTER_TIMEOUT` events:
+
+`timeout`Number
+
+* * *
+
+For `MOUSE_ENTER`, `MOUSE_LEAVE`, `MOUSE_UP`, and `MOUSE_DOWN` events:
+
+`delay`Number
+
+`deprecatedVersion`Boolean
+
+Whether this is a [deprecated version](https://help.figma.com/hc/articles/360040035834-Prototype-triggers#h_01HHN04REHJNP168R26P1CMP0A) of the trigger that was left unchanged for backwards compatibility. If not present, the trigger is the latest version.
+
+* * *
+
+For `ON_KEY_DOWN` events:
+
+`device`String
+
+The device that the key was pressed on, as a string enum.
+
+*   `KEYBOARD`
+*   `XBOX_ONE`
+*   `PS4`
+*   `SWITCH_PRO`
+*   `UNKNOWN_CONTROLLER`
+
+`keyCodes`Number\[\]
+
+* * *
+
+For `ON_MEDIA_HIT` events:
+
+`mediaHitTime`Number
+
+### Action[​](#action-type "Direct link to Action")
+
+An action that is performed when a trigger is activated.
+
+An action can be one of the following types:
+
+*   [BackAction](#backaction-type)
+*   [CloseAction](#closeaction-type)
+*   [OpenURLAction](#openurlaction-type)
+*   [UpdateMediaRuntimeAction](#updatemediaruntimeaction-type)
+*   [NodeAction](#nodeaction-type)
+*   [SetVariableAction](#setvariableaction-type)
+*   [SetVariableModeAction](#setvariablemodeaction-type)
+*   [ConditionalAction](#conditionalaction-type)
+
+### BackAction[​](#backaction-type "Direct link to BackAction")
+
+An action that navigates to the previously viewed frame.
+
+`type`String
+
+The type of the action, as a string enum.
+
+*   `BACK`
+
+### CloseAction[​](#closeaction-type "Direct link to CloseAction")
+
+An action that closes the current topmost overlay (applicable only on overlays).
+
+`type`String
+
+The type of the action, as a string enum.
+
+*   `CLOSE`
+
+### OpenURLAction[​](#openurlaction-type "Direct link to OpenURLAction")
+
+An action that opens a URL.
+
+`type`String
+
+The type of the action, as a string enum.
+
+*   `URL`
+
+`url`String
+
+### UpdateMediaRuntimeAction[​](#updatemediaruntimeaction-type "Direct link to UpdateMediaRuntimeAction")
+
+An action that affects a video node in the Figma viewer. For example, to play, pause, or skip.
+
+`type`String
+
+The type of the action, as a string enum.
+
+*   `UPDATE_MEDIA_RUNTIME`
+
+`destinationId`String | null
+
+The node ID of the media node to update. If destinationId is null, the action will update the media node that contains the action.
+
+`mediaAction`String
+
+The action to perform on the media node, as a string enum.
+
+*   `PLAY`
+*   `PAUSE`
+*   `TOGGLE_PLAY_PAUSE`
+*   `MUTE`
+*   `UNMUTE`
+*   `TOGGLE_MUTE_UNMUTE`
+*   `SKIP_FORWARD`
+*   `SKIP_BACKWARD`
+*   `SKIP_TO`
+
+* * *
+
+For `SKIP_FORWARD` and `SKIP_BACKWARD` actions:
+
+`amountToSkip`Number
+
+The amount of time to skip in seconds.
+
+* * *
+
+For `SKIP_TO` actions:
+
+`newTimestamp`Number
+
+The new time to skip to in seconds.
+
+### NodeAction[​](#nodeaction-type "Direct link to NodeAction")
+
+An action that navigates to a specific node in the Figma viewer.
+
+`type`String
+
+The type of the action, as a string enum.
+
+*   `NODE`
+
+`destinationId`String | null
+
+`navigation`[Navigation](#navigation-type)
+
+`transition`[SimpleTransition](#simpletransition-type) | [DirectionTransition](#directiontransition-type) | null
+
+`preserveScrollPosition`Boolean
+
+Whether the scroll offsets of any scrollable elements in the current screen or overlay are preserved when navigating to the destination. This is applicable only if the layout of both the current frame and its destination are the same.
+
+`overlayRelativePosition`[Vector](#vector-type)
+
+Applicable only when navigation is `OVERLAY` and the destination is a frame with overlayPosition equal to `MANUAL`. This value represents the offset by which the overlay is opened relative to this node.
+
+`resetVideoPosition`Boolean
+
+When true, all videos within the destination frame will reset their memorized playback position to 00:00 before starting to play.
+
+`resetScrollPosition`Boolean
+
+Whether the scroll offsets of any scrollable elements in the current screen or overlay reset when navigating to the destination. This is applicable only if the layout of both the current frame and its destination are the same.
+
+`resetInteractiveComponents`Boolean
+
+Whether the state of any interactive components in the current screen or overlay reset when navigating to the destination. This is applicable if there are interactive components in the destination frame.
+
+### Navigation[​](#navigation-type "Direct link to Navigation")
+
+`type`String
+
+The method of navigation, as a string enum.
+
+*   `NAVIGATE`: Replaces the current screen with the destination, also closing all overlays.
+*   `OVERLAY`: Opens the destination as an overlay on the current screen.
+*   `SWAP`: On an overlay, replaces the current (topmost) overlay with the destination. On a top-level frame, behaves the same as `NAVIGATE` except that no entry is added to the navigation history.
+*   `SCROLL_TO`: Scrolls to the destination on the current screen.
+*   `CHANGE_TO`: Changes the closest ancestor instance of source node to the specified variant.
+
+### SimpleTransition[​](#simpletransition-type "Direct link to SimpleTransition")
+
+Describes an animation used when navigating in a prototype.
+
+`type`String
+
+The type of the transition, as a string enum.
+
+*   `DISSOLVE`
+*   `SMART_ANIMATE`
+*   `SCROLL_ANIMATE`
+
+`duration`Number
+
+The duration of the transition in milliseconds.
+
+`easing`[Easing](#easing-type)
+
+The easing curve of the transition.
+
+### DirectionTransition[​](#directiontransition-type "Direct link to DirectionTransition")
+
+Describes an animation used when navigating in a prototype.
+
+`type`String
+
+The type of the transition, as a string enum.
+
+*   `MOVE_IN`
+*   `MOVE_OUT`
+*   `PUSH`
+*   `SLIDE_IN`
+*   `SLIDE_OUT`
+
+`direction`String
+
+The direction of the transition, as a string enum.
+
+*   `LEFT`
+*   `RIGHT`
+*   `TOP`
+*   `BOTTOM`
+
+`duration`Number
+
+The duration of the transition in milliseconds.
+
+`easing`[Easing](#easing-type)
+
+The easing curve of the transition.
+
+`matchLayers`Boolean
+
+When the transition type is `SMART_ANIMATE` or when matchLayers is true, then the transition will be performed using smart animate, which attempts to match corresponding layers and interpolate other properties during the animation.
+
+### Easing[​](#easing-type "Direct link to Easing")
+
+Describes an easing curve.
+
+`type`[EasingType](#easingtype-type)
+
+The type of easing curve.
+
+`easingFunctionCubicBezier`[EasingFunctionCubicBezier](#easingfunctioncubicbezier-type)
+
+A cubic bezier curve that defines the easing.
+
+`easingFunctionSpring`[EasingFunctionSpring](#easingfunctionspring-type)
+
+A spring function that defines the easing.
+
+### EasingFunctionCubicBezier[​](#easingfunctioncubicbezier-type "Direct link to EasingFunctionCubicBezier")
+
+A cubic bezier curve that defines the easing.
+
+`x1`Number
+
+The x component of the first control point.
+
+`y1`Number
+
+The y component of the first control point.
+
+`x2`Number
+
+The x component of the second control point.
+
+`y2`Number
+
+The y component of the second control point.
+
+### EasingFunctionSpring[​](#easingfunctionspring-type "Direct link to EasingFunctionSpring")
+
+A spring function that defines the easing.
+
+`mass`Number
+
+`stiffness`Number
+
+`damping`Number
+
+### SetVariableAction[​](#setvariableaction-type "Direct link to SetVariableAction")
+
+An action that sets a variable to a specific value.
+
+`type`String
+
+The type of the action, as a string enum.
+
+*   `SET_VARIABLE`
+
+`variableId`String | null
+
+`variableValue`[VariableData](#variabledata-type)
+
+### SetVariableModeAction[​](#setvariablemodeaction-type "Direct link to SetVariableModeAction")
+
+An action that sets a variable to a specific mode.
+
+`type`String
+
+The type of the action, as a string enum.
+
+*   `SET_VARIABLE_MODE`
+
+`variableCollectionId`String | null
+
+`variableModeId`String | null
+
+### ConditionalAction[​](#conditionalaction-type "Direct link to ConditionalAction")
+
+An action that checks if a condition is met before performing certain actions by using an if/else conditional statement.
+
+`type`String
+
+The type of the action, as a string enum.
+
+*   `CONDITIONAL`
+
+`conditionalBlocks`[ConditionalBlock](#conditionalblock-type)\[\]
+
+### VariableData[​](#variabledata-type "Direct link to VariableData")
+
+A value to set a variable to during prototyping.
+
+`type`[VariableDataType](#variabledatatype-type)
+
+`resolvedType`[VariableResolvedDataType](#variableresolveddatatype-type)
+
+`value`Boolean | Number | String | [Color](#color-type) | [RGBColor](#rgbcolor-type) | [VariableAlias](#variablealias-type) | [Expression](#expression-type)
+
+### VariableDataType[​](#variabledatatype-type "Direct link to VariableDataType")
+
+Defines the types of data a VariableData object can hold.
+
+`type`String
+
+The type of the variable data, as a string enum.
+
+*   `BOOLEAN`
+*   `FLOAT`
+*   `STRING`
+*   `COLOR`
+*   `VARIABLE_ALIAS`
+*   `EXPRESSION`
+
+### VariableResolvedDataType[​](#variableresolveddatatype-type "Direct link to VariableResolvedDataType")
+
+Defines the types of data a VariableData object can eventually equal.
+
+`type`String
+
+The type of the variable when resolved, as a string enum.
+
+*   `BOOLEAN`
+*   `FLOAT`
+*   `STRING`
+*   `COLOR`
+
+### Expression[​](#expression-type "Direct link to Expression")
+
+Defines the [Expression](https://help.figma.com/hc/articles/15253194385943) object, which contains a list of [VariableData](#variabledata-type) objects strung together by operators.
+
+`expressionFunction`[ExpressionFunction](#expressionfunction-type)
+
+`expressionArguments`[VariableData](#variabledata-type)\[\]
+
+### ExpressionFunction[​](#expressionfunction-type "Direct link to ExpressionFunction")
+
+Defines the list of operators available to use in an Expression.
+
+`type`String
+
+The type of the function, as a string enum.
+
+*   `ADDITION`
+*   `SUBTRACTION`
+*   `MULTIPLICATION`
+*   `DIVISION`
+*   `EQUALS`
+*   `NOT_EQUAL`
+*   `LESS_THAN`
+*   `LESS_THAN_OR_EQUAL`
+*   `GREATER_THAN`
+*   `GREATER_THAN_OR_EQUAL`
+*   `AND`
+*   `OR`
+*   `VAR_MODE_LOOKUP`
+*   `NEGATE`
+*   `NOT`
+
+### ConditionalBlock[​](#conditionalblock-type "Direct link to ConditionalBlock")
+
+Either the if or else conditional blocks. The if block contains a condition to check. If that condition is met then it will run those list of actions, else it will run the actions in the else block.
+
+`condition`[VariableData](#variabledata-type)
+
+`actions`[Action](#action-type)\[\]
+
+### TransformModifier[​](#transformmodifier-type "Direct link to TransformModifier")
+
+Data describing the transform applied to nodes within a [TRANSFORM\_GROUP](/docs/rest-api/file-node-types/#transform-group-props) node.
+
+`type`REPEAT
+
+The type of transform modifier. Currently, the only supported type is REPEAT, which creates repeated copies of the child node.
+
+`unitType`"PIXELS" | "RELATIVE"
+
+The unit used for the offset value of the transform modifier. RELATIVE is a percentage of the child node size.
+
+`offset`Number
+
+The offset value for the transform modifier, in the specified unitType.
+
+`count`Number
+
+The number of times to repeat the child node (REPEAT type only).
+
+`repeatType`"LINEAR" | "RADIAL"
+
+The type of repeat to apply (REPEAT type only).
+
+`axis`"HORIZONTAL" | "VERTICAL"
+
+The axis along which to repeat the child node (LINEAR REPEAT type only).
+
+### ComplexStrokeProperties[​](#complexstrokeproperties-type "Direct link to ComplexStrokeProperties")
+
+Properties for brush and dynamic strokes.
+
+[BasicStrokeProperties](#basicstrokeproperties-type) | [BrushStrokeProperties](#brushstrokeproperties-type) | [DynamicStrokeProperties](#dynamicstrokeproperties-type)
+
+### BasicStrokeProperties[​](#basicstrokeproperties-type "Direct link to BasicStrokeProperties")
+
+Properties for basic strokes.
+
+`strokeType`"BASIC"
+
+The type of stroke.
+
+### DynamicStrokeProperties[​](#dynamicstrokeproperties-type "Direct link to DynamicStrokeProperties")
+
+Properties for dynamic strokes.
+
+`strokeType`"DYNAMIC"
+
+The type of stroke.
+
+`frequency`Number
+
+Frequency of the dynamic stroke pattern.
+
+`wiggle`Number
+
+Wiggle amount of the dynamic stroke pattern.
+
+`smoothen`Number
+
+Smoothness of the dynamic stroke pattern.
+
+### BrushStrokeProperties[​](#brushstrokeproperties-type "Direct link to BrushStrokeProperties")
+
+Properties for brush strokes.
+
+[ScatterBrushStrokeProperties](#scatterbrushstrokeproperties-type) | [StretchBrushStrokeProperties](#stretchbrushstrokeproperties-type)
+
+### ScatterBrushStrokeProperties[​](#scatterbrushstrokeproperties-type "Direct link to ScatterBrushStrokeProperties")
+
+Properties for scatter brush strokes.
+
+`strokeType`"BRUSH"
+
+`brushType`"SCATTER"
+
+`brushNodeId`String
+
+The node ID of the brush node used for the scatter brush stroke.
+
+`brushName`String
+
+The name of the brush used for the scatter brush stroke.
+
+`gap`Number
+
+The gap between brush instances along the stroke.
+
+`wiggle`Number
+
+The wiggle amount for brush instances along the stroke.
+
+`rotation`Number
+
+The rotation applied to brush instances along the stroke.
+
+`sizeJitter`Number
+
+The size jitter applied to brush instances along the stroke.
+
+`angularJitter`Number
+
+The angular jitter applied to brush instances along the stroke.
+
+### StretchBrushStrokeProperties[​](#stretchbrushstrokeproperties-type "Direct link to StretchBrushStrokeProperties")
+
+Properties for stretch brush strokes.
+
+`strokeType`"BRUSH"
+
+`brushType`"STRETCH"
+
+`brushNodeId`String
+
+The node ID of the brush node used for the stretch brush stroke.
+
+`brushName`String
+
+The name of the brush used for the stretch brush stroke.
+
+`direction`"FORWARD" | "REVERSE"
+
+The direction in which to stretch the brush along the stroke.
+
+### VariableWidthPoint[​](#variablewidthpoint-type "Direct link to VariableWidthPoint")
+
+Data describing the width of a certain point in a variable width stroke.
+
+`segment`Number
+
+The index of the segment that the variable width point is on.
+
+`position`Number
+
+The position of the variable width point along the segment, between 0 (start) and 1 (end). Note that this parameter represents the Bezier curve parameterization, so for curved segments the position may not align with the visual position of the point -- a position of 0.5 may not be the midpoint of the segment's arc length.
+
+`width`Number
+
+The width multiplier at this point. The final width at this point is 2 \* strokeWeight \* this value.
+
+### TextPathStartData[​](#textpathstartdata-type "Direct link to TextPathStartData")
+
+Data describing the starting position of text in [TEXT\_PATH](/docs/rest-api/file-node-types/#text-path-props) nodes.
+
+`segment`Number
+
+The index of the segment that the text path start is on.
+
+`position`Number
+
+The position along the segment where the text begins. 0 is the start of the segment, 1 is the end.
+
+*   [Color](#color-type)
+*   [RGBColor](#rgbcolor-type)
+*   [ExportSetting](#exportsetting-type)
+*   [Constraint](#constraint-type)
+*   [Rectangle](#rectangle-type)
+*   [ArcData](#arcdata-type)
+*   [BlendMode](#blendmode-type)
+*   [MaskType](#masktype-type)
+*   [EasingType](#easingtype-type)
+*   [FlowStartingPoint](#flowstartingpoint-type)
+*   [LayoutConstraint](#layoutconstraint-type)
+*   [LayoutGrid](#layoutgrid-type)
+*   [Effect](#effect-type)
+*   [Hyperlink](#hyperlink-type)
+*   [DocumentationLink](#documentationlink-type)
+*   [Paint](#paint-type)
+*   [Path](#path-type)
+*   [Vector](#vector-type)
+*   [Size](#size-type)
+*   [Transform](#transform-type)
+*   [ImageFilters](#imagefilters-type)
+*   [ColorStop](#colorstop-type)
+*   [PaintOverride](#paintoverride-type)
+*   [TypeStyle](#typestyle-type)
+*   [TextPathTypeStyle](#textpathtypestyle-type)
+*   [Component](#component-type)
+*   [ComponentSet](#componentset-type)
+*   [Style](#style-type)
+*   [ShapeType](#shapetype-type)
+*   [ConnectorEndpoint](#connectorendpoint-type)
+*   [ConnectorLineType](#connectorlinetype-type)
+*   [ConnectorTextBackground](#connectortextbackground-type)
+*   [ComponentPropertyDefinition](#componentpropertydefinition-type)
+*   [ComponentProperty](#componentproperty-type)
+*   [ComponentPropertyType](#componentpropertytype-type)
+*   [InstanceSwapPreferredValue](#instanceswappreferredvalue-type)
+*   [PrototypeDevice](#prototypedevice-type)
+*   [Annotation](#annotation-type)
+*   [AnnotationProperty](#annotationproperty-type)
+*   [Measurement](#measurement-type)
+*   [MeasurementStartEnd](#measurementstartend-type)
+*   [MeasurementOffsetInner](#measurementoffsetinner-type)
+*   [MeasurementOffsetOuter](#measurementoffsetouter-type)
+*   [StrokeWeights](#strokeweights-type)
+*   [Overrides](#overrides-type)
+*   [VariableAlias](#variablealias-type)
+*   [DevStatus](#devstatus-type)
+*   [Interaction](#interaction-type)
+*   [Trigger](#trigger-type)
+*   [Action](#action-type)
+*   [BackAction](#backaction-type)
+*   [CloseAction](#closeaction-type)
+*   [OpenURLAction](#openurlaction-type)
+*   [UpdateMediaRuntimeAction](#updatemediaruntimeaction-type)
+*   [NodeAction](#nodeaction-type)
+*   [Navigation](#navigation-type)
+*   [SimpleTransition](#simpletransition-type)
+*   [DirectionTransition](#directiontransition-type)
+*   [Easing](#easing-type)
+*   [EasingFunctionCubicBezier](#easingfunctioncubicbezier-type)
+*   [EasingFunctionSpring](#easingfunctionspring-type)
+*   [SetVariableAction](#setvariableaction-type)
+*   [SetVariableModeAction](#setvariablemodeaction-type)
+*   [ConditionalAction](#conditionalaction-type)
+*   [VariableData](#variabledata-type)
+*   [VariableDataType](#variabledatatype-type)
+*   [VariableResolvedDataType](#variableresolveddatatype-type)
+*   [Expression](#expression-type)
+*   [ExpressionFunction](#expressionfunction-type)
+*   [ConditionalBlock](#conditionalblock-type)
+*   [TransformModifier](#transformmodifier-type)
+*   [ComplexStrokeProperties](#complexstrokeproperties-type)
+*   [BasicStrokeProperties](#basicstrokeproperties-type)
+*   [DynamicStrokeProperties](#dynamicstrokeproperties-type)
+*   [BrushStrokeProperties](#brushstrokeproperties-type)
+*   [ScatterBrushStrokeProperties](#scatterbrushstrokeproperties-type)
+*   [StretchBrushStrokeProperties](#stretchbrushstrokeproperties-type)
+*   [VariableWidthPoint](#variablewidthpoint-type)
+*   [TextPathStartData](#textpathstartdata-type)

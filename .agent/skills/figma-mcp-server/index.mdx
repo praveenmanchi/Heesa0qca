@@ -1,0 +1,30 @@
+---
+title: Introduction | Developer Docs
+slug: /figma/figma-mcp-server/index
+---
+
+On this page
+
+The MCP Server brings Figma directly into your workflow by providing important design information and context to AI agents generating code from Figma design files.
+
+MCP Servers are part of a standardized interface for AI agents to interact with data sources using the [Model Context Protocol](https://modelcontextprotocol.io/).
+
+With the server enabled, you can:
+
+*   **Generate code from selected frames**: Select a Figma frame and turn it into code. Great for product teams building new flows or iterating on app features.
+*   **Extract design context**: Pull in variables, components, and layout data directly into your IDE. This is especially useful for design systems and component-based workflows.
+*   **Retrieve Make resources**: [Gather code resources from Make files](https://developers.figma.com/docs/figma-mcp-server/bringing-make-context-to-your-agent/) and provide them to the LLM as context. This can help as you move from prototype to production application.
+*   **Keep your design system components consistent with Code Connect**: Boost output quality by reusing your actual components. Code Connect keeps your generated code consistent with your codebase.
+
+## Ways to connect[​](#ways-to-connect "Direct link to Ways to connect")
+
+You can connect to the Figma MCP server in two ways:
+
+*   [**Remote MCP server**](/docs/figma-mcp-server/remote-server-installation/) - Connects directly to Figma’s hosted endpoint, without requiring the desktop app
+*   [**Desktop MCP server**](/docs/figma-mcp-server/local-server-installation/) - Runs locally through the Figma desktop app on your machine
+
+note
+
+Before getting started, check the [MCP catalog](https://www.figma.com/mcp-catalog/) to confirm whether your client supports local or remote MCP servers. Then, follow the installation flow that matches your setup.
+
+*   [Ways to connect](#ways-to-connect)

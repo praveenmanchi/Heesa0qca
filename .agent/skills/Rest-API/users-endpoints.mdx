@@ -1,0 +1,26 @@
+---
+title: Endpoints | Developer Docs
+slug: /figma/rest-api/users-endpoints
+---
+
+On this page
+
+You can use the users endpoint to access information regarding the currently authenticated user. When using OAuth 2, the user in question must be authenticated through the Figma API to access their information.
+
+## GET me[​](#get-me-endpoint "Direct link to GET me")
+
+If you are using OAuth for authentication, this endpoint can be used to get user information for the authenticated user.
+
+info
+
+This is a [Tier 3 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`current_user:read` scope](/docs/rest-api/scopes/).
+
+### HTTP Endpoint[​](#http-endpoint "Direct link to HTTP Endpoint")
+
+`GET /v1/me`
+
+**Return value**
+
+[User](/docs/rest-api/users-types/#user-type)
+
+*   [GET me](#get-me-endpoint)

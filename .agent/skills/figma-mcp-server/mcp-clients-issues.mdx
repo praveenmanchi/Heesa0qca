@@ -1,0 +1,48 @@
+---
+title: Known issues with MCP clients | Developer Docs
+slug: /figma/figma-mcp-server/mcp-clients-issues
+---
+
+On this page
+
+Known issues you might encounter when using MCP clients with the Figma MCP server and how to resolve them.
+
+## Claude Code token limit exceeded error[​](#claude-code-token-limit-exceeded-error "Direct link to Claude Code token limit exceeded error")
+
+**Problem:** You receive an error message like this when using Claude:
+
+```
+Error: MCP tool "get_design_context" response (351378 tokens) exceeds maximum allowed tokens (25000).
+Please use pagination, filtering, or limit parameters to reduce the response size.
+```
+
+**Why this happens:** The response from the Figma MCP server contains more tokens than your AI assistant can handle in a single response.
+
+**Solution:** Increase the maximum token limit by setting the `MAX_MCP_OUTPUT_TOKENS` environment variable:
+
+1.  Open your Claude Code settings
+2.  Navigate to the Environment Variables section
+3.  Add or update the `MAX_MCP_OUTPUT_TOKENS` variable with a higher value (e.g., `50000` or `100000`)
+4.  Restart Claude Code for the changes to take effect
+
+For detailed instructions, see the [Claude Code environment variables documentation](https://docs.claude.com/en/docs/claude-code/settings#environment-variables).
+
+## Cursor tool call failures[​](#cursor-tool-call-failures "Direct link to Cursor tool call failures")
+
+**Problem:** MCP tool calls fail unexpectedly in Cursor
+
+**Why this happens:** This is often due to expired or corrupted authentication tokens.
+
+**Solution:** Clear and re-authenticate your tokens:
+
+1.  Open the Command Palette in Cursor (`Cmd+Shift+P` on Mac, `Ctrl+Shift+P` on Windows/Linux)
+2.  Type and select "Clear All MCP Tokens"
+3.  Follow the prompts to re-authenticate with your accounts
+4.  Try your MCP tool calls again
+
+tip
+
+If you continue experiencing issues, try restarting Cursor completely after clearing tokens and re-authenticating.
+
+*   [Claude Code token limit exceeded error](#claude-code-token-limit-exceeded-error)
+*   [Cursor tool call failures](#cursor-tool-call-failures)

@@ -1,0 +1,147 @@
+---
+title: JSON file schema | Developer Docs
+slug: /figma/rest-api/discovery-schema
+---
+
+On this page
+
+The files provided by the Discovery API are in JSON format and represented as an array of JSON objects. The following table describes the objects that can appear in the array.
+
+Name
+
+Description
+
+### file\_key[​](#file_key "Direct link to file_key")
+
+String
+
+A unique identifier for the file where the text communication took place.
+
+### text[​](#text "Direct link to text")
+
+String
+
+The text itself that was communicated.
+
+### timestamp[​](#timestamp "Direct link to timestamp")
+
+Number
+
+A unix timestamp with second level precision representing when the text communication occurred.
+
+### action\_type[​](#action_type "Direct link to action_type")
+
+String
+
+The action performed that resulted in text communication, as a string enum.
+
+*   `insert`
+*   `update`
+*   `delete`
+*   `transient`
+
+### file\_name[​](#file_name "Direct link to file_name")
+
+String
+
+The file name at the time text communication took place.
+
+### file\_workspace\_id[​](#file_workspace_id "Direct link to file_workspace_id")
+
+String | null
+
+The ID of the workspace the file belonged to at time of text communication. Can be `null` if the file is not in a workspace.
+
+### node\_id[​](#node_id "Direct link to node_id")
+
+String | null
+
+The identifier for the entity within Figma that the text belongs to. This value is unique within a file, but could be the same value in a different file.
+
+### text\_type[​](#text_type "Direct link to text_type")
+
+String
+
+What object type within Figma that text belongs to, as a string enum. See [text types](#text-types) for more details.
+
+**Note:** It's possible that new values will be added for this enum. When building with this API, keep in mind that the list of valid values might expand.
+
+*   `in_file`
+*   `file_comments`
+*   `file_comment_reactions`
+*   `developer_related_links`
+*   `dev_mode_annotation`
+*   `component_documentation_link`
+*   `component_documentation_description`
+*   `cursor_chat`
+*   `user_ai_prompts`
+
+### resource\_id[​](#resource_id "Direct link to resource_id")
+
+String | null
+
+A unique identifier, valid for the following `text_type` values:
+
+*   `file_comments`
+*   `file_comment_reactions`
+*   `developer_related_links`
+*   `user_ai_prompts`
+
+### parent\_comment\_id[​](#parent_comment_id "Direct link to parent_comment_id")
+
+String | null
+
+A unique identifier for a resource’s parent comment, valid for the following `text_type` values:
+
+*   `file_comments`
+*   `file_comment_reactions`
+
+### user\_id[​](#user_id "Direct link to user_id")
+
+String
+
+A unique identifier for the user who performed the text communication.
+
+### user\_email[​](#user_email "Direct link to user_email")
+
+String
+
+The user’s email at the time text communication took place. When a user is in a FigJam open session but not logged in, will be marked as `anonymous`.
+
+### user\_billing\_group\_id[​](#user_billing_group_id "Direct link to user_billing_group_id")
+
+String | null
+
+The ID of the billing group the user belonged to at time of text communication. Can be `null` if the user is not in a billing group.
+
+### feature\_entrypoint[​](#feature_entrypoint "Direct link to feature_entrypoint")
+
+String | null
+
+The UI feature or entry point from which the action was performed. Valid for the following text\_type values:
+
+*   `user_ai_prompts`
+
+### moderation\_failure\_flags[​](#moderation_failure_flags "Direct link to moderation_failure_flags")
+
+String | null
+
+Content moderation flags, if any were triggered. Null or empty when moderation passed. Valid for the following text\_type values:
+
+*   `user_ai_prompts`
+
+*   [file\_key](#file_key)
+*   [text](#text)
+*   [timestamp](#timestamp)
+*   [action\_type](#action_type)
+*   [file\_name](#file_name)
+*   [file\_workspace\_id](#file_workspace_id)
+*   [node\_id](#node_id)
+*   [text\_type](#text_type)
+*   [resource\_id](#resource_id)
+*   [parent\_comment\_id](#parent_comment_id)
+*   [user\_id](#user_id)
+*   [user\_email](#user_email)
+*   [user\_billing\_group\_id](#user_billing_group_id)
+*   [feature\_entrypoint](#feature_entrypoint)
+*   [moderation\_failure\_flags](#moderation_failure_flags)

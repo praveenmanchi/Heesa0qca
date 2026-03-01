@@ -1,0 +1,20 @@
+---
+title: Figma files – Endpoints
+slug: /figma/rest-api/file-endpoints
+---
+
+# File endpoints
+
+File endpoints let you fetch JSON and image representations of Figma files and specific nodes.[page:8] With a file key, you can query file structure, render images, and access related metadata.[page:8]
+
+## Common patterns
+
+Typical file‑related operations include:[page:8]
+
+- Getting the full file JSON tree.  
+- Fetching node subsets by ID.  
+- Rendering images for nodes in various formats and scales.  
+- Accessing file versions and version history.  
+- Fetching Dev Mode and documentation‑related metadata.[page:8]
+
+Each endpoint uses the standard base URL, takes a file key, and may accept query parameters such as node IDs, geometry settings, or image formats.[page:8] Rate‑limit tiers and required scopes vary per endpoint and are listed alongside each endpoint in the full docs.[page:8]

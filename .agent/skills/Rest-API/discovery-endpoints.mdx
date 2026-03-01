@@ -1,0 +1,92 @@
+---
+title: Endpoints | Developer Docs
+slug: /figma/rest-api/discovery-endpoints
+---
+
+On this page
+
+The GET discovery endpoint allows you to retrieve text events that have occurred in Figma files throughout your organization. You can specify a start date and an end date to determine the time range for which you want to retrieve text events. The API returns links to JSON files containing the text events, organized by hour. Each link is valid for a specified duration, which you can set in your request.
+
+## GET text events[​](#get-discovery-text-events "Direct link to GET text events")
+
+Fetch up to 24 hours of text events for Figma files in your organization.
+
+info
+
+This is a [Tier 2 endpoint](/docs/rest-api/rate-limits/#rate-limits-tier-table) and requires the [`org:discovery_read` scope](/docs/rest-api/scopes/).
+
+### HTTP endpoint[​](#http-endpoint "Direct link to HTTP endpoint")
+
+`GET /v1/discovery`
+
+**Return value**
+
+```
+{  "error": Boolean,  "status": Number,  "meta": [    {      "urls": Record<String, Array<String>>,    }  ]  "i18n": String | null,  "message?": String | null,}
+```
+
+Query parameters
+
+Description
+
+start\_date
+
+Stringrequired
+
+What hour to start retrieving downloadable links at. ISO 8601 date format in UTC, such as `2025-01-01T00:00:00Z`. Must be before `end_date`. Must be at least 1 hour in the past.
+
+end\_date
+
+Stringoptional
+
+What hour to end retrieving downloadable links at. If unspecified, only one hour of data beginning at the start\_date will be returned. ISO 8601 date format in UTC, such as `2025-01-01T02:00:00Z`. Must be after `start_date`. Cannot be more than 24 hours greater than `start_date`.
+
+file\_ttl\_in\_seconds
+
+Numberoptional
+
+How long the downloadable links should be valid for. If unspecified, will default to `86400` seconds (1 day). Must be a whole number between `60` (1 minute) and `86400` (1 day).
+
+### Response[​](#response "Direct link to Response")
+
+```
+{  "error": Boolean,  "status": Number,  "meta": {    "urls": Record<String, Array<String>>,  },  "i18n": String | null,  "message"?: String | null,}
+```
+
+Error codes
+
+Description
+
+400
+
+Request query parameters are malformed.
+
+401
+
+The OAuth token is invalid.
+
+403
+
+The OAuth token is invalid.
+
+429
+
+Too many request have been made (more than 20 per second).
+
+500
+
+An error has occurred while the Discovery API was trying to respond.
+
+### Example request[​](#example-request "Direct link to Example request")
+
+```
+GET https://api.figma.com/v1/discovery?start_date=2024-01-01T00:00:00Z&end_date=2024-01-01T02:00:00Z
+```
+
+### Example response[​](#example-response "Direct link to Example response")
+
+```
+{    "error": false,    "status": 200,    "meta": {        "urls": {            "2024/01/01/00": ["https://aws-s3-download-1.com"],            "2024/01/01/01": ["https://aws-s3-download-2.com"],            "2024/01/01/02": ["https://aws-s3-download-3.com"]        }    },    "i18n": null}
+```
+
+*   [GET text events](#get-discovery-text-events)

@@ -28,6 +28,10 @@ export type GithubExtractConfig = {
   filePath?: string;
   webhookUrl?: string;
   webhookUrlDev?: string;
+  /** Email address to notify on PR creation */
+  emailNotification?: string;
+  /** Enable comparing local variables.json with the one on GitHub */
+  localJsonComparison?: boolean;
 };
 
 export interface SettingsState {
