@@ -90,7 +90,7 @@ export default function ModeImpactPanel({ data, loading, onClose }: Props) {
         width: '280px',
         zIndex: 20,
         background: '$bgCanvas',
-        borderLeft: '1px solid $borderSubtle',
+        borderLeft: '1px solid $borderMuted',
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '-4px 0 16px rgba(0,0,0,0.18)',
@@ -101,7 +101,7 @@ export default function ModeImpactPanel({ data, loading, onClose }: Props) {
       <Box
         css={{
           padding: '$3 $4',
-          borderBottom: '1px solid $borderSubtle',
+          borderBottom: '1px solid $borderMuted',
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'space-between',
@@ -155,7 +155,7 @@ export default function ModeImpactPanel({ data, loading, onClose }: Props) {
         <>
           {/* ── Mode / Brand Values ── */}
           {data.modes.length > 0 && (
-            <Box css={{ padding: '$3 $4', borderBottom: '1px solid $borderSubtle' }}>
+            <Box css={{ padding: '$3 $4', borderBottom: '1px solid $borderMuted' }}>
               <Box css={{ fontSize: '$bodyXs', fontWeight: '$sansBold', color: '$fgSubtle', marginBottom: '$2', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Values by Mode / Brand
               </Box>
@@ -215,7 +215,7 @@ export default function ModeImpactPanel({ data, loading, onClose }: Props) {
                       width: '100%',
                       padding: '$2 $3',
                       background: 'transparent',
-                      border: '1px solid $borderSubtle',
+                      border: '1px solid $borderMuted',
                       borderRadius: '$small',
                       cursor: 'pointer',
                       textAlign: 'left',

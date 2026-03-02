@@ -1,12 +1,15 @@
 import React, { useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Button, Box, Heading } from '@tokens-studio/ui';
-import { Dispatch, RootState } from '../store';
+import { Button, Heading } from '@tokens-studio/ui';
+import { Dispatch } from '../store';
+import Box from './Box';
 import Text from './Text';
 import Stack from './Stack';
 import { changeLogSelector } from '@/selectors';
 import { AsyncMessageChannel } from '@/AsyncMessageChannel';
 import { AsyncMessageTypes } from '@/types/AsyncMessages';
+import { TabRoot } from '@/app/components/ui';
+import { FONT_SIZE } from '@/constants/UIConstants';
 
 export default function ChangeLog() {
   const dispatch = useDispatch<Dispatch>();
@@ -24,53 +27,72 @@ export default function ChangeLog() {
   }, [logs]);
 
   return (
-    <Box css={{
-      display: 'flex', flexDirection: 'column', flexGrow: 1, padding: '$4', height: '100%', overflowY: 'auto',
-    }}
-    >
-      <Stack direction="row" align="center" justify="between" css={{ marginBottom: '$4' }}>
-        <Heading size="small">Change Log</Heading>
-        <Stack direction="row" gap={2}>
-          <Button variant="secondary" onClick={handleClearLogs}>
-            Clear
-          </Button>
-          <Button variant="primary" onClick={handleGenerateValues}>
-            Generate
-          </Button>
+    <TabRoot>
+      {/* Header */}
+      <Box css={{
+        padding: '$3 $4',
+        borderBottom: '1px solid $borderMuted',
+        flexShrink: 0,
+      }}
+      >
+        <Stack direction="row" align="center" justify="between">
+          <Heading size="small" css={{ margin: 0, fontWeight: 600, color: '$fgDefault' }}>Change Log</Heading>
+          <Stack direction="row" gap={2}>
+            <Button variant="secondary" size="small" onClick={handleClearLogs}>
+              Clear
+            </Button>
+            <Button variant="primary" size="small" onClick={handleGenerateValues}>
+              Generate
+            </Button>
+          </Stack>
         </Stack>
-      </Stack>
+      </Box>
 
-      <Stack direction="column" gap={3}>
-        {logs.length === 0 ? (
-          <Text muted>No changes recorded in this session.</Text>
-        ) : (
-          logs.map((log, index) => (
-            <Box
-              key={index}
-              css={{
-                padding: '$3', borderRadius: '$medium', background: '$bgSubtle', border: '1px solid $borderMuted',
-              }}
+      {/* Content */}
+      <Box css={{ flex: 1, padding: '$4', overflowY: 'auto' }}>
+        <Stack direction="column" gap={3}>
+          {logs.length === 0 ? (
+            <Box css={{
+              padding: '$5',
+              textAlign: 'center',
+              color: '$fgMuted',
+              fontSize: FONT_SIZE.sm,
+            }}
             >
-              <Stack direction="row" justify="between" align="center" css={{ marginBottom: '$1' }}>
-                <Text bold size="small" css={{ textTransform: 'uppercase', color: '$textMuted' }}>
-                  {log.type}
-                </Text>
-                <Text size="xsmall" muted>
-                  {new Date(log.timestamp).toLocaleTimeString()}
-                </Text>
-              </Stack>
-              <Text size="small" css={{ wordBreak: 'break-word' }}>
-                {log.name}
-              </Text>
-              {log.details && (
-                <Text size="small" muted css={{ marginTop: '$1' }}>
-                  {log.details}
-                </Text>
-              )}
+              No changes recorded in this session.
             </Box>
-          ))
-        )}
-      </Stack>
-    </Box>
+          ) : (
+            logs.map((log, index) => (
+              <Box
+                key={index}
+                css={{
+                  padding: '$3',
+                  borderRadius: '$medium',
+                  background: '$bgSubtle',
+                  border: '1px solid $borderMuted',
+                }}
+              >
+                <Stack direction="row" justify="between" align="center" css={{ marginBottom: '$1' }}>
+                  <Text bold size="small" css={{ textTransform: 'uppercase', color: '$fgMuted', fontSize: FONT_SIZE.xxs }}>
+                    {log.type}
+                  </Text>
+                  <Text size="xsmall" muted css={{ fontSize: FONT_SIZE.xxs }}>
+                    {new Date(log.timestamp).toLocaleTimeString()}
+                  </Text>
+                </Stack>
+                <Text size="small" css={{ wordBreak: 'break-word', fontSize: FONT_SIZE.sm }}>
+                  {log.name}
+                </Text>
+                {log.details && (
+                  <Text size="small" muted css={{ marginTop: '$1', fontSize: FONT_SIZE.xs }}>
+                    {log.details}
+                  </Text>
+                )}
+              </Box>
+            ))
+          )}
+        </Stack>
+      </Box>
+    </TabRoot>
   );
 }

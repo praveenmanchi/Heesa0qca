@@ -111,6 +111,16 @@ AsyncMessageChannel.PluginInstance.handle(AsyncMessageTypes.GET_NODE_VARIABLES, 
 AsyncMessageChannel.PluginInstance.handle(AsyncMessageTypes.GET_PAGES, async () => ({
   pages: figma.root.children.map((p) => ({ id: p.id, name: p.name })),
 }));
+AsyncMessageChannel.PluginInstance.handle(AsyncMessageTypes.GET_COMPONENTS, async () => {
+  const components = figma.root.findAllWithCriteria({
+    types: ['COMPONENT', 'COMPONENT_SET'],
+  });
+  return {
+    components: components
+      .filter((c) => !c.name.startsWith('.') && !c.name.startsWith('_'))
+      .map((c) => ({ id: c.id, name: c.name })),
+  };
+});
 
 figma.on('close', () => {
   defaultWorker.stop();

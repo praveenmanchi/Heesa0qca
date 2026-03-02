@@ -36,7 +36,7 @@ export default function UXAIRecommendations() {
   return (
     <Box
       css={{
-        border: '1px solid $borderSubtle',
+        border: '1px solid $borderMuted',
         borderRadius: '$medium',
         overflow: 'hidden',
         backgroundColor: '$bgSubtle',
@@ -48,7 +48,7 @@ export default function UXAIRecommendations() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '$3 $4',
-          borderBottom: expanded ? '1px solid $borderSubtle' : 'none',
+          borderBottom: expanded ? '1px solid $borderMuted' : 'none',
           cursor: 'pointer',
           '&:hover': { backgroundColor: '$bgDefault' },
         }}
@@ -76,7 +76,7 @@ export default function UXAIRecommendations() {
                   padding: '$2 $3',
                   backgroundColor: '$bgDefault',
                   borderRadius: '$small',
-                  border: '1px solid $borderSubtle',
+                  border: '1px solid $borderMuted',
                 }}
               >
                 <Text css={{

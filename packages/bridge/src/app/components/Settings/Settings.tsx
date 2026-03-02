@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Box, Link, Text, Button, Heading, Label, Stack, Switch, Select, TextInput,
 } from '@tokens-studio/ui';
-import SyncSettings from '../SyncSettings';
+
 import GithubExtractSettings from '../GithubExtractSettings';
 
 import { Dispatch } from '../../store';
@@ -56,8 +56,7 @@ function Settings() {
             <OnboardingExplainer data={onboardingData} closeOnboarding={closeOnboarding} />
           </Stack>
         )} */}
-          <SyncSettings />
-          <Divider />
+
           <Stack direction="column" align="start" gap={4} css={{ padding: '0 $4' }}>
             <GithubExtractSettings />
           </Stack>
@@ -68,7 +67,7 @@ function Settings() {
               direction="column"
               gap={4}
               css={{
-                border: '1px solid $borderSubtle', borderRadius: '$medium', padding: '$4', width: '100%',
+                border: '1px solid $borderMuted', borderRadius: '$medium', padding: '$4', width: '100%',
               }}
             >
               <Stack direction="row" justify="between" align="center" css={{ width: '100%' }}>
@@ -79,95 +78,120 @@ function Settings() {
                 />
               </Stack>
               {settings.aiAssistanceEnabled && (
-              <>
-                <Stack direction="column" gap={2} css={{ width: '100%' }}>
-                  <Label>AI Provider</Label>
-                  <Select
-                    value={settings.aiProvider ?? 'claude'}
-                    onValueChange={(v) => dispatch.settings.setAiProvider(v as 'claude' | 'gemini')}
-                  >
-                    <Select.Trigger value={settings.aiProvider ?? 'claude'} />
-                    <Select.Content>
-                      <Select.Item value="claude">Claude (Anthropic)</Select.Item>
-                      <Select.Item value="gemini">Gemini (Google)</Select.Item>
-                    </Select.Content>
-                  </Select>
-                </Stack>
-                <Stack direction="column" gap={2} css={{ width: '100%' }}>
-                  <Label>Claude API Key</Label>
-                  <TextInput
-                    type="password"
-                    value={settings.aiClaudeApiKey ?? ''}
-                    onChange={(e) => dispatch.settings.setAiClaudeApiKey(e.target.value)}
-                    placeholder="sk-ant-..."
-                  />
-                </Stack>
-                <Stack direction="column" gap={2} css={{ width: '100%' }}>
-                  <Label>Gemini API Key</Label>
-                  <TextInput
-                    type="password"
-                    value={settings.aiGeminiApiKey ?? ''}
-                    onChange={(e) => dispatch.settings.setAiGeminiApiKey(e.target.value)}
-                    placeholder="AIza..."
-                  />
-                </Stack>
-                <Divider />
-                <Stack direction="column" gap={3} css={{ width: '100%' }}>
-                  <Heading size="small">Dual File Mode</Heading>
-                  <Text css={{ fontSize: '$1', color: '$fgMuted' }}>
-                    Configure separate Variables and Components Figma files so UXAI can analyze cross-file
-                    variable and component usage via the Figma REST API.
-                  </Text>
-                  <Stack direction="row" justify="between" align="center" css={{ width: '100%' }}>
-                    <Label>Enable Dual File Mode</Label>
-                    <Switch
-                      checked={settings.uxaiDualFileEnabled ?? false}
-                      onCheckedChange={(checked) => dispatch.settings.setUxaiDualFileEnabled(checked as CheckedState as boolean)}
+                <>
+                  <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                    <Label>AI Provider</Label>
+                    <Select
+                      value={settings.aiProvider ?? 'claude'}
+                      onValueChange={(v) => dispatch.settings.setAiProvider(v as 'claude' | 'gemini')}
+                    >
+                      <Select.Trigger value={settings.aiProvider ?? 'claude'} />
+                      <Select.Content>
+                        <Select.Item value="claude">Claude (Anthropic)</Select.Item>
+                        <Select.Item value="gemini">Gemini (Google)</Select.Item>
+                      </Select.Content>
+                    </Select>
+                  </Stack>
+                  <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                    <Label>Claude API Key</Label>
+                    <TextInput
+                      type="password"
+                      value={settings.aiClaudeApiKey ?? ''}
+                      onChange={(e) => dispatch.settings.setAiClaudeApiKey(e.target.value)}
+                      placeholder="sk-ant-..."
                     />
                   </Stack>
-                  {settings.uxaiDualFileEnabled && (
-                    <Stack direction="column" gap={3} css={{ width: '100%' }}>
-                      <Stack direction="column" gap={2} css={{ width: '100%' }}>
-                        <Label>Variables File ID</Label>
-                        <TextInput
-                          type="text"
-                          value={settings.uxaiVariablesFileId ?? ''}
-                          onChange={(e) => dispatch.settings.setUxaiVariablesFileId(e.target.value)}
-                          placeholder="Figma file key for your Variables library"
-                        />
-                      </Stack>
-                      <Stack direction="column" gap={2} css={{ width: '100%' }}>
-                        <Label>Variables File API Key</Label>
-                        <TextInput
-                          type="password"
-                          value={settings.uxaiVariablesFileApiKey ?? ''}
-                          onChange={(e) => dispatch.settings.setUxaiVariablesFileApiKey(e.target.value)}
-                          placeholder="Personal access token with file_variables:read"
-                        />
-                      </Stack>
-                      <Stack direction="column" gap={2} css={{ width: '100%' }}>
-                        <Label>Components File ID</Label>
-                        <TextInput
-                          type="text"
-                          value={settings.uxaiComponentsFileId ?? ''}
-                          onChange={(e) => dispatch.settings.setUxaiComponentsFileId(e.target.value)}
-                          placeholder="Figma file key for your Components library"
-                        />
-                      </Stack>
-                      <Stack direction="column" gap={2} css={{ width: '100%' }}>
-                        <Label>Components File API Key</Label>
-                        <TextInput
-                          type="password"
-                          value={settings.uxaiComponentsFileApiKey ?? ''}
-                          onChange={(e) => dispatch.settings.setUxaiComponentsFileApiKey(e.target.value)}
-                          placeholder="Personal access token with file_variables:read"
-                        />
-                      </Stack>
+                  <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                    <Label>Gemini API Key</Label>
+                    <TextInput
+                      type="password"
+                      value={settings.aiGeminiApiKey ?? ''}
+                      onChange={(e) => dispatch.settings.setAiGeminiApiKey(e.target.value)}
+                      placeholder="AIza..."
+                    />
+                  </Stack>
+                  <Divider />
+                  <Stack direction="column" gap={3} css={{ width: '100%' }}>
+                    <Heading size="small">Dual File Mode</Heading>
+                    <Text css={{ fontSize: '$1', color: '$fgMuted' }}>
+                      Configure separate Variables and Components Figma files so UXAI can analyze cross-file
+                      variable and component usage via the Figma REST API.
+                    </Text>
+                    <Stack direction="row" justify="between" align="center" css={{ width: '100%' }}>
+                      <Label>Enable Dual File Mode</Label>
+                      <Switch
+                        checked={settings.uxaiDualFileEnabled ?? false}
+                        onCheckedChange={(checked) => dispatch.settings.setUxaiDualFileEnabled(checked as CheckedState as boolean)}
+                      />
                     </Stack>
-                  )}
-                </Stack>
-              </>
+                    {settings.uxaiDualFileEnabled && (
+                      <Stack direction="column" gap={3} css={{ width: '100%' }}>
+                        <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                          <Label>Variables File ID</Label>
+                          <TextInput
+                            type="text"
+                            value={settings.uxaiVariablesFileId ?? ''}
+                            onChange={(e) => dispatch.settings.setUxaiVariablesFileId(e.target.value)}
+                            placeholder="Figma file key for your Variables library"
+                          />
+                        </Stack>
+                        <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                          <Label>Variables File API Key</Label>
+                          <TextInput
+                            type="password"
+                            value={settings.uxaiVariablesFileApiKey ?? ''}
+                            onChange={(e) => dispatch.settings.setUxaiVariablesFileApiKey(e.target.value)}
+                            placeholder="Personal access token with file_variables:read"
+                          />
+                        </Stack>
+                        <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                          <Label>Components File ID</Label>
+                          <TextInput
+                            type="text"
+                            value={settings.uxaiComponentsFileId ?? ''}
+                            onChange={(e) => dispatch.settings.setUxaiComponentsFileId(e.target.value)}
+                            placeholder="Figma file key for your Components library"
+                          />
+                        </Stack>
+                        <Stack direction="column" gap={2} css={{ width: '100%' }}>
+                          <Label>Components File API Key</Label>
+                          <TextInput
+                            type="password"
+                            value={settings.uxaiComponentsFileApiKey ?? ''}
+                            onChange={(e) => dispatch.settings.setUxaiComponentsFileApiKey(e.target.value)}
+                            placeholder="Personal access token with file_variables:read"
+                          />
+                        </Stack>
+                      </Stack>
+                    )}
+                  </Stack>
+                </>
               )}
+            </Stack>
+          </Stack>
+          <Divider />
+          <Stack direction="column" align="start" gap={4} css={{ padding: '0 $4' }}>
+            <Heading size="medium">MCP+Code Integration</Heading>
+            <Stack
+              direction="column"
+              gap={3}
+              css={{
+                border: '1px solid $borderMuted',
+                borderRadius: '$medium',
+                padding: '$4',
+                width: '100%',
+              }}
+            >
+              <Stack direction="row" justify="between" align="center" css={{ width: '100%' }}>
+                <Label>Enable MCP+Code Tab</Label>
+                <Switch
+                  checked={settings.mcpEnabled ?? false}
+                  onCheckedChange={(checked) => dispatch.settings.setMcpEnabled(checked as CheckedState as boolean)}
+                />
+              </Stack>
+              <Text css={{ fontSize: '$1', color: '$fgMuted' }}>
+                Enables a new tab bridging your design tokens with your codebase via the Model Context Protocol (Coming Soon).
+              </Text>
             </Stack>
           </Stack>
           <Divider />
@@ -178,7 +202,7 @@ function Settings() {
               direction="column"
               gap={4}
               css={{
-                border: '1px solid $borderSubtle',
+                border: '1px solid $borderMuted',
                 borderRadius: '$medium',
                 padding: '$4',
                 width: '100%',
@@ -190,7 +214,7 @@ function Settings() {
               direction="column"
               gap={4}
               css={{
-                border: '1px solid $borderSubtle',
+                border: '1px solid $borderMuted',
                 borderRadius: '$medium',
                 padding: '$4',
                 width: '100%',

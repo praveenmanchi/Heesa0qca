@@ -56,7 +56,7 @@ const Root = styled(Box, {
 const Sidebar = styled(Box, {
   width: '180px',
   flexShrink: 0,
-  borderRight: '1px solid $borderSubtle',
+  borderRight: '1px solid $borderMuted',
   display: 'flex',
   flexDirection: 'column',
   overflowY: 'auto',
@@ -68,7 +68,7 @@ const Sidebar = styled(Box, {
 });
 
 const SidebarSection = styled(Box, {
-  borderBottom: '1px solid $borderSubtle',
+  borderBottom: '1px solid $borderMuted',
   padding: '$3 $4',
 });
 

@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@tokens-studio/ui';
 import Box from './Box';
-import AnnotationBuilder from './AnnotationBuilder';
+
 import { SingleToken } from '@/types/tokens';
 import useTokens from '../store/useTokens';
 import { uiStateSelector } from '@/selectors';
@@ -21,7 +21,7 @@ const StyledCode = styled('code', {
   gap: '$3',
 });
 
-export default function InspectorDebugView({ resolvedTokens, selectedMode }: { resolvedTokens: SingleToken[], selectedMode?: string }) {
+export default function InspectorDebugView({ resolvedTokens, _selectedMode }: { resolvedTokens: SingleToken[], _selectedMode?: string }) {
   const uiState = useSelector(uiStateSelector, isEqual);
   const { getTokenValue } = useTokens();
   const { t } = useTranslation(['inspect']);
@@ -58,7 +58,6 @@ export default function InspectorDebugView({ resolvedTokens, selectedMode }: { r
       className="content scroll-container"
     >
       <Stack direction="column" css={{ flexGrow: 1 }}>
-        <AnnotationBuilder />
 
         {uiState.selectedLayers === 1 && Object.entries(uiState.mainNodeSelectionValues).length > 0
           ? (

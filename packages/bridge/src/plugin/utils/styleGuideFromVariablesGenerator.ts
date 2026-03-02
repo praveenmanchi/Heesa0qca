@@ -61,16 +61,32 @@ function getValueFromMapForMode(valuesByMode: Record<string, any> | undefined, m
   return valuesByMode[firstKey];
 }
 
-async function resolveAliasChain(input: any, modeId?: string, depth: number = 0): Promise<any> {
+async function resolveAliasChain(input: any, modeId?: string, modeName?: string, depth: number = 0): Promise<any> {
   if (!isVariableAlias(input) || depth > 5) return input;
 
   try {
     const variable = await figma.variables.getVariableByIdAsync(input.id);
     if (!variable) return input;
-    const raw = getValueFromMapForMode(variable.valuesByMode as Record<string, any>, modeId);
+
+    let targetModeId = modeId;
+    if (modeName) {
+      try {
+        const collection = await figma.variables.getVariableCollectionByIdAsync(variable.variableCollectionId);
+        if (collection) {
+          const matchedMode = collection.modes.find((m) => m.name === modeName);
+          if (matchedMode) {
+            targetModeId = matchedMode.modeId;
+          }
+        }
+      } catch (e) {
+        // ignore collection fetch error
+      }
+    }
+
+    const raw = getValueFromMapForMode(variable.valuesByMode as Record<string, any>, targetModeId);
     if (!raw) return input;
     if (isVariableAlias(raw)) {
-      return resolveAliasChain(raw, modeId, depth + 1);
+      return resolveAliasChain(raw, targetModeId, modeName, depth + 1);
     }
     return raw;
   } catch {
@@ -78,11 +94,11 @@ async function resolveAliasChain(input: any, modeId?: string, depth: number = 0)
   }
 }
 
-async function getResolvedValueForMode(v: StyleGuideVariableData, modeId?: string): Promise<any> {
+async function getResolvedValueForMode(v: StyleGuideVariableData, modeId?: string, modeName?: string): Promise<any> {
   const base = getValueFromMapForMode(v.valuesByMode, modeId);
   if (!base) return v.resolvedValue;
   if (isVariableAlias(base)) {
-    return resolveAliasChain(base, modeId);
+    return resolveAliasChain(base, modeId, modeName);
   }
   return base;
 }
@@ -506,7 +522,7 @@ export async function generateStyleGuideFromVariables(
     const textStyleNames = new Set(variables.map((v) => v.name));
 
     for (const v of variables) {
-      const resolved = await getResolvedValueForMode(v, modeId);
+      const resolved = await getResolvedValueForMode(v, modeId, modeName);
       normalizedVariables.push({
         ...v,
         resolvedValue: resolved ?? v.resolvedValue,

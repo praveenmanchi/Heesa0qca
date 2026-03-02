@@ -74,9 +74,9 @@ const StatChip = styled(Box, {
   letterSpacing: '$wider',
   variants: {
     type: {
-      added: { backgroundColor: 'rgba(46,125,50,0.25)', color: '#81C784', border: '1px solid #2E7D32' },
-      removed: { backgroundColor: 'rgba(198,40,40,0.2)', color: '#EF9A9A', border: '1px solid #C62828' },
-      modified: { backgroundColor: 'rgba(21,101,192,0.2)', color: '#90CAF9', border: '1px solid #1565C0' },
+      added: { backgroundColor: 'rgba(46,125,50,0.25)', color: '$successFg', border: '1px solid #2E7D32' },
+      removed: { backgroundColor: 'rgba(198,40,40,0.2)', color: '$dangerFg', border: '1px solid #C62828' },
+      modified: { backgroundColor: 'rgba(21,101,192,0.2)', color: '$accentDefault', border: '1px solid #1565C0' },
     },
   },
 });
@@ -100,9 +100,9 @@ const Badge = styled(Box, {
   letterSpacing: '$widest',
   variants: {
     type: {
-      added: { backgroundColor: '#1B5E20', color: '#A5D6A7' },
-      removed: { backgroundColor: '#7F0000', color: '#FFCDD2' },
-      modified: { backgroundColor: '#0D47A1', color: '#BBDEFB' },
+      added: { backgroundColor: 'rgba(46,125,50,0.35)', color: '$successFg' },
+      removed: { backgroundColor: 'rgba(198,40,40,0.25)', color: '$dangerFg' },
+      modified: { backgroundColor: 'rgba(21,101,192,0.3)', color: '$accentDefault' },
     },
   },
 });
@@ -845,12 +845,12 @@ export default function ExtractTab() {
     <TabRoot>
       {/* ── Top Bar ── */}
       <Box css={{
-        padding: '$3 $4', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', flexShrink: 0,
+        padding: '$3 $4', borderBottom: '1px solid $borderMuted', backgroundColor: '$bgDefault', flexShrink: 0,
       }}
       >
         <Stack direction="row" align="center" justify="between">
           <Box>
-            <Heading size="small" css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '2px' }}>Extract Variables</Heading>
+            <Heading size="small" css={{ margin: 0, color: '$fgDefault', fontWeight: 600 }}>Extract Variables</Heading>
             <Text css={{ color: '$fgMuted', fontSize: FONT_SIZE.sm }}>
               {!(pat && owner && repo) && 'Configure GitHub (PAT, owner, repo) in Settings to compare with remote'}
               {pat && owner && repo && hasDrift === true && '⚠ Local drift detected'}
@@ -970,7 +970,7 @@ export default function ExtractTab() {
             <Box css={{
               backgroundColor: '$bgSubtle',
               borderRadius: '$medium',
-              border: '1px solid $borderSubtle',
+              border: '1px solid $borderMuted',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
@@ -979,7 +979,7 @@ export default function ExtractTab() {
               {/* Summary Header */}
               <Box css={{
                 padding: '$2 $3',
-                borderBottom: '1px solid $borderSubtle',
+                borderBottom: '1px solid $borderMuted',
                 backgroundColor: '$bgCanvas',
                 display: 'flex',
                 flexWrap: 'wrap',
@@ -995,13 +995,13 @@ export default function ExtractTab() {
                   {' '}
                   {oldJsonPreview.length}
                 </Text>
-                <Text css={{ color: '$borderSubtle' }}>|</Text>
+                <Text css={{ color: '$borderMuted' }}>|</Text>
                 <Text css={{ fontFamily: 'inherit' }}>
                   Old Variables Count:
                   {' '}
                   {oldVariablesCount}
                 </Text>
-                <Text css={{ color: '$borderSubtle' }}>|</Text>
+                <Text css={{ color: '$borderMuted' }}>|</Text>
                 <Text css={{ fontFamily: 'inherit' }}>
                   New Variables Count:
                   {' '}
@@ -1009,7 +1009,7 @@ export default function ExtractTab() {
                 </Text>
                 {diff && (
                   <>
-                    <Text css={{ color: '$borderSubtle' }}>|</Text>
+                    <Text css={{ color: '$borderMuted' }}>|</Text>
                     <Text css={{ fontFamily: 'inherit' }}>
                       Diff
                       {' '}
@@ -1017,13 +1017,13 @@ export default function ExtractTab() {
                       {' '}
                       Added:
                       {' '}
-                      <span style={{ color: '#81C784' }}>{diff.added.length}</span>
+                      <span style={{ color: 'var(--colors-successFg)' }}>{diff.added.length}</span>
                       , Removed:
                       {' '}
-                      <span style={{ color: '#EF9A9A' }}>{diff.removed.length}</span>
+                      <span style={{ color: 'var(--colors-dangerFg)' }}>{diff.removed.length}</span>
                       , Modified:
                       {' '}
-                      <span style={{ color: '#90CAF9' }}>{diff.changed.length}</span>
+                      <span style={{ color: 'var(--colors-accentDefault)' }}>{diff.changed.length}</span>
                     </Text>
                   </>
                 )}
@@ -1031,7 +1031,7 @@ export default function ExtractTab() {
 
               <Box css={{ height: '400px', display: 'flex', flexDirection: 'column' }}>
                 <Text css={{
-                  padding: '$2 $3', color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.06em', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', display: 'block',
+                  padding: '$2 $3', color: '$fgSubtle', fontSize: FONT_SIZE.xs, fontWeight: '$bold', letterSpacing: '0.06em', borderBottom: '1px solid $borderMuted', backgroundColor: '$bgDefault', display: 'block',
                 }}
                 >
                   UNIFIED DIFF (GITHUB vs CANVAS)
@@ -1120,7 +1120,7 @@ export default function ExtractTab() {
                   </Text>
                   <Stack direction="row" gap={2} css={{ fontSize: FONT_SIZE.xxs, color: '$fgSubtle' }}>
                     {m.added > 0 && (
-                      <span style={{ color: '#81C784' }}>
+                      <span style={{ color: 'var(--colors-successFg)' }}>
                         +
                         {m.added}
                         {' '}
@@ -1128,7 +1128,7 @@ export default function ExtractTab() {
                       </span>
                     )}
                     {m.removed > 0 && (
-                      <span style={{ color: '#EF9A9A' }}>
+                      <span style={{ color: 'var(--colors-dangerFg)' }}>
                         -
                         {m.removed}
                         {' '}
@@ -1136,7 +1136,7 @@ export default function ExtractTab() {
                       </span>
                     )}
                     {m.modified > 0 && (
-                      <span style={{ color: '#90CAF9' }}>
+                      <span style={{ color: 'var(--colors-accentDefault)' }}>
                         ~
                         {m.modified}
                         {' '}
@@ -1164,8 +1164,8 @@ export default function ExtractTab() {
                   Variables &amp; Components
                 </Text>
                 <Box css={{
-                  padding: '1px 6px', borderRadius: '10px', backgroundColor: 'rgba(139,92,246,0.2)',
-                  border: '1px solid #8b5cf6', fontSize: FONT_SIZE.xs, color: '#c4b5fd',
+                  padding: '1px 6px', borderRadius: '10px', backgroundColor: '$bgSubtle',
+                  border: '1px solid $borderMuted', fontSize: FONT_SIZE.xs, color: '$fgSubtle',
                 }}>
                   {allVariablesImpact.length}
                 </Box>
@@ -1232,7 +1232,7 @@ export default function ExtractTab() {
                         {v.totalCount > 0 && (
                           <Box css={{
                             padding: '1px 6px', borderRadius: '8px', fontSize: FONT_SIZE.xs,
-                            backgroundColor: 'rgba(139,92,246,0.15)', color: '#c4b5fd', border: '1px solid rgba(139,92,246,0.4)', flexShrink: 0,
+                            backgroundColor: '$bgSubtle', color: '$fgSubtle', border: '1px solid $borderMuted', flexShrink: 0,
                           }}>
                             {v.totalCount} use{v.totalCount !== 1 ? 's' : ''}
                           </Box>
@@ -1301,17 +1301,17 @@ export default function ExtractTab() {
                               css={{
                                 display: 'inline-flex', alignItems: 'center', gap: '4px',
                                 padding: '2px 8px', borderRadius: '4px', fontSize: FONT_SIZE.xs,
-                                backgroundColor: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.3)',
-                                color: '#c4b5fd', cursor: 'pointer',
-                                '&:hover': { backgroundColor: 'rgba(139,92,246,0.2)' },
+                                backgroundColor: '$bgSubtle', border: '1px solid $borderMuted',
+                                color: '$fgDefault', cursor: 'pointer',
+                                '&:hover': { backgroundColor: '$bgDefault', color: '$accentDefault', borderColor: '$borderMuted' },
                               }}
                               title={`Click to select ${comp.nodeIds.length} node${comp.nodeIds.length !== 1 ? 's' : ''} in Figma`}
                             >
                               <Component width={9} height={9} />
                               {comp.componentName}
                               <Box css={{
-                                backgroundColor: 'rgba(139,92,246,0.3)', borderRadius: '8px',
-                                padding: '0 4px', fontSize: '9px', color: '#e9d5ff',
+                                backgroundColor: '$bgSubtle', borderRadius: '8px',
+                                padding: '0 4px', fontSize: '9px', color: '$fgSubtle',
                               }}>
                                 {comp.nodeIds.length}
                               </Box>

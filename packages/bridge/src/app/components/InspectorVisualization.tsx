@@ -374,7 +374,7 @@ function InspectorVisualizationInner() {
         display: 'flex',
         flexDirection: 'row',
         height: '100%',
-        borderTop: '1px solid $borderSubtle',
+        borderTop: '1px solid $borderMuted',
         backgroundColor: '$bgDefault',
         overflow: 'hidden',
       }}

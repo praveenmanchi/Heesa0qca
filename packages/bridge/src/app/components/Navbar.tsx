@@ -18,6 +18,7 @@ import {
   IconBell,
   IconSettings,
   IconComposition,
+  IconCode,
 } from '@/icons';
 
 const Navbar: React.FC<React.PropsWithChildren<unknown>> = () => {
@@ -26,6 +27,7 @@ const Navbar: React.FC<React.PropsWithChildren<unknown>> = () => {
   const dispatch = useDispatch<Dispatch>();
   const { t } = useTranslation(['navbar']);
   const aiEnabled = settings?.aiAssistanceEnabled ?? false;
+  const mcpEnabled = settings?.mcpEnabled ?? false;
 
   const handleSwitch = useCallback(
     (tab: Tabs) => {
@@ -88,6 +90,15 @@ const Navbar: React.FC<React.PropsWithChildren<unknown>> = () => {
                 label="UXAI"
                 onSwitch={handleSwitch}
                 startEnhancer={<IconComposition />}
+              />
+            )}
+            {mcpEnabled && (
+              <TabButton
+                name={Tabs.MCP_CODE}
+                activeTab={activeTab}
+                label="MCP+Code"
+                onSwitch={handleSwitch}
+                startEnhancer={<IconCode />}
               />
             )}
             <TabButton

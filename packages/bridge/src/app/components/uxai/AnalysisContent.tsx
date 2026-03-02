@@ -68,7 +68,7 @@ function parseInlineFormatting(text: string): React.ReactNode[] {
               padding: '1px 4px',
               borderRadius: '4px',
               backgroundColor: '$bgDefault',
-              border: '1px solid $borderSubtle',
+              border: '1px solid $borderMuted',
               color: '$accentDefault',
             }}
           >

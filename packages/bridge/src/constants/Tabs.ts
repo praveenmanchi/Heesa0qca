@@ -11,4 +11,5 @@ export enum Tabs {
   EXTRACT = 'extract',
   STYLEGUIDE = 'styleguide',
   UXAI = 'uxai',
+  MCP_CODE = 'mcpcode',
 }

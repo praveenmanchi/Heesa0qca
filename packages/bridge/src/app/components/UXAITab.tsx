@@ -1,16 +1,15 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import {
   Button,
   Heading,
   Text,
-  Textarea,
   Stack,
   Label,
   Spinner,
 } from '@tokens-studio/ui';
 import {
-  LayoutLeft, LightBulb, Check, ClockRotateRight, NavArrowDown, NavArrowUp,
+  LayoutLeft, LightBulb, Check, ClockRotateRight, NavArrowDown, NavArrowUp, Component,
 } from 'iconoir-react';
 import Box from './Box';
 import AnalysisContent from './uxai/AnalysisContent';
@@ -268,13 +267,13 @@ const SECTION_HEADER = {
   gap: '$2',
   marginBottom: '$3',
   paddingBottom: '$2',
-  borderBottom: '1px solid $borderSubtle',
+  borderBottom: '1px solid $borderMuted',
 } as const;
 
 const SECTION_CARD = {
   padding: '$4',
   borderRadius: '$medium',
-  border: '1px solid $borderSubtle',
+  border: '1px solid $borderMuted',
   backgroundColor: '$bgSubtle',
   transition: 'border-color 0.15s ease',
 } as const;
@@ -303,6 +302,14 @@ function formatHistoryTime(ts: number): string {
   return new Date(ts).toLocaleDateString();
 }
 
+// ─── Autocomplete option type ──────────────────────────────────────────────
+interface SlashOption {
+  key: string;
+  label: string;
+  category: 'component' | 'color' | 'number' | 'string' | 'boolean';
+  colorValue?: any;
+}
+
 // ─── Main component ────────────────────────────────────────────────────────
 export default function UXAITab() {
   const settings = useSelector(settingsStateSelector);
@@ -326,7 +333,21 @@ export default function UXAITab() {
   const [pendingChanges, setPendingChanges] = useState<UxaiStructuredChanges | null>(null);
   const [varsCache, setVarsCache] = useState<any[]>([]);
   const [collectionsCache, setCollectionsCache] = useState<any[]>([]);
+  const [componentsList, setComponentsList] = useState<{ id: string; name: string }[]>([]);
+  const [componentsLoading, setComponentsLoading] = useState(true);
   const [previewLoading, setPreviewLoading] = useState(false);
+
+  // ── Slash-command autocomplete state ──
+  const [showSlashMenu, setShowSlashMenu] = useState(false);
+  const [slashFilter, setSlashFilter] = useState('');
+  const [slashCursorPos, setSlashCursorPos] = useState(0);
+  const [slashHighlight, setSlashHighlight] = useState(0);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  // Track inserted tokens for rich text rendering
+  const [insertedTokens, setInsertedTokens] = useState<{ label: string; category: string }[]>([]);
 
   // Load persisted history on mount
   useEffect(() => {
@@ -337,8 +358,35 @@ export default function UXAITab() {
           setHistory(stored as HistoryEntry[]);
         }
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setHistoryLoaded(true));
+
+    // Defer component + variable fetch so the textarea is interactive immediately
+    setComponentsLoading(true);
+    const timer = setTimeout(() => {
+      // Fetch components
+      AsyncMessageChannel.ReactInstance.message({ type: AsyncMessageTypes.GET_COMPONENTS })
+        .then((res: any) => {
+          if (Array.isArray(res?.components)) {
+            setComponentsList(res.components);
+          }
+        })
+        .catch(() => { })
+        .finally(() => setComponentsLoading(false));
+
+      // Pre-fetch variables for overlay auto-detection
+      AsyncMessageChannel.ReactInstance.message({
+        type: AsyncMessageTypes.EXTRACT_VARIABLES_TO_CANVAS,
+      })
+        .then((extractRes: any) => {
+          const vars = JSON.parse(extractRes?.jsonString ?? '[]');
+          const cols = (extractRes as any)?.collectionsInfo ?? [];
+          if (vars.length) setVarsCache(vars);
+          if (cols.length) setCollectionsCache(cols);
+        })
+        .catch(() => { });
+    }, 300);
+    return () => clearTimeout(timer);
   }, []);
 
   // Persist history whenever it changes
@@ -349,7 +397,7 @@ export default function UXAITab() {
       history: history.map((h) => ({
         id: h.id, prompt: h.prompt, result: h.result, timestamp: h.timestamp,
       })),
-    }).catch(() => {});
+    }).catch(() => { });
   }, [history, historyLoaded]);
 
   const provider = settings?.aiProvider ?? 'claude';
@@ -509,28 +557,48 @@ export default function UXAITab() {
     setConfirming(true);
     setProgressMsg('Applying changes to Figma…');
     setError(null);
+
+    const updatesCount = pendingChanges.updates?.length ?? 0;
+    const createsCount = pendingChanges.creates?.length ?? 0;
+    console.log('[UXAI] Applying changes:', {
+      updates: updatesCount,
+      creates: createsCount,
+      data: pendingChanges,
+    });
+
     try {
       const applyRes = await AsyncMessageChannel.ReactInstance.message({
         type: AsyncMessageTypes.APPLY_UXAI_CHANGES,
         updates: pendingChanges.updates ?? [],
         creates: pendingChanges.creates ?? [],
-      }) as { applied?: number; errors?: string[] };
+      }) as { applied?: number; remapped?: number; errors?: string[] };
+
+      console.log('[UXAI] Apply result:', applyRes);
 
       const applied = applyRes?.applied ?? 0;
+      const remappedCount = applyRes?.remapped ?? 0;
       const errs = applyRes?.errors ?? [];
 
+      if (errs.length > 0) {
+        console.warn('[UXAI] Apply errors:', errs);
+      }
+
       if (applied > 0) {
-        setResult(null);
+        const successParts = [`✅ Successfully applied ${applied} change${applied > 1 ? 's' : ''}`];
+        if (remappedCount > 0) successParts.push(`and remapped ${remappedCount} binding${remappedCount > 1 ? 's' : ''}`);
+        successParts.push('to Figma variables.');
+        if (errs.length > 0) successParts.push(`\n⚠️ Warnings: ${errs.join(' · ')}`);
+
+        // Show success message — keep result visible but clear pending
         setPendingChanges(null);
-        setPrompt('');
-        setActiveHistoryId(null);
-        setError(null);
+        setError(successParts.join(' '));
       } else if (errs.length > 0) {
-        setError(`Apply errors: ${errs.join(' · ')}`);
+        setError(`❌ Apply errors: ${errs.join(' · ')}`);
       } else {
-        setError('No changes were applied. The variables may not exist in this file or values are unchanged.');
+        setError('⚠️ No changes were applied. The variable IDs from the AI may not match existing variables in this file. Try running the analysis again.');
       }
     } catch (err: any) {
+      console.error('[UXAI] Apply failed:', err);
       setError(err?.message ?? 'Apply failed.');
     } finally {
       setConfirming(false);
@@ -568,6 +636,167 @@ export default function UXAITab() {
   const totalPending = (pendingChanges?.updates?.length ?? 0) + (pendingChanges?.creates?.length ?? 0);
   const isBusy = isLoading || previewLoading || confirming;
 
+  // ── Slash command helpers ────────────────────────────────────────────────
+  const buildSlashOptions = useCallback((): SlashOption[] => {
+    const opts: SlashOption[] = [];
+    componentsList.forEach((c) => {
+      opts.push({ key: `comp-${c.id}`, label: c.name, category: 'component' });
+    });
+    varsCache.forEach((v: any) => {
+      const cat = v.type === 'COLOR' ? 'color' : v.type === 'FLOAT' ? 'number' : 'string';
+      opts.push({
+        key: `var-${v.id}`,
+        label: v.name,
+        category: cat as SlashOption['category'],
+        colorValue: v.type === 'COLOR' && v.valuesByMode ? Object.values(v.valuesByMode)[0] : undefined,
+      });
+    });
+    return opts;
+  }, [componentsList, varsCache]);
+
+  const filteredSlashOptions = useMemo(() => {
+    const all = buildSlashOptions();
+    if (!slashFilter) return all;
+    const lc = slashFilter.toLowerCase();
+    return all.filter((o) => o.label.toLowerCase().includes(lc));
+  }, [buildSlashOptions, slashFilter]);
+
+  const handleTextareaChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setPrompt(val);
+
+    // Detect slash trigger — find the last "/" before cursor
+    const curPos = e.target.selectionStart ?? val.length;
+    const textBefore = val.slice(0, curPos);
+    const slashIdx = textBefore.lastIndexOf('/');
+    if (slashIdx >= 0) {
+      const filterText = textBefore.slice(slashIdx + 1);
+      // Show menu if filter text has no spaces (user is still typing the token name)
+      if (!/\s/.test(filterText)) {
+        setShowSlashMenu(true);
+        setSlashFilter(filterText);
+        setSlashCursorPos(slashIdx);
+        setSlashHighlight(0);
+        return;
+      }
+    }
+    setShowSlashMenu(false);
+    setSlashFilter('');
+  }, []);
+
+  const handleSlashSelect = useCallback((opt: SlashOption) => {
+    const before = prompt.slice(0, slashCursorPos);
+    const afterSlash = prompt.slice(slashCursorPos);
+    const rest = afterSlash.replace(/^\/[^\s]*/, '');
+    const newVal = `${before}${opt.label} ${rest.startsWith(' ') ? rest.slice(1) : rest}`;
+    setPrompt(newVal);
+    setShowSlashMenu(false);
+    setSlashFilter('');
+    // Track this token for rich rendering
+    setInsertedTokens((prev) => {
+      if (prev.some((t) => t.label === opt.label)) return prev;
+      return [...prev, { label: opt.label, category: opt.category }];
+    });
+    setTimeout(() => textareaRef.current?.focus(), 0);
+  }, [prompt, slashCursorPos]);
+
+  const handleTextareaKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!showSlashMenu || filteredSlashOptions.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSlashHighlight((h) => Math.min(h + 1, filteredSlashOptions.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSlashHighlight((h) => Math.max(h - 1, 0));
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault();
+      handleSlashSelect(filteredSlashOptions[slashHighlight]);
+    } else if (e.key === 'Escape') {
+      setShowSlashMenu(false);
+    }
+  }, [showSlashMenu, filteredSlashOptions, slashHighlight, handleSlashSelect]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)
+        && textareaRef.current && !textareaRef.current.contains(e.target as Node)) {
+        setShowSlashMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Build overlay HTML with highlighted tokens
+  const buildOverlayContent = useMemo(() => {
+    if (!prompt) return null;
+
+    // Collect all known tokens: inserted ones + known components + known variables
+    const allTokens: { label: string; category: string }[] = [...insertedTokens];
+
+    // Auto-detect component names in the prompt
+    componentsList.forEach((c) => {
+      if (!allTokens.some((t) => t.label === c.name) && prompt.includes(c.name)) {
+        allTokens.push({ label: c.name, category: 'component' });
+      }
+    });
+
+    // Auto-detect variable names in the prompt
+    varsCache.forEach((v: any) => {
+      const cat = v.type === 'COLOR' ? 'color' : v.type === 'FLOAT' ? 'number' : 'string';
+      if (!allTokens.some((t) => t.label === v.name) && prompt.includes(v.name)) {
+        allTokens.push({ label: v.name, category: cat });
+      }
+    });
+
+    // If no known tokens match the prompt, don't overlay
+    if (allTokens.length === 0) return null;
+
+    // Sort by label length descending so longer matches take priority
+    const sorted = [...allTokens].sort((a, b) => b.label.length - a.label.length);
+
+    // Build segments
+    type Seg = { text: string; token?: { label: string; category: string } };
+    const segments: Seg[] = [];
+    let remaining = prompt;
+
+    while (remaining.length > 0) {
+      let found = false;
+      for (const tok of sorted) {
+        const idx = remaining.indexOf(tok.label);
+        if (idx === 0) {
+          segments.push({ text: tok.label, token: tok });
+          remaining = remaining.slice(tok.label.length);
+          found = true;
+          break;
+        } else if (idx > 0) {
+          segments.push({ text: remaining.slice(0, idx) });
+          segments.push({ text: tok.label, token: tok });
+          remaining = remaining.slice(idx + tok.label.length);
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        segments.push({ text: remaining });
+        remaining = '';
+      }
+    }
+
+    // Only return segments if at least one token was matched
+    if (!segments.some((s) => s.token)) return null;
+    return segments;
+  }, [prompt, insertedTokens, componentsList, varsCache]);
+
+  // Sync overlay scroll with textarea scroll
+  const handleTextareaScroll = useCallback(() => {
+    if (overlayRef.current && textareaRef.current) {
+      overlayRef.current.scrollTop = textareaRef.current.scrollTop;
+      overlayRef.current.scrollLeft = textareaRef.current.scrollLeft;
+    }
+  }, []);
+
   // ── Not enabled gate ───────────────────────────────────────────────────
   if (!aiEnabled) {
     return (
@@ -589,8 +818,8 @@ export default function UXAITab() {
     <TabRoot css={{ overflow: 'hidden' }}>
       {/* Header */}
       <Box css={{
-        padding: '$4 $5',
-        borderBottom: '1px solid $borderSubtle',
+        padding: '$3 $4',
+        borderBottom: '1px solid $borderMuted',
         flexShrink: 0,
         backgroundColor: '$bgDefault',
       }}
@@ -604,32 +833,311 @@ export default function UXAITab() {
       </Box>
 
       {/* Scrollable body */}
-      <Box className="content scroll-container" css={{ flex: 1, padding: '$4 $5', overflowY: 'auto' }}>
+      <Box className="content scroll-container" css={{ flex: 1, padding: '$4', overflowY: 'auto' }}>
         <Stack direction="column" gap={4}>
 
           {/* ── Input card ── */}
           <Box css={{
             padding: '$4',
             borderRadius: '$medium',
-            border: '1px solid $borderSubtle',
+            border: '1px solid $borderMuted',
             backgroundColor: '$bgDefault',
           }}
           >
-            <Label css={{ color: '$fgDefault', fontWeight: 500, marginBottom: '$2', display: 'block' }}>
-              Your request
-            </Label>
-            <Textarea
-              value={prompt}
-              onChange={(v: string) => setPrompt(v ?? '')}
-              placeholder="e.g., Change the border color of the Primary Button to #0048B7 in Gap 2.0 only"
-              css={{
-                minHeight: '72px',
-                fontSize: FONT_SIZE.sm,
-                borderRadius: '$small',
-                border: '1px solid $borderSubtle',
-                '&:focus': { borderColor: '$accentDefault', outline: 'none' },
-              }}
-            />
+            <Box css={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '$2' }}>
+              <Label css={{ color: '$fgDefault', fontWeight: 500, display: 'block', margin: 0 }}>
+                Your request
+              </Label>
+              {componentsLoading && (
+                <Box css={{ display: 'flex', alignItems: 'center', gap: '$1' }}>
+                  <Spinner />
+                  <Text css={{ fontSize: '10px', color: '$fgMuted' }}>Loading components…</Text>
+                </Box>
+              )}
+            </Box>
+            <Box css={{ position: 'relative' }}>
+              <textarea
+                ref={textareaRef}
+                value={prompt}
+                onChange={handleTextareaChange}
+                onKeyDown={handleTextareaKeyDown}
+                onScroll={handleTextareaScroll}
+                placeholder={buildOverlayContent ? '' : "e.g., Change the border color of the Primary Button to #0048B7 in Gap 2.0 only. Type '/' to insert variables and components."}
+                style={{
+                  width: '100%',
+                  minHeight: '72px',
+                  fontSize: '12px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--colors-borderMuted, #3c3c3c)',
+                  background: 'var(--colors-bgSubtle, #1e1e21)',
+                  color: buildOverlayContent ? 'transparent' : 'var(--colors-fgDefault, #fff)',
+                  caretColor: 'var(--colors-fgDefault, #fff)',
+                  padding: '8px',
+                  fontFamily: 'inherit',
+                  lineHeight: '1.5',
+                  resize: 'vertical',
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                }}
+                onFocus={(e) => { e.target.style.borderColor = 'var(--colors-accentDefault, #0048B7)'; }}
+                onBlur={(e) => { e.target.style.borderColor = 'var(--colors-borderMuted, #3c3c3c)'; }}
+              />
+              {/* Styled overlay for token highlighting - rendered ON TOP with pointer-events:none */}
+              {buildOverlayContent && (
+                <div
+                  ref={overlayRef}
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    padding: '8px',
+                    fontSize: '12px',
+                    fontFamily: 'inherit',
+                    lineHeight: '1.5',
+                    whiteSpace: 'pre-wrap',
+                    wordWrap: 'break-word',
+                    overflow: 'hidden',
+                    pointerEvents: 'none',
+                    boxSizing: 'border-box',
+                    border: '1px solid transparent',
+                    zIndex: 2,
+                  }}
+                >
+                  {buildOverlayContent.map((seg, i) => {
+                    if (!seg.token) {
+                      return (
+                        <span key={i} style={{ color: 'var(--colors-fgDefault, #fff)' }}>
+                          {seg.text}
+                        </span>
+                      );
+                    }
+                    const isComp = seg.token.category === 'component';
+                    const bgColor = isComp
+                      ? 'rgba(139, 92, 246, 0.2)'
+                      : seg.token.category === 'color'
+                        ? 'rgba(59, 130, 246, 0.2)'
+                        : seg.token.category === 'number'
+                          ? 'rgba(245, 158, 11, 0.2)'
+                          : 'rgba(16, 185, 129, 0.2)';
+                    const fgColor = isComp
+                      ? '#c4b5fd'
+                      : seg.token.category === 'color'
+                        ? '#93c5fd'
+                        : seg.token.category === 'number'
+                          ? '#fcd34d'
+                          : '#6ee7b7';
+                    return (
+                      <span
+                        key={i}
+                        style={{
+                          background: bgColor,
+                          color: fgColor,
+                          padding: '1px 4px',
+                          borderRadius: '3px',
+                          fontWeight: 600,
+                          border: `1px solid ${fgColor}44`,
+                        }}
+                      >
+                        {isComp ? (
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={fgColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '3px', flexShrink: 0 }}>
+                            <path d="M12 2L17 7L12 12L7 7Z" />
+                            <path d="M12 12L17 17L12 22L7 17Z" />
+                          </svg>
+                        ) : (
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill={fgColor} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '3px', flexShrink: 0 }}>
+                            <circle cx="12" cy="12" r="5" />
+                          </svg>
+                        )}
+                        {seg.text}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Slash-command dropdown */}
+              {showSlashMenu && filteredSlashOptions.length > 0 && (
+                <div
+                  ref={dropdownRef}
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    top: '100%',
+                    marginTop: '4px',
+                    maxHeight: '240px',
+                    overflowY: 'auto',
+                    background: 'var(--colors-bgCanvas, #1a1a1d)',
+                    border: '1px solid var(--colors-borderSubtle, #3c3c3c)',
+                    borderRadius: '8px',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.3)',
+                    zIndex: 10000,
+                    padding: '6px',
+                  }}
+                >
+                  {/* Components section */}
+                  {filteredSlashOptions.some((o) => o.category === 'component') && (
+                    <>
+                      <div style={{
+                        padding: '6px 10px 4px',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        color: '#8b8b8b',
+                        textTransform: 'uppercase' as const,
+                        letterSpacing: '0.08em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                      }}>
+                        <Component width={10} height={10} strokeWidth={2} />
+                        Components
+                      </div>
+                      {filteredSlashOptions.filter((o) => o.category === 'component').map((opt) => {
+                        const globalIdx = filteredSlashOptions.indexOf(opt);
+                        const isActive = slashHighlight === globalIdx;
+                        return (
+                          <div
+                            key={opt.key}
+                            onMouseDown={(e) => { e.preventDefault(); handleSlashSelect(opt); }}
+                            onMouseEnter={() => setSlashHighlight(globalIdx)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '6px 10px',
+                              fontSize: '11px',
+                              cursor: 'pointer',
+                              borderRadius: '5px',
+                              color: isActive ? '#fff' : 'var(--colors-fgDefault, #e0e0e0)',
+                              background: isActive ? 'var(--colors-accentDefault, #0048B7)' : 'transparent',
+                              transition: 'background 0.1s ease',
+                            }}
+                          >
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: 20,
+                              height: 20,
+                              borderRadius: '4px',
+                              background: isActive ? 'rgba(255,255,255,0.15)' : 'rgba(139,92,246,0.15)',
+                              color: isActive ? '#fff' : '#a78bfa',
+                              flexShrink: 0,
+                            }}>
+                              <Component width={12} height={12} strokeWidth={1.5} />
+                            </span>
+                            <span style={{ fontWeight: 500 }}>{opt.label}</span>
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
+
+                  {/* Variables section */}
+                  {filteredSlashOptions.some((o) => o.category !== 'component') && (
+                    <>
+                      {filteredSlashOptions.some((o) => o.category === 'component') && (
+                        <div style={{ height: 1, background: 'var(--colors-borderSubtle, #333)', margin: '4px 10px' }} />
+                      )}
+                      <div style={{
+                        padding: '6px 10px 4px',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        color: '#8b8b8b',
+                        textTransform: 'uppercase' as const,
+                        letterSpacing: '0.08em',
+                      }}>
+                        Variables
+                      </div>
+                      {filteredSlashOptions.filter((o) => o.category !== 'component').map((opt) => {
+                        const globalIdx = filteredSlashOptions.indexOf(opt);
+                        const isActive = slashHighlight === globalIdx;
+                        const iconBg = opt.category === 'color'
+                          ? (isActive ? 'rgba(255,255,255,0.15)' : 'rgba(59,130,246,0.15)')
+                          : opt.category === 'number'
+                            ? (isActive ? 'rgba(255,255,255,0.15)' : 'rgba(245,158,11,0.15)')
+                            : (isActive ? 'rgba(255,255,255,0.15)' : 'rgba(16,185,129,0.15)');
+                        const iconColor = opt.category === 'color'
+                          ? (isActive ? '#fff' : '#60a5fa')
+                          : opt.category === 'number'
+                            ? (isActive ? '#fff' : '#fbbf24')
+                            : (isActive ? '#fff' : '#34d399');
+                        return (
+                          <div
+                            key={opt.key}
+                            onMouseDown={(e) => { e.preventDefault(); handleSlashSelect(opt); }}
+                            onMouseEnter={() => setSlashHighlight(globalIdx)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '6px 10px',
+                              fontSize: '11px',
+                              cursor: 'pointer',
+                              borderRadius: '5px',
+                              color: isActive ? '#fff' : 'var(--colors-fgDefault, #e0e0e0)',
+                              background: isActive ? 'var(--colors-accentDefault, #0048B7)' : 'transparent',
+                              transition: 'background 0.1s ease',
+                            }}
+                          >
+                            {opt.category === 'color' ? (
+                              opt.colorValue ? (
+                                <MiniSwatch value={opt.colorValue} type="COLOR" />
+                              ) : (
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  width: 20,
+                                  height: 20,
+                                  borderRadius: '4px',
+                                  background: iconBg,
+                                  color: iconColor,
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  flexShrink: 0,
+                                }}>🎨</span>
+                              )
+                            ) : (
+                              <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 20,
+                                height: 20,
+                                borderRadius: '4px',
+                                background: iconBg,
+                                color: iconColor,
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                flexShrink: 0,
+                              }}>{opt.category === 'number' ? '#' : 'T'}</span>
+                            )}
+                            <span style={{ fontWeight: 500 }}>{opt.label}</span>
+                            <span style={{
+                              marginLeft: 'auto',
+                              fontSize: '9px',
+                              fontWeight: 600,
+                              padding: '1px 5px',
+                              borderRadius: '3px',
+                              background: isActive ? 'rgba(255,255,255,0.15)' : iconBg,
+                              color: isActive ? 'rgba(255,255,255,0.7)' : iconColor,
+                              textTransform: 'uppercase' as const,
+                              letterSpacing: '0.04em',
+                            }}>
+                              {opt.category}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
+                </div>
+              )}
+            </Box>
             <Button
               variant="primary"
               onClick={handleAnalyze}
@@ -706,7 +1214,7 @@ export default function UXAITab() {
               {pendingChanges ? (
                 /* Diff preview panel */
                 <Box css={{
-                  border: '1px solid $borderSubtle',
+                  border: '1px solid $borderMuted',
                   borderRadius: '$medium',
                   overflow: 'hidden',
                   backgroundColor: '$bgSubtle',
@@ -718,7 +1226,7 @@ export default function UXAITab() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '$3 $4',
-                    borderBottom: '1px solid $borderSubtle',
+                    borderBottom: '1px solid $borderMuted',
                     background: '$bgDefault',
                   }}
                   >
@@ -772,7 +1280,7 @@ export default function UXAITab() {
                   {(pendingChanges.creates?.length ?? 0) > 0 && (
                     <Box css={{
                       padding: '$3 $4',
-                      borderTop: (pendingChanges.updates?.length ?? 0) > 0 ? '1px solid $borderSubtle' : 'none',
+                      borderTop: (pendingChanges.updates?.length ?? 0) > 0 ? '1px solid $borderMuted' : 'none',
                     }}
                     >
                       <Text css={{
@@ -800,7 +1308,7 @@ export default function UXAITab() {
                   )}
 
                   {/* Apply button */}
-                  <Box css={{ padding: '$3 $4', borderTop: '1px solid $borderSubtle' }}>
+                  <Box css={{ padding: '$3 $4', borderTop: '1px solid $borderMuted' }}>
                     <Text css={{
                       fontSize: FONT_SIZE.xs,
                       color: '$fgMuted',
@@ -828,7 +1336,7 @@ export default function UXAITab() {
                 <Box css={{
                   padding: '$3 $4',
                   borderRadius: '$medium',
-                  border: '1px solid $borderSubtle',
+                  border: '1px solid $borderMuted',
                   backgroundColor: '$bgDefault',
                 }}
                 >
@@ -858,7 +1366,7 @@ export default function UXAITab() {
           {/* ── History panel ── */}
           {history.length > 0 && (
             <Box css={{
-              border: '1px solid $borderSubtle',
+              border: '1px solid $borderMuted',
               borderRadius: '$medium',
               overflow: 'hidden',
               backgroundColor: '$bgSubtle',
@@ -870,7 +1378,7 @@ export default function UXAITab() {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '$3 $4',
-                  borderBottom: historyOpen ? '1px solid $borderSubtle' : 'none',
+                  borderBottom: historyOpen ? '1px solid $borderMuted' : 'none',
                   cursor: 'pointer',
                   '&:hover': { backgroundColor: '$bgDefault' },
                 }}

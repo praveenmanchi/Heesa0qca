@@ -85,6 +85,7 @@ export interface SettingsState {
   uxaiVariablesFileApiKey?: string;
   uxaiComponentsFileId?: string;
   uxaiComponentsFileApiKey?: string;
+  mcpEnabled?: boolean;
 }
 
 const setUI = (state: SettingsState) => {
@@ -149,6 +150,7 @@ export const settings = createModel<RootModel>()({
     uxaiVariablesFileApiKey: '',
     uxaiComponentsFileId: '',
     uxaiComponentsFileApiKey: '',
+    mcpEnabled: false,
   } as SettingsState,
   reducers: {
     ...settingsStateReducers,
@@ -341,6 +343,9 @@ export const settings = createModel<RootModel>()({
     setUxaiComponentsFileApiKey(state, payload: string) {
       return { ...state, uxaiComponentsFileApiKey: payload };
     },
+    setMcpEnabled(state, payload: boolean) {
+      return { ...state, mcpEnabled: payload };
+    },
   },
   effects: () => ({
     setLanguage: (payload: string, rootState) => {
@@ -440,6 +445,9 @@ export const settings = createModel<RootModel>()({
       setUI(rootState.settings);
     },
     setUxaiComponentsFileApiKey: (payload: string, rootState) => {
+      setUI(rootState.settings);
+    },
+    setMcpEnabled: (payload: boolean, rootState) => {
       setUI(rootState.settings);
     },
     ...Object.fromEntries(

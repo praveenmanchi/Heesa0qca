@@ -34,9 +34,9 @@ export function VariableNode({ data }: { data: any }) {
                 }
             }}
         >
-            <Handle type="target" position={Position.Left} style={{ background: '#555' }} />
+            <Handle type="target" position={Position.Left} style={{ background: 'var(--colors-fgMuted)' }} />
             <Box css={{ padding: '$2 $3', borderBottom: '1px solid $borderSubtle', display: 'flex', alignItems: 'center', gap: '$2' }}>
-                <Box css={{ color: '#8b5cf6', display: 'flex' }}>
+                <Box css={{ color: '$accentDefault', display: 'flex' }}>
                     {getIcon()}
                 </Box>
                 <Box css={{
@@ -57,7 +57,7 @@ export function VariableNode({ data }: { data: any }) {
                 </Box>
                 <Badge size="small">{data.totalCount} uses</Badge>
             </Stack>
-            <Handle type="source" position={Position.Right} style={{ background: '#555' }} />
+            <Handle type="source" position={Position.Right} style={{ background: 'var(--colors-fgMuted)' }} />
         </Box>
     );
 }

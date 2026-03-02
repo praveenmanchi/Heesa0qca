@@ -9,6 +9,7 @@ import {
   ComponentInstanceIcon, TokensIcon, TextIcon, GroupIcon,
 } from '@radix-ui/react-icons';
 import { IconSpacing } from '@/icons';
+import { ICON_SIZE } from '@/constants/UIConstants';
 import { Dispatch } from '../store';
 import useTokens from '../store/useTokens';
 import InspectorTokenGroup from './InspectorTokenGroup';
@@ -238,19 +239,19 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
           >
             {/* Variables */}
             <Box css={{ display: 'flex', alignItems: 'center', gap: '4px', color: '$fgMuted', fontSize: '$bodyXs' }}>
-              <TokensIcon width={12} height={12} />
+              <TokensIcon width={ICON_SIZE.sm} height={ICON_SIZE.sm} />
               <Box as="strong" css={{ color: '$fgDefault' }}>{uniqueVarCount}</Box>
               <span>variables</span>
             </Box>
             {/* Components */}
             <Box css={{ display: 'flex', alignItems: 'center', gap: '4px', color: '$fgMuted', fontSize: '$bodyXs' }}>
-              <ComponentInstanceIcon width={12} height={12} />
+              <ComponentInstanceIcon width={ICON_SIZE.sm} height={ICON_SIZE.sm} />
               <Box as="strong" css={{ color: '$fgDefault' }}>{totalCompCount}</Box>
               <span>components</span>
             </Box>
             {/* Groups */}
             <Box css={{ display: 'flex', alignItems: 'center', gap: '4px', color: '$fgMuted', fontSize: '$bodyXs' }}>
-              <GroupIcon width={12} height={12} />
+              <GroupIcon width={ICON_SIZE.sm} height={ICON_SIZE.sm} />
               <Box as="strong" css={{ color: '$fgDefault' }}>{groupCount}</Box>
               <span>groups</span>
             </Box>
@@ -265,46 +266,46 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
           {(categoryComponentCounts.color?.size > 0
             || categoryComponentCounts.typography?.size > 0
             || categoryComponentCounts.spacing?.size > 0) && (
-            <Box css={{ display: 'flex', alignItems: 'center', gap: '$2', flexWrap: 'wrap' }}>
-              {categoryComponentCounts.color?.size > 0 && (
-                <Box css={{
-                  display: 'flex', alignItems: 'center', gap: '4px',
-                  padding: '2px $2', border: '1px solid $borderMuted', borderRadius: '$small',
-                  fontSize: '$label', color: '$fgMuted',
-                }}
-                >
+              <Box css={{ display: 'flex', alignItems: 'center', gap: '$2', flexWrap: 'wrap' }}>
+                {categoryComponentCounts.color?.size > 0 && (
                   <Box css={{
-                    width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                    background: 'linear-gradient(135deg, #f87171 0%, #60a5fa 50%, #34d399 100%)',
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                    padding: '2px $2', border: '1px solid $borderMuted', borderRadius: '$small',
+                    fontSize: '$label', color: '$fgMuted',
                   }}
-                  />
-                  {`Colors: ${categoryComponentCounts.color.size} ${categoryComponentCounts.color.size === 1 ? 'comp' : 'comps'}`}
-                </Box>
-              )}
-              {categoryComponentCounts.typography?.size > 0 && (
-                <Box css={{
-                  display: 'flex', alignItems: 'center', gap: '4px',
-                  padding: '2px $2', border: '1px solid $borderMuted', borderRadius: '$small',
-                  fontSize: '$label', color: '$fgMuted',
-                }}
-                >
-                  <TextIcon width={10} height={10} />
-                  {`Typography: ${categoryComponentCounts.typography.size} ${categoryComponentCounts.typography.size === 1 ? 'comp' : 'comps'}`}
-                </Box>
-              )}
-              {categoryComponentCounts.spacing?.size > 0 && (
-                <Box css={{
-                  display: 'flex', alignItems: 'center', gap: '4px',
-                  padding: '2px $2', border: '1px solid $borderMuted', borderRadius: '$small',
-                  fontSize: '$label', color: '$fgMuted',
-                }}
-                >
-                  <IconSpacing style={{ width: 10, height: 10 }} />
-                  {`Spacing: ${categoryComponentCounts.spacing.size} ${categoryComponentCounts.spacing.size === 1 ? 'comp' : 'comps'}`}
-                </Box>
-              )}
-            </Box>
-          )}
+                  >
+                    <Box css={{
+                      width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                      background: 'linear-gradient(135deg, #f87171 0%, #60a5fa 50%, #34d399 100%)',
+                    }}
+                    />
+                    {`Colors: ${categoryComponentCounts.color.size} ${categoryComponentCounts.color.size === 1 ? 'comp' : 'comps'}`}
+                  </Box>
+                )}
+                {categoryComponentCounts.typography?.size > 0 && (
+                  <Box css={{
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                    padding: '2px $2', border: '1px solid $borderMuted', borderRadius: '$small',
+                    fontSize: '$label', color: '$fgMuted',
+                  }}
+                  >
+                    <TextIcon width={ICON_SIZE.xs} height={ICON_SIZE.xs} />
+                    {`Typography: ${categoryComponentCounts.typography.size} ${categoryComponentCounts.typography.size === 1 ? 'comp' : 'comps'}`}
+                  </Box>
+                )}
+                {categoryComponentCounts.spacing?.size > 0 && (
+                  <Box css={{
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                    padding: '2px $2', border: '1px solid $borderMuted', borderRadius: '$small',
+                    fontSize: '$label', color: '$fgMuted',
+                  }}
+                  >
+                    <IconSpacing style={{ width: ICON_SIZE.xs, height: ICON_SIZE.xs }} />
+                    {`Spacing: ${categoryComponentCounts.spacing.size} ${categoryComponentCounts.spacing.size === 1 ? 'comp' : 'comps'}`}
+                  </Box>
+                )}
+              </Box>
+            )}
 
           {/* ── Row 3: Filter pills ── */}
           <Box css={{ display: 'flex', flexWrap: 'wrap', gap: '3px', alignItems: 'center' }}>
@@ -325,12 +326,12 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
             </FilterPill>
 
             <FilterPill active={typeFilter === 'typography'} onClick={() => setTypeFilter('typography')}>
-              <TextIcon width={10} height={10} />
+              <TextIcon width={ICON_SIZE.xs} height={ICON_SIZE.xs} />
               Typography
             </FilterPill>
 
             <FilterPill active={typeFilter === 'spacing'} onClick={() => setTypeFilter('spacing')}>
-              <IconSpacing style={{ width: 10, height: 10 }} />
+              <IconSpacing style={{ width: ICON_SIZE.xs, height: ICON_SIZE.xs }} />
               Spacing
             </FilterPill>
 
@@ -412,7 +413,6 @@ export default function InspectorMultiView({ resolvedTokens, tokenToSearch, sele
                 group={group as [Properties, SelectionGroup[]]}
                 resolvedTokens={resolvedTokens}
                 selectedMode={selectedMode}
-                defaultCollapsed={Object.keys(groupedSelectionValues).length > 5}
               />
             ))}
           </Box>

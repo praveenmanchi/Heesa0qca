@@ -21,9 +21,9 @@ export function ComponentNode({ data }: { data: any }) {
                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
             }}
         >
-            <Handle type="target" position={Position.Top} style={{ background: '#555' }} />
+            <Handle type="target" position={Position.Top} style={{ background: 'var(--colors-fgMuted)' }} />
             <Stack direction="row" align="center" gap={2}>
-                <Box css={{ color: '#8b5cf6', display: 'flex' }}><Icon width={16} height={16} /></Box>
+                <Box css={{ color: '$accentDefault', display: 'flex' }}><Icon width={16} height={16} /></Box>
                 <Box css={{
                     fontSize: '$bodySm',
                     color: '$fgDefault',
@@ -40,7 +40,7 @@ export function ComponentNode({ data }: { data: any }) {
                     </Box>
                 )}
             </Stack>
-            <Handle type="source" position={Position.Bottom} style={{ background: '#555' }} />
+            <Handle type="source" position={Position.Bottom} style={{ background: 'var(--colors-fgMuted)' }} />
         </Box>
     );
 }

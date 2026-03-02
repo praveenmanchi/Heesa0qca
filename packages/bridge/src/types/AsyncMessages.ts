@@ -72,6 +72,7 @@ export enum AsyncMessageTypes {
   GET_SELECTION_VISUALIZATION = 'async/get-selection-visualization',
   GET_NODE_VARIABLES = 'async/get-node-variables',
   GET_PAGES = 'async/get-pages',
+  GET_COMPONENTS = 'async/get-components',
   // the below messages are going from plugin to UI
   STARTUP = 'async/startup',
   GET_THEME_INFO = 'async/get-theme-info',
@@ -276,6 +277,11 @@ export type GenerateStyleGuideFromVariablesAsyncMessage = AsyncMessage<AsyncMess
   groupsConfig?: StyleGuideGroupsConfig;
 }>;
 export type GenerateStyleGuideFromVariablesAsyncMessageResult = AsyncMessage<AsyncMessageTypes.GENERATE_STYLE_GUIDE_FROM_VARIABLES>;
+
+export type GetComponentAsyncMessage = AsyncMessage<AsyncMessageTypes.GET_COMPONENTS>;
+export type GetComponentAsyncMessageResult = AsyncMessage<AsyncMessageTypes.GET_COMPONENTS, {
+  components: { name: string; id: string }[];
+}>;
 
 export type CreateStylesAsyncMessage = AsyncMessage<AsyncMessageTypes.CREATE_STYLES, {
   tokens: AnyTokenList;
@@ -682,7 +688,8 @@ export type AsyncMessages =
   | GenerateStyleGuideFromVariablesAsyncMessage
   | GetSelectionVisualizationAsyncMessage
   | GetNodeVariablesAsyncMessage
-  | GetPagesAsyncMessage;
+  | GetPagesAsyncMessage
+  | GetComponentAsyncMessage;
 
 export type AsyncMessageResults =
   CreateStylesAsyncMessageResult
@@ -750,7 +757,8 @@ export type AsyncMessageResults =
   | GenerateStyleGuideFromVariablesAsyncMessageResult
   | GetSelectionVisualizationAsyncMessageResult
   | GetNodeVariablesAsyncMessageResult
-  | GetPagesAsyncMessageResult;
+  | GetPagesAsyncMessageResult
+  | GetComponentAsyncMessageResult;
 
 export type AsyncMessagesMap = {
   [K in AsyncMessageTypes]: Extract<AsyncMessages, { type: K }>

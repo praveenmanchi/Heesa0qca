@@ -4,7 +4,7 @@ import React, {
 import {
   TextInput, Badge, Spinner, Button, DropdownMenu,
 } from '@tokens-studio/ui';
-import { Search, Xmark, MultiWindow } from 'iconoir-react';
+import { Search, Xmark, MultiWindow, Clock } from 'iconoir-react';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import Box from './Box';
 import Stack from './Stack';
@@ -79,7 +79,7 @@ const SuggestionDropdown = React.memo(({
       right: 0,
       zIndex: 100,
       background: '$bgCanvas',
-      border: '1px solid $borderSubtle',
+      border: '1px solid $borderMuted',
       borderRadius: '$medium',
       boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
       maxHeight: '180px',
@@ -137,6 +137,39 @@ function VariableUsageSearch() {
   const [displayCount, setDisplayCount] = useState(50);
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [progressText, setProgressText] = useState('');
+
+  // Recent searches
+  const RECENT_KEY = 'variable-search-recent';
+  const MAX_RECENT = 8;
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem(RECENT_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
+
+  const addRecentSearch = useCallback((q: string) => {
+    if (!q.trim()) return;
+    setRecentSearches((prev) => {
+      const filtered = prev.filter((s) => s !== q);
+      const updated = [q, ...filtered].slice(0, MAX_RECENT);
+      try { localStorage.setItem(RECENT_KEY, JSON.stringify(updated)); } catch { /* ignore */ }
+      return updated;
+    });
+  }, []);
+
+  const removeRecentSearch = useCallback((q: string) => {
+    setRecentSearches((prev) => {
+      const updated = prev.filter((s) => s !== q);
+      try { localStorage.setItem(RECENT_KEY, JSON.stringify(updated)); } catch { /* ignore */ }
+      return updated;
+    });
+  }, []);
+
+  const clearAllRecent = useCallback(() => {
+    setRecentSearches([]);
+    try { localStorage.removeItem(RECENT_KEY); } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -222,7 +255,8 @@ function VariableUsageSearch() {
   const handleSearch = useCallback(() => {
     runSearch(searchQuery, allPages, selectedPageIds);
     setShowSuggestions(false);
-  }, [runSearch, searchQuery, allPages, selectedPageIds]);
+    addRecentSearch(searchQuery);
+  }, [runSearch, searchQuery, allPages, selectedPageIds, addRecentSearch]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -265,7 +299,14 @@ function VariableUsageSearch() {
     setSearchQuery(s);
     setShowSuggestions(false);
     runSearch(s, allPages, selectedPageIds);
-  }, [allPages, selectedPageIds, runSearch]);
+    addRecentSearch(s);
+  }, [allPages, selectedPageIds, runSearch, addRecentSearch]);
+
+  const handleRecentSelect = useCallback((q: string) => {
+    setSearchQuery(q);
+    runSearch(q, allPages, selectedPageIds);
+    addRecentSearch(q);
+  }, [allPages, selectedPageIds, runSearch, addRecentSearch]);
 
   const toggleAllPages = useCallback(() => {
     setAllPages(true);
@@ -317,7 +358,7 @@ function VariableUsageSearch() {
 
       {/* ── Search Header ─────────────────────────────── */}
       <Box css={{
-        padding: '$3 $4', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', display: 'flex', alignItems: 'center', gap: '$2',
+        padding: '$2 $4', borderBottom: '1px solid $borderMuted', backgroundColor: 'transparent', display: 'flex', alignItems: 'center', gap: '$3',
       }}
       >
         {/* Pages Dropdown */}
@@ -338,7 +379,7 @@ function VariableUsageSearch() {
               left: 0,
               zIndex: 200,
               background: '$bgCanvas',
-              border: '1px solid $borderSubtle',
+              border: '1px solid $borderMuted',
               borderRadius: '$medium',
               boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
               minWidth: '200px',
@@ -372,7 +413,7 @@ function VariableUsageSearch() {
                 Select All Pages
               </Box>
               <Box css={{
-                height: '1px', background: '$borderSubtle', margin: '4px 0', flexShrink: 0,
+                height: '1px', background: '$borderMuted', margin: '4px 0', flexShrink: 0,
               }}
               />
               {availablePages.map((page) => {
@@ -491,13 +532,117 @@ function VariableUsageSearch() {
             variant="primary"
             onClick={handleSearch}
             disabled={isLoading}
-            css={{ flexShrink: 0, gap: '$1' }}
+            css={{
+              flexShrink: 0,
+              gap: '$1',
+              backgroundColor: '$accentDefault',
+              color: '$fgOnEmphasis',
+              borderRadius: '$medium',
+              padding: '$2 $4',
+              '&:hover': { backgroundColor: '$accentHover' }
+            }}
           >
             <Search width={14} height={14} />
             {isLoading ? '…' : 'Search'}
           </Button>
         </Box>
       </Box>
+
+      {/* ── Recent Searches ────────────────────────────── */}
+      {recentSearches.length > 0 && !hasSearched && (
+        <Box css={{
+          padding: '$2 $3',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '$2',
+        }}>
+          <Box css={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <Box css={{ display: 'flex', alignItems: 'center', gap: '$1', color: '$fgMuted' }}>
+              <Clock width={12} height={12} />
+              <span style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.3px', textTransform: 'uppercase' }}>Recent Searches</span>
+            </Box>
+            <Box
+              as="button"
+              onClick={clearAllRecent}
+              css={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '10px',
+                color: '$fgSubtle',
+                '&:hover': { color: '$fgDefault' },
+                padding: 0,
+              }}
+            >
+              Clear all
+            </Box>
+          </Box>
+          <Box css={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {recentSearches.map((q) => (
+              <Box
+                key={q}
+                css={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '3px 8px',
+                  borderRadius: '100px',
+                  border: '1px solid $borderMuted',
+                  background: '$bgSubtle',
+                  fontSize: '11px',
+                  color: '$fgDefault',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  '&:hover': {
+                    background: '$bgEmphasis',
+                    borderColor: '$accentDefault',
+                    color: '$fgOnEmphasis',
+                  },
+                }}
+              >
+                <Box
+                  as="button"
+                  onClick={() => handleRecentSelect(q)}
+                  css={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'inherit',
+                    padding: 0,
+                    fontSize: 'inherit',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  {q}
+                </Box>
+                <Box
+                  as="button"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    removeRecentSearch(q);
+                  }}
+                  css={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '$fgSubtle',
+                    padding: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    '&:hover': { color: '$dangerFg' },
+                  }}
+                >
+                  <Xmark width={10} height={10} />
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      )}
 
       {/* ── Results ───────────────────────────────────── */}
       <Box
@@ -526,7 +671,7 @@ function VariableUsageSearch() {
               backgroundColor: '$bgSubtle',
               borderRadius: '$medium',
               margin: '$4',
-              border: '1px solid $borderSubtle',
+              border: '1px solid $borderMuted',
             }}
           >
             <Spinner />
@@ -552,7 +697,7 @@ function VariableUsageSearch() {
             backgroundColor: '$bgSubtle',
             borderRadius: '$medium',
             margin: '$4',
-            border: '1px solid $borderSubtle',
+            border: '1px solid $borderMuted',
           }}
           >
             <Box css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '$2' }}>No variables found</Box>
@@ -580,7 +725,7 @@ function VariableUsageSearch() {
             backgroundColor: '$bgSubtle',
             borderRadius: '$medium',
             margin: '$4',
-            border: '1px solid $borderSubtle',
+            border: '1px solid $borderMuted',
           }}
           >
             <Box css={{ color: '$fgDefault', fontWeight: '$sansBold', marginBottom: '$2' }}>Search Variables</Box>
@@ -781,7 +926,7 @@ function VariableUsageSearch() {
       {
         !isLoading && hasSearched && results.length > 0 && (
           <Box css={{
-            padding: '$2 $4', borderTop: '1px solid $borderSubtle', fontSize: '$bodySm', color: '$fgSubtle', display: 'flex', justifyContent: 'space-between', flexShrink: 0,
+            padding: '$2 $4', borderTop: '1px solid $borderMuted', fontSize: '$bodySm', color: '$fgSubtle', display: 'flex', justifyContent: 'space-between', flexShrink: 0,
           }}
           >
             <span>

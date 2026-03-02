@@ -77,19 +77,55 @@ export const applyUxaiChanges: AsyncMessageChannelHandlers[AsyncMessageTypes.APP
   let remapped = 0;
 
   // Apply updates to existing variables
+  // Pre-load all local variables for name-based fallback
+  const allLocalVars = await figma.variables.getLocalVariablesAsync();
+  console.log(`[Backend] applyUxaiChanges: ${updates.length} updates, ${creates.length} creates. Total local vars: ${allLocalVars.length}`);
+
   for (const u of updates) {
     try {
+      console.log(`[Backend] Processing update: id=${u.variableId}, name=${u.variableName}, mode=${u.modeId}, value=${u.value}, type=${u.type}`);
+
+      // Step 1: Try by ID
       let variable = await figma.variables.getVariableByIdAsync(u.variableId);
+
+      // Step 2: Exact name match
       if (!variable && u.variableName) {
-        const allVars = await figma.variables.getLocalVariablesAsync();
-        variable = allVars.find((v) => v.name === u.variableName) ?? null;
+        variable = allLocalVars.find((v) => v.name === u.variableName) ?? null;
+        if (variable) console.log(`[Backend] Found by exact name: "${u.variableName}" → id=${variable.id}`);
       }
+
+      // Step 3: Case-insensitive name match
+      if (!variable && u.variableName) {
+        const lowerName = u.variableName.toLowerCase();
+        variable = allLocalVars.find((v) => v.name.toLowerCase() === lowerName) ?? null;
+        if (variable) console.log(`[Backend] Found by case-insensitive name: "${u.variableName}" → "${variable.name}" id=${variable.id}`);
+      }
+
+      // Step 4: Partial path match (e.g., "border/color" matches "component/border/color")
+      if (!variable && u.variableName) {
+        const lowerName = u.variableName.toLowerCase();
+        variable = allLocalVars.find((v) => v.name.toLowerCase().endsWith(lowerName) || v.name.toLowerCase().endsWith(`/${lowerName}`)) ?? null;
+        if (variable) console.log(`[Backend] Found by partial path: "${u.variableName}" → "${variable.name}" id=${variable.id}`);
+      }
+
       if (!variable) {
-        errors.push(`Variable ${u.variableId}${u.variableName ? ` (${u.variableName})` : ''} not found`);
+        const errMsg = `Variable not found: id="${u.variableId}", name="${u.variableName ?? 'N/A'}"`;
+        console.warn(`[Backend] ${errMsg}`);
+        errors.push(errMsg);
         continue;
       }
 
-      const { modeId } = u;
+      // Resolve modeId — if provided modeId is invalid, try to use the first available mode
+      const collection = await figma.variables.getVariableCollectionByIdAsync(variable.variableCollectionId);
+      let resolvedModeId = u.modeId;
+
+      if (collection) {
+        const validMode = collection.modes.find((m) => m.modeId === u.modeId);
+        if (!validMode) {
+          console.warn(`[Backend] ModeId "${u.modeId}" not found in collection "${collection.name}", using first mode: "${collection.modes[0]?.modeId}"`);
+          resolvedModeId = collection.modes[0]?.modeId ?? u.modeId;
+        }
+      }
 
       let figmaValue: VariableValue;
       switch (u.type) {
@@ -112,10 +148,13 @@ export const applyUxaiChanges: AsyncMessageChannelHandlers[AsyncMessageTypes.APP
           continue;
       }
 
-      variable.setValueForMode(modeId, figmaValue);
+      console.log(`[Backend] Setting "${variable.name}" mode="${resolvedModeId}" to`, figmaValue);
+      variable.setValueForMode(resolvedModeId, figmaValue);
       applied += 1;
     } catch (e: any) {
-      errors.push(`Update failed for ${u.variableId}: ${e?.message ?? String(e)}`);
+      const errMsg = `Update failed for ${u.variableId}${u.variableName ? ` (${u.variableName})` : ''}: ${e?.message ?? String(e)}`;
+      console.error(`[Backend] ${errMsg}`);
+      errors.push(errMsg);
     }
   }
 

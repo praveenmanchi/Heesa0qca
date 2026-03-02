@@ -9,11 +9,6 @@ import { getLastopened } from '@/selectors';
 import Stack from './Stack';
 import { styled } from '@/stitches.config';
 
-const StyledLink = styled('a', {
-  display: 'inline-flex',
-  fontSize: '$1',
-  color: '$accentDefault',
-});
 
 const StyledImage = styled('img', {
   borderRadius: '$medium',
@@ -26,12 +21,6 @@ function fetchOnboardingImage(idx: number) {
       return require('../assets/onboardingflow/0.webp');
     case 1:
       return require('../assets/onboardingflow/1.webp');
-    case 2:
-      return require('../assets/onboardingflow/2.webp');
-    case 3:
-      return require('../assets/onboardingflow/3.webp');
-    case 4:
-      return require('../assets/onboardingflow/4.webp');
     default:
       return '';
   }
@@ -47,7 +36,6 @@ export default function OnboardingFlow() {
     {
       title: 'createTokens',
       excerpt: 'createTokensText',
-      read_more_link: 'https://docs.tokens.studio/tokens/creating-tokens',
     },
   ];
 
@@ -83,15 +71,6 @@ export default function OnboardingFlow() {
             <StyledImage src={fetchOnboardingImage(index)} alt="" />
             <Heading size="medium">{t(item.title)}</Heading>
             <Text size="small">{t(item.excerpt)}</Text>
-            {item.read_more_link && (
-              <StyledLink
-                target="_blank"
-                rel="noreferrer"
-                href={item.read_more_link}
-              >
-                {t('readMore')}
-              </StyledLink>
-            )}
           </Stack>
         ))}
         <Stack direction="row" gap={2} justify={activeIndex > 1 ? 'between' : 'end'}>

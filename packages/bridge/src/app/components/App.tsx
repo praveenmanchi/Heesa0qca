@@ -20,6 +20,7 @@ import ChangeLog from './ChangeLog';
 import ExtractTab from './ExtractTab';
 import StyleGuideTab from './StyleGuideTab';
 import UXAITab from './UXAITab';
+import MCPCodeTab from './MCPCodeTab';
 
 function App() {
   const activeTab = useSelector(activeTabSelector);
@@ -66,6 +67,7 @@ function App() {
               {activeTab === 'settings' && <Settings />}
               {activeTab === 'styleguide' && <StyleGuideTab />}
               {activeTab === 'uxai' && <UXAITab />}
+              {activeTab === 'mcpcode' && <MCPCodeTab />}
             </Box>
             {activeTab !== 'loading' && activeTab !== 'start' && <Footer />}
           </Box>

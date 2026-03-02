@@ -59,7 +59,7 @@ function Inspector() {
   function renderInspectView() {
     switch (inspectView) {
       case 'debug':
-        return <InspectorDebugView resolvedTokens={resolvedTokens} selectedMode={selectedMode} />;
+        return <InspectorDebugView resolvedTokens={resolvedTokens} _selectedMode={selectedMode} />;
       case 'json':
         return <InspectorJsonView resolvedTokens={resolvedTokens} selectedMode={selectedMode} />;
       case 'visualization':
@@ -88,27 +88,10 @@ function Inspector() {
     }}
     >
       <Box css={{
-        display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: '$3', padding: '$3 $4', borderBottom: '1px solid $borderSubtle', backgroundColor: '$bgDefault', flexShrink: 0,
+        display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: '$3', padding: '$2 $4', borderBottom: '1px solid $borderSubtle', backgroundColor: 'transparent', flexShrink: 0,
       }}
       >
-        <Box
-          css={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: '$3',
-          }}
-        >
-          <TextInput
-            value={searchInputValue}
-            onChange={handleSearchInputChange}
-            type="text"
-            placeholder={`${t('search')}… (Esc to clear)`}
-            leadingVisual={<Search />}
-          />
-        </Box>
         <Stack direction="row" align="center" gap={2}>
-          <InspectSearchOptionDropdown />
           {availableModes.length > 0 && (
             <DropdownMenu>
               <DropdownMenu.Trigger asChild>
@@ -131,6 +114,26 @@ function Inspector() {
             type="single"
             value={inspectView}
             onValueChange={handleSetInspectView}
+            css={{
+              backgroundColor: '$bgSubtle',
+              padding: '2px',
+              borderRadius: '$medium',
+              border: 'none',
+              gap: 0,
+              '& [data-state="on"]': {
+                backgroundColor: '$accentDefault',
+                color: '$fgOnEmphasis',
+                borderRadius: '$medium',
+                boxShadow: 'none',
+              },
+              '& [data-state="off"]': {
+                backgroundColor: 'transparent',
+                color: '$fgMuted',
+                '&:hover': {
+                  color: '$fgDefault',
+                }
+              }
+            }}
           >
             {/* Disabling tooltip for now due to https://github.com/radix-ui/primitives/issues/602
             <ToggleGroup.Item value="multi" tooltip={t('inspectLayers') as string} tooltipSide="bottom"> */}
@@ -176,6 +179,25 @@ function Inspector() {
               </Box>
             </ToggleGroup.Item>
           </ToggleGroup>
+        </Stack>
+        <Stack direction="row" align="center" gap={2}>
+          <Box
+            css={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: '$3',
+            }}
+          >
+            <TextInput
+              value={searchInputValue}
+              onChange={handleSearchInputChange}
+              type="text"
+              placeholder={`${t('search')}… (Esc to clear)`}
+              leadingVisual={<Search />}
+            />
+          </Box>
+          <InspectSearchOptionDropdown />
         </Stack>
       </Box>
       {renderInspectView()}
